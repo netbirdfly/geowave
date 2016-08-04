@@ -417,6 +417,7 @@ public class GeoWaveFeatureReader implements
 						getSubset(),
 						components.getAdapter());
 			}
+			queryOptions.setAggregation(aggregation, adapter);
 			return components.getDataStore().query(
 					queryOptions,
 					CQLQuery.createOptimalQuery(
@@ -424,8 +425,6 @@ public class GeoWaveFeatureReader implements
 							components.getAdapter(),
 							index,
 							query));
-			// TODO: ? need to figure out how to add back CqlQueryRenderIterator
-			// renderer,
 		}
 	}
 

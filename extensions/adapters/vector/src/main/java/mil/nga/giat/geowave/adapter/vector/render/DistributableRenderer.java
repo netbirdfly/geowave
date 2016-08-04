@@ -24,6 +24,6 @@ public interface DistributableRenderer extends
 	// public AbstractRowProvider newRowProvider(
 	// final NumericIndexStrategy indexStrategy );
 
-	public RenderedMaster getResult();
+	public PersistableRenderedImage getResult();
 
 }

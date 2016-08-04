@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import mil.nga.giat.geowave.adapter.vector.render.DistributableRenderer;
-import mil.nga.giat.geowave.adapter.vector.render.RenderedMaster;
+import mil.nga.giat.geowave.adapter.vector.render.PersistableRenderedImage;
 import mil.nga.giat.geowave.adapter.vector.stats.FeatureBoundingBoxStatistics;
 import mil.nga.giat.geowave.adapter.vector.stats.FeatureNumericRangeStatistics;
 import mil.nga.giat.geowave.adapter.vector.stats.FeatureTimeRangeStatistics;
@@ -198,7 +198,7 @@ public class GeoWaveFeatureCollection extends
 		typeBuilder.setName("image_type");
 		typeBuilder.add(
 				"Image",
-				RenderedMaster.class);
+				PersistableRenderedImage.class);
 		return typeBuilder.buildFeatureType();
 	}
 
@@ -278,22 +278,22 @@ public class GeoWaveFeatureCollection extends
 								SERVER_FEATURE_RENDERER));
 			}
 			else if (query.getHints().containsKey(
-					DecimationProcess.OUTPUT_WIDTH) && query.getHints().containsKey(
-					DecimationProcess.OUTPUT_HEIGHT) && query.getHints().containsKey(
-					DecimationProcess.OUTPUT_BBOX)) {
+					SubsampleProcess.OUTPUT_WIDTH) && query.getHints().containsKey(
+					SubsampleProcess.OUTPUT_HEIGHT) && query.getHints().containsKey(
+					SubsampleProcess.OUTPUT_BBOX)) {
 				double pixelSize = 1;
 				if (query.getHints().containsKey(
-						DecimationProcess.PIXEL_SIZE)) {
+						SubsampleProcess.PIXEL_SIZE)) {
 					pixelSize = (Double) query.getHints().get(
-							DecimationProcess.PIXEL_SIZE);
+							SubsampleProcess.PIXEL_SIZE);
 				}
 				featureCursor = reader.getData(
 						jtsBounds,
 						timeBounds,
 						(Integer) query.getHints().get(
-								DecimationProcess.OUTPUT_WIDTH),
+								SubsampleProcess.OUTPUT_WIDTH),
 						(Integer) query.getHints().get(
-								DecimationProcess.OUTPUT_HEIGHT),
+								SubsampleProcess.OUTPUT_HEIGHT),
 						pixelSize,
 						getFilter(query),
 						referencedEnvelope,
@@ -331,9 +331,9 @@ public class GeoWaveFeatureCollection extends
 			throws TransformException,
 			FactoryException {
 		if (query.getHints().containsKey(
-				DecimationProcess.OUTPUT_BBOX)) {
+				SubsampleProcess.OUTPUT_BBOX)) {
 			return ((ReferencedEnvelope) query.getHints().get(
-					DecimationProcess.OUTPUT_BBOX)).transform(
+					SubsampleProcess.OUTPUT_BBOX)).transform(
 					GeoWaveGTDataStore.DEFAULT_CRS,
 					true);
 		}

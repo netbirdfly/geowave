@@ -1,4 +1,4 @@
-package mil.nga.giat.geowave.adapter.vector.render;
+package mil.nga.giat.geowave.adapter.vector.render.param;
 
 import java.awt.Rectangle;
 import java.nio.ByteBuffer;

@@ -16,8 +16,9 @@ public class GeoWaveGSProcessFactory extends
 	public GeoWaveGSProcessFactory() {
 		super(
 				Text.text("GeoWave Process Factory"),
-				"nga",
-				DecimationProcess.class);
+				"geowave",
+				SubsampleProcess.class,
+				DistributedRenderProcess.class);
 	}
 
 }

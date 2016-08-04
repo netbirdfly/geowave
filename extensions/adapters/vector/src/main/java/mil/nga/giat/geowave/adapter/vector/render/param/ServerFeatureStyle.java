@@ -1,4 +1,4 @@
-package mil.nga.giat.geowave.adapter.vector.render;
+package mil.nga.giat.geowave.adapter.vector.render.param;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -7,6 +7,7 @@ import java.util.List;
 
 import javax.xml.transform.TransformerException;
 
+import mil.nga.giat.geowave.adapter.vector.render.RenderedStyle;
 import mil.nga.giat.geowave.core.index.Persistable;
 import mil.nga.giat.geowave.core.index.StringUtils;
 
@@ -40,7 +41,7 @@ public class ServerFeatureStyle implements
 
 	private boolean screenMapEnabled = false;
 	private ScreenMap screenMap = null;
-	protected DelayedBackbufferGraphic graphics;
+	protected CallbackGraphics2DWrapper graphics;
 
 	protected ServerFeatureStyle() {}
 
@@ -76,7 +77,7 @@ public class ServerFeatureStyle implements
 		else {
 			screenMap = null;
 		}
-		graphics = new DelayedBackbufferGraphic(
+		graphics = new CallbackGraphics2DWrapper(
 				options.masterGraphics,
 				paintArea.getArea());
 	}

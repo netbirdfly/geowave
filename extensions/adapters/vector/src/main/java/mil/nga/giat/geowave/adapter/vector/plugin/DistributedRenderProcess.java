@@ -1,5 +1,6 @@
 package mil.nga.giat.geowave.adapter.vector.plugin;
 
+import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.Query;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.factory.Hints;
@@ -9,6 +10,7 @@ import org.geotools.process.factory.DescribeParameter;
 import org.geotools.process.factory.DescribeProcess;
 import org.geotools.process.factory.DescribeResult;
 import org.geotools.process.gs.GSProcess;
+import org.geotools.styling.SLDParser;
 import org.opengis.coverage.grid.GridGeometry;
 
 /**
@@ -22,11 +24,9 @@ import org.opengis.coverage.grid.GridGeometry;
  */
 @SuppressWarnings("deprecation")
 @DescribeProcess(title = "DecimateToPixelResolution", description = "This process will enable GeoWave to decimate WMS rendering down to pixel resolution to not oversample data.  This will efficiently render overlapping geometry that would otherwise be hidden but it assume an opaque style and does not take transparency into account.")
-public class DecimationProcess implements
+public class DistributedRenderProcess implements
 		GSProcess
 {
-	public static final Hints.Key PIXEL_SIZE = new Hints.Key(
-			Double.class);
 	public static final Hints.Key OUTPUT_BBOX = new Hints.Key(
 			ReferencedEnvelope.class);
 	public static final Hints.Key OUTPUT_WIDTH = new Hints.Key(
@@ -44,10 +44,10 @@ public class DecimationProcess implements
 			final Integer argOutputWidth,
 			@DescribeParameter(name = "outputHeight", description = "Height of the output raster")
 			final Integer argOutputHeight,
-			@DescribeParameter(name = "pixelSize", description = "The pixel size to decimate by")
-			final Double pixelSize )
+			@DescribeParameter(name = "distributedRenderStyle", description = "The feature type style(s) to use for distributed rendering ")
+			final String style )
 			throws ProcessException {
-		// vector-to-vector render transform that is just a pass through - the
+		// vector-to-raster render transform that is just a pass through - the
 		// key is to add map to screen transform within invertQuery
 		return features;
 	}
@@ -59,12 +59,13 @@ public class DecimationProcess implements
 			final Integer argOutputWidth,
 			@DescribeParameter(name = "outputHeight", description = "Height of the output raster")
 			final Integer argOutputHeight,
-			@DescribeParameter(name = "pixelSize", description = "The pixel size to decimate by")
-			final Double pixelSize,
+			@DescribeParameter(name = "distributedRenderStyle", description = "The feature type style(s) to use for distributed rendering ")
+			final String style,
 			final Query targetQuery,
 			final GridGeometry targetGridGeometry )
 			throws ProcessException {
-
+		// SLDParser
+		
 		// add to the query hints
 		targetQuery.getHints().put(
 				OUTPUT_WIDTH,
@@ -75,12 +76,6 @@ public class DecimationProcess implements
 		targetQuery.getHints().put(
 				OUTPUT_BBOX,
 				argOutputEnv);
-		if (pixelSize != null) {
-			targetQuery.getHints().put(
-					PIXEL_SIZE,
-					pixelSize);
-		}
 		return targetQuery;
 	}
-
 }

@@ -5,8 +5,8 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+import mil.nga.giat.geowave.adapter.vector.render.param.ServerFeatureStyle;
 import mil.nga.giat.geowave.core.index.PersistenceUtils;
-
 /**
  * In addition to a main persisted image, this class also wraps rendered styles.
  * The main image contains any labels, and the styles each persist a per-style

@@ -13,13 +13,9 @@ import mil.nga.giat.geowave.datastore.hbase.util.HBaseUtils;
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.TableName;
-import org.apache.hadoop.hbase.client.BufferedMutator;
-import org.apache.hadoop.hbase.client.BufferedMutator.ExceptionListener;
-import org.apache.hadoop.hbase.client.BufferedMutatorParams;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.RegionLocator;
 import org.apache.hadoop.hbase.client.ResultScanner;
-import org.apache.hadoop.hbase.client.RetriesExhaustedWithDetailsException;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.security.visibility.Authorizations;
@@ -248,5 +244,11 @@ public class BasicHBaseOperations implements
 	@Override
 	public String getTableNameSpace() {
 		return tableNamespace;
+	}
+
+	public Table getTable(
+			final String tableName )
+			throws IOException {
+		return conn.getTable(getTableName(getQualifiedTableName(tableName)));
 	}
 }

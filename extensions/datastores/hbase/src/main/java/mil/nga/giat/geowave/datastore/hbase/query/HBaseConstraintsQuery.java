@@ -4,16 +4,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import org.apache.commons.lang3.tuple.Pair;
-import org.apache.hadoop.hbase.filter.Filter;
-import org.apache.log4j.Logger;
-
-import com.google.common.collect.Iterators;
+import java.util.Map;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.ByteArrayRange;
 import mil.nga.giat.geowave.core.index.IndexMetaData;
+import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.CloseableIterator.Wrapper;
@@ -28,6 +24,16 @@ import mil.nga.giat.geowave.core.store.query.ConstraintsQuery;
 import mil.nga.giat.geowave.core.store.query.Query;
 import mil.nga.giat.geowave.core.store.query.aggregate.Aggregation;
 import mil.nga.giat.geowave.datastore.hbase.operations.BasicHBaseOperations;
+import mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos;
+
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.hadoop.hbase.client.Table;
+import org.apache.hadoop.hbase.client.coprocessor.Batch;
+import org.apache.hadoop.hbase.filter.Filter;
+import org.apache.hadoop.hbase.ipc.BlockingRpcCallback;
+import org.apache.log4j.Logger;
+
+import com.google.common.collect.Iterators;
 
 public class HBaseConstraintsQuery extends
 		HBaseFilteredIndexQuery
@@ -124,39 +130,55 @@ public class HBaseConstraintsQuery extends
 			final BasicHBaseOperations operations,
 			final AdapterStore adapterStore,
 			final Integer limit ) {
-		final CloseableIterator<Object> it = super.query(
-				operations,
-				adapterStore,
-				limit);
-
-		if (isAggregation() && (it != null) && it.hasNext()) {
-			// TODO implement aggregation as a co-processor on the server side,
-			// but for now simply aggregate client-side here
-
-			final Aggregation aggregationFunction = base.aggregation.getRight();
-			synchronized (aggregationFunction) {
-
-				aggregationFunction.clearResult();
-				while (it.hasNext()) {
-					final Object input = it.next();
-					if (input != null) {
-						aggregationFunction.aggregate(input);
-					}
-				}
-				try {
-					it.close();
-				}
-				catch (final IOException e) {
-					LOGGER.warn(
-							"Unable to close hbase scanner",
-							e);
-				}
-
-				return new Wrapper(
-						Iterators.singletonIterator(aggregationFunction.getResult()));
-			}
+		if (!isAggregation()) {
+			return super.query(
+					operations,
+					adapterStore,
+					limit);
 		}
 
-		return it;
+		// Use the row count coprocessor
+		final String tableName = StringUtils.stringFromBinary(index.getId().getBytes());
+		long total = 0;
+
+		try {
+			Table table = operations.getTable(tableName);
+
+			final RowCountProtos.CountRequest request = RowCountProtos.CountRequest.getDefaultInstance();
+
+			// TODO: use row ranges
+			Map<byte[], Long> results = table.coprocessorService(
+					RowCountProtos.RowCountService.class,
+					null,
+					null, // Set start and end row key to "null" to count all rows.
+					new Batch.Call<RowCountProtos.RowCountService, Long>() {
+						public Long call(
+								RowCountProtos.RowCountService counter )
+								throws IOException {
+							BlockingRpcCallback<RowCountProtos.CountResponse> rpcCallback = new BlockingRpcCallback<RowCountProtos.CountResponse>();
+							counter.getRowCount(
+									null,
+									request,
+									rpcCallback);
+							RowCountProtos.CountResponse response = rpcCallback.get();
+							return response.hasCount() ? response.getCount() : 0;
+						}
+					});
+
+			for (Map.Entry<byte[], Long> entry : results.entrySet()) {
+				total += entry.getValue().longValue();
+			}
+		}
+		catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		catch (Throwable e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return new Wrapper(
+				Iterators.singletonIterator(total));	
 	}
 }

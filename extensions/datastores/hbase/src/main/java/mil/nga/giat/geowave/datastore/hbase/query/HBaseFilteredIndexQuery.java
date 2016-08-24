@@ -115,7 +115,7 @@ public abstract class HBaseFilteredIndexQuery extends
 		}
 
 		final String tableName = StringUtils.stringFromBinary(index.getId().getBytes());
-
+		
 		final List<Filter> distributableFilters = getDistributableFilter();
 
 		CloseableIterator<DataAdapter<?>> adapters = null;
@@ -255,7 +255,7 @@ public abstract class HBaseFilteredIndexQuery extends
 		// Set the filter list for the scan and return the scan list (with the
 		// single multi-range scan)
 		scanner.setFilter(filterList);
-		scanner.setMaxVersions(1);
+
 		// Only return the most recent version
 		scanner.setMaxVersions(1);
 

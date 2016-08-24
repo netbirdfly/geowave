@@ -156,12 +156,6 @@ public class HBaseConstraintsQuery extends
 						Iterators.singletonIterator(aggregationFunction.getResult()));
 			}
 		}
-		// else {
-		// return super.query(
-		// operations,
-		// adapterStore,
-		// limit);
-		// }
 
 		return it;
 	}

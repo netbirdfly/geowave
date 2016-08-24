@@ -69,7 +69,7 @@
 		<test.args>-Xms128m -Xmx1024m -XX:MaxMetaspaceSize=256m</test.args>
 		<findbugs.version>3.0.1</findbugs.version>
 		<findbugs.omitVisitors>MutableStaticFields,FindReturnRef</findbugs.omitVisitors>
-		<findbugs.effort>Min</findbugs.effort>
+		<findbugs.effort>Max</findbugs.effort>
 		<findbugs.threshold>Medium</findbugs.threshold>
 		<findbugs.failOnError>true</findbugs.failOnError>
 	</properties>

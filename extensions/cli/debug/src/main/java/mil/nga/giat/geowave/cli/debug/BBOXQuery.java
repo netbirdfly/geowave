@@ -24,8 +24,6 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 public class BBOXQuery extends
 		AbstractGeoWaveQuery
 {
-	private static final boolean USE_COPROCESSOR = true;
-
 	@Parameter(names = {
 		"-e",
 		"--east"
@@ -79,28 +77,23 @@ public class BBOXQuery extends
 
 		long count = 0;
 		if (useAggregation) {
-			if (USE_COPROCESSOR) {
-
+			final QueryOptions options = new QueryOptions(
+					adapterId,
+					indexId);
+			options.setAggregation(
+					new CountAggregation(),
+					adapter);
+			try (final CloseableIterator<Object> it = dataStore.query(
+					options,
+					new SpatialQuery(
+							geom))) {
+				final CountResult result = ((CountResult) (it.next()));
+				if (result != null) {
+					count += result.getCount();
+				}
 			}
-			else {
-				final QueryOptions options = new QueryOptions(
-						adapterId,
-						indexId);
-				options.setAggregation(
-						new CountAggregation(),
-						adapter);
-				try (final CloseableIterator<Object> it = dataStore.query(
-						options,
-						new SpatialQuery(
-								geom))) {
-					final CountResult result = ((CountResult) (it.next()));
-					if (result != null) {
-						count += result.getCount();
-					}
-				}
-				catch (final IOException e) {
-					e.printStackTrace();
-				}
+			catch (final IOException e) {
+				e.printStackTrace();
 			}
 		}
 		else {

@@ -23,8 +23,6 @@ import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcController;
 import com.google.protobuf.Service;
 
-// cc RowCountEndpoint Example endpoint implementation, adding a row and cell count method.
-// vv RowCountEndpoint
 public class RowCountEndpoint extends
 		RowCountProtos.RowCountService implements
 		Coprocessor,

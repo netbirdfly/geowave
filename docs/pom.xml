@@ -19,6 +19,7 @@
 	<asciidoctor.epub.version>1.5.0-alpha.6</asciidoctor.epub.version>
         <asciidoctor.maven.plugin.version>1.5.3</asciidoctor.maven.plugin.version>
 	<asciidoctorj.pdf.version>1.5.0-alpha.11</asciidoctorj.pdf.version>
+	<asciidoctor.pdf.version>1.5.0.alpha.11</asciidoctor.pdf.version>
     </properties>
 
     <repositories>

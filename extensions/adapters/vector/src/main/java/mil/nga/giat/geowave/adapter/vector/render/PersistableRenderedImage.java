@@ -1,6 +1,7 @@
 package mil.nga.giat.geowave.adapter.vector.render;
 
 import java.awt.image.BufferedImage;
+import java.awt.image.RenderedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -16,20 +17,20 @@ import org.apache.log4j.Logger;
  * serializes and deserializes the BufferedImage as a png using ImageIO.
  * 
  */
-abstract public class PersistableRenderedImage implements
+public class PersistableRenderedImage implements
 		Persistable
 {
 	private final static Logger LOGGER = Logger.getLogger(PersistableRenderedImage.class);
-	public BufferedImage image;
+	public RenderedImage image;
 
 	protected PersistableRenderedImage() {}
 
 	public PersistableRenderedImage(
-			final BufferedImage image ) {
+			final RenderedImage image ) {
 		this.image = image;
 	}
 
-	public BufferedImage getImage() {
+	public RenderedImage getImage() {
 		return image;
 	}
 

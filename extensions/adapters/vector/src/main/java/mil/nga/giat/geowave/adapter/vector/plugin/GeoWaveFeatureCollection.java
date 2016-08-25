@@ -52,12 +52,12 @@ public class GeoWaveFeatureCollection extends
 		DataFeatureCollection
 {
 
-	public static final Hints.Key LEVEL = new Hints.Key(
-			Integer.class);
-	public static final Hints.Key SERVER_FEATURE_RENDERER = new Hints.Key(
-			DistributableRenderer.class);
-	public static final Hints.Key STATS_NAME = new Hints.Key(
-			String.class);
+//	public static final Hints.Key LEVEL = new Hints.Key(
+//			Integer.class);
+//	public static final Hints.Key SERVER_FEATURE_RENDERER = new Hints.Key(
+//			DistributableRenderer.class);
+//	public static final Hints.Key STATS_NAME = new Hints.Key(
+//			String.class);
 	private final static Logger LOGGER = Logger.getLogger(GeoWaveFeatureCollection.class);
 	private final GeoWaveFeatureReader reader;
 	private CloseableIterator<SimpleFeature> featureCursor;
@@ -202,15 +202,6 @@ public class GeoWaveFeatureCollection extends
 		return typeBuilder.buildFeatureType();
 	}
 
-	protected String getStatsQueryName() {
-		final Object statsQueryName = query.getHints().get(
-				STATS_NAME);
-		if (statsQueryName == null) {
-			return null;
-		}
-		return statsQueryName.toString();
-	}
-
 	protected boolean isDistributedRenderQuery() {
 		return GeoWaveFeatureCollection.isDistributedRenderQuery(query);
 	}
@@ -218,7 +209,7 @@ public class GeoWaveFeatureCollection extends
 	protected static final boolean isDistributedRenderQuery(
 			final Query query ) {
 		return query.getHints().containsKey(
-				SERVER_FEATURE_RENDERER);
+				DistributedRenderProcess.ENABLE);
 	}
 
 	private static SimpleFeatureType getSchema(
@@ -299,15 +290,6 @@ public class GeoWaveFeatureCollection extends
 						referencedEnvelope,
 						limit);
 
-			}
-			else if (getStatsQueryName() != null) {
-				featureCursor = reader.getData(
-						jtsBounds,
-						timeBounds,
-						(Integer) query.getHints().get(
-								LEVEL),
-						(String) query.getHints().get(
-								STATS_NAME));
 			}
 			else {
 				// get the data within the bounding box

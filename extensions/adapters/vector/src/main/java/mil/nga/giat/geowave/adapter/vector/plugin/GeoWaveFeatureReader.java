@@ -559,22 +559,6 @@ public class GeoWaveFeatureReader implements
 						limit));
 	}
 
-	public CloseableIterator<SimpleFeature> getData(
-			final Geometry jtsBounds,
-			final TemporalConstraintsSet timeBounds,
-			final int level,
-			final String statsName ) {
-		return issueQuery(
-				jtsBounds,
-				timeBounds,
-				new IdQueryIssuer(
-						Arrays.asList(new ByteArrayId[] {
-							new ByteArrayId(
-									StringUtils.stringToBinary("l" + level + "_stats" + statsName))
-						})));
-
-	}
-
 	public GeoWaveFeatureCollection getFeatureCollection() {
 		return featureCollection;
 	}

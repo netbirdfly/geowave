@@ -22,6 +22,7 @@ import mil.nga.giat.geowave.adapter.vector.render.RenderedMaster;
 import mil.nga.giat.geowave.core.index.Persistable;
 
 import org.apache.log4j.Logger;
+import org.geoserver.wms.map.ImageUtils;
 import org.geotools.renderer.label.LabelCacheImpl.LabelRenderingMode;
 import org.geotools.renderer.lite.StyledShapePainter;
 import org.geotools.renderer.lite.StyledShapePainter.TextureAnchorKey;
@@ -102,11 +103,11 @@ public class ServerRenderOptions implements
 				paintArea.getWidth(),
 				paintArea.getHeight(),
 				useAlpha);
-		// masterGraphics = ImageUtils.prepareTransparency(
-		// useAlpha,
-		// bgColor,
-		// masterImage,
-		// null);
+		masterGraphics = ImageUtils.prepareTransparency(
+				useAlpha,
+				bgColor,
+				masterImage,
+				null);
 		if (renderingHints != null) {
 			masterGraphics.setRenderingHints(renderingHints);
 		}
@@ -134,12 +135,11 @@ public class ServerRenderOptions implements
 			final int width,
 			final int height,
 			final boolean transparent ) {
-		return null;
-		// ImageUtils.createImage(
-		// width,
-		// height,
-		// null,
-		// transparent);
+		return ImageUtils.createImage(
+		 width,
+		 height,
+		 null,
+		 transparent);
 	}
 
 	protected RenderedMaster getRenderedMaster(

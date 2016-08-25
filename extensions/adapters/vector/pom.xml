@@ -46,9 +46,18 @@
 			<artifactId>gt-wps</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>org.geoserver</groupId>
+			<artifactId>gs-wms</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-core</artifactId>
 			<version>3.1.0.RELEASE</version>
+		</dependency>
+		<dependency>
+			<groupId>com.aol.simplereact</groupId>
+			<artifactId>cyclops-react</artifactId>
+			<version>1.0.0-RC4</version>
 		</dependency>
 		<dependency>
 			<groupId>org.geotools</groupId>

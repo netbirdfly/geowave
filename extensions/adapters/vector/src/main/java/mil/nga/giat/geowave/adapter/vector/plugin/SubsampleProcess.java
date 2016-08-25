@@ -20,10 +20,8 @@ import org.opengis.coverage.grid.GridGeometry;
  * skipped when a feature successfully passes filters.
  * 
  */
-@SuppressWarnings("deprecation")
 @DescribeProcess(title = "SubsampleAtScreenResolution", description = "This process will enable GeoWave to subsample WMS requests based on pixel resolution to not oversample data.  This will efficiently render overlapping point geometry that would otherwise be hidden but it assumes an opaque style and does not take transparency into account.  It will use the centroid for other geometry types than point which can produce visual artifacts - distributed rendering is an alternative approach to efficiently render lines and polygons")
-public class SubsampleProcess implements
-		GSProcess
+public class SubsampleProcess
 {
 	public static final Hints.Key PIXEL_SIZE = new Hints.Key(
 			Double.class);

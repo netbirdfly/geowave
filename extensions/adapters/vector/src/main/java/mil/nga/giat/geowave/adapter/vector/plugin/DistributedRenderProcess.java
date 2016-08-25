@@ -1,5 +1,12 @@
 package mil.nga.giat.geowave.adapter.vector.plugin;
 
+import java.awt.AlphaComposite;
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.awt.image.IndexColorModel;
+import java.io.ByteArrayOutputStream;
+
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.Query;
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -9,9 +16,14 @@ import org.geotools.process.ProcessException;
 import org.geotools.process.factory.DescribeParameter;
 import org.geotools.process.factory.DescribeProcess;
 import org.geotools.process.factory.DescribeResult;
-import org.geotools.process.gs.GSProcess;
+import org.geotools.resources.coverage.FeatureUtilities;
 import org.geotools.styling.SLDParser;
+import org.geotools.styling.SLDTransformer;
+import org.geotools.styling.Style;
+import org.opengis.coverage.grid.GridCoverage;
 import org.opengis.coverage.grid.GridGeometry;
+
+import mil.nga.giat.geowave.adapter.vector.render.DistributedRenderOptions;
 
 /**
  * This class can be used as a GeoTools Render Transform ('nga:Decimation')
@@ -22,20 +34,16 @@ import org.opengis.coverage.grid.GridGeometry;
  * skipped when a feature successfully passes filters.
  * 
  */
-@SuppressWarnings("deprecation")
 @DescribeProcess(title = "DecimateToPixelResolution", description = "This process will enable GeoWave to decimate WMS rendering down to pixel resolution to not oversample data.  This will efficiently render overlapping geometry that would otherwise be hidden but it assume an opaque style and does not take transparency into account.")
-public class DistributedRenderProcess implements
-		GSProcess
+public class DistributedRenderProcess
 {
-	public static final Hints.Key OUTPUT_BBOX = new Hints.Key(
-			ReferencedEnvelope.class);
-	public static final Hints.Key OUTPUT_WIDTH = new Hints.Key(
-			Integer.class);
-	public static final Hints.Key OUTPUT_HEIGHT = new Hints.Key(
-			Integer.class);
+	public static final Hints.Key STYLE = new Hints.Key(
+			Style.class);
+	public static final Hints.Key OPTIONS = new Hints.Key(
+			DistributedRenderOptions.class);
 
 	@DescribeResult(name = "result", description = "This is just a pass-through, the key is to provide enough information within invertQuery to perform a map to screen transform")
-	public SimpleFeatureCollection execute(
+	public GridCoverage2D execute(
 			@DescribeParameter(name = "data", description = "Feature collection containing the data")
 			final SimpleFeatureCollection features,
 			@DescribeParameter(name = "outputBBOX", description = "Georeferenced bounding box of the output")
@@ -43,12 +51,44 @@ public class DistributedRenderProcess implements
 			@DescribeParameter(name = "outputWidth", description = "Width of the output raster")
 			final Integer argOutputWidth,
 			@DescribeParameter(name = "outputHeight", description = "Height of the output raster")
-			final Integer argOutputHeight,
-			@DescribeParameter(name = "distributedRenderStyle", description = "The feature type style(s) to use for distributed rendering ")
-			final String style )
+			final Integer argOutputHeight )
 			throws ProcessException {
-		// vector-to-raster render transform that is just a pass through - the
-		// key is to add map to screen transform within invertQuery
+		// vector-to-raster render transform that takes a set of features that
+		// wrap graphics2D objects and converts them to a GridCoverage2D
+		FeatureUtilities.wrapGridCoverage(
+				coverage);
+		final ColorModel model = masterImage.getImage().getColorModel();
+		BufferedImage master;
+		if (model instanceof IndexColorModel) {
+			master = new BufferedImage(
+					masterImage.getImage().getWidth(),
+					masterImage.getImage().getHeight(),
+					masterImage.getImage().getType(),
+					(IndexColorModel) model);
+		}
+		else {
+			master = new BufferedImage(
+					masterImage.getImage().getWidth(),
+					masterImage.getImage().getHeight(),
+					masterImage.getImage().getType());
+		}
+		Graphics2D graphics = master.createGraphics();
+		graphics.setComposite(
+				AlphaComposite.getInstance(
+						AlphaComposite.SRC_OVER));
+
+		for (final BufferedImage ftsGraphics : mergeGraphics) {
+			// we may have not found anything to paint, in that case the
+			// delegate
+			// has not been initialized
+			if (ftsGraphics != null) {
+				graphics.drawImage(
+						ftsGraphics,
+						0,
+						0,
+						null);
+			}
+		}
 		return features;
 	}
 
@@ -59,23 +99,20 @@ public class DistributedRenderProcess implements
 			final Integer argOutputWidth,
 			@DescribeParameter(name = "outputHeight", description = "Height of the output raster")
 			final Integer argOutputHeight,
-			@DescribeParameter(name = "distributedRenderStyle", description = "The feature type style(s) to use for distributed rendering ")
-			final String style,
 			final Query targetQuery,
 			final GridGeometry targetGridGeometry )
 			throws ProcessException {
-		// SLDParser
-		
 		// add to the query hints
-		targetQuery.getHints().put(
-				OUTPUT_WIDTH,
-				argOutputWidth);
-		targetQuery.getHints().put(
-				OUTPUT_HEIGHT,
-				argOutputHeight);
-		targetQuery.getHints().put(
-				OUTPUT_BBOX,
-				argOutputEnv);
+		Style style = (Style) targetQuery.getHints().get(
+				STYLE);
+		if (style != null) {
+			DistributedRenderOptions options = new DistributedRenderOptions();
+			options.setStyle(
+					style);
+			targetQuery.getHints().put(
+					OPTIONS,
+					options);
+		}
 		return targetQuery;
 	}
 }

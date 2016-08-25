@@ -16,11 +16,9 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	<asciidoctor.epub.version>1.5.0-alpha.4</asciidoctor.epub.version>
-        <asciidoctor.maven.plugin.version>1.5.2.1</asciidoctor.maven.plugin.version>
-	<asciidoctorj.pdf.version>1.5.0-alpha.7</asciidoctorj.pdf.version>
-	<asciidoctor.pdf.version>1.5.0.alpha.7</asciidoctor.pdf.version>
-        <jruby.version>1.7.20.1</jruby.version>
+	<asciidoctor.epub.version>1.5.0-alpha.6</asciidoctor.epub.version>
+        <asciidoctor.maven.plugin.version>1.5.3</asciidoctor.maven.plugin.version>
+	<asciidoctorj.pdf.version>1.5.0-alpha.11</asciidoctorj.pdf.version>
     </properties>
 
     <repositories>

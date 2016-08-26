@@ -26,8 +26,13 @@ public class DistributedRenderWMSFacade extends
 	}
 
 	@Override
+	public int getMaxRenderingErrors() {
+		return options.getMaxErrors();
+	}
+
+	@Override
 	public WMSInterpolation getInterpolation() {
-		return WMSInterpolation.values()[options.getInterpolationOrdinal()];
+		return WMSInterpolation.values()[options.getWmsInterpolationOrdinal()];
 	}
 
 	@Override

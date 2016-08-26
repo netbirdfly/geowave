@@ -91,6 +91,7 @@ public class DistributedRenderAggregation implements
 						options.getEnvelope()));
 		request.setBbox(
 				options.getEnvelope());
+		request.setInterpolations(options.getInterpolations());
 		final Map formatOptions = new HashMap<>();
 		formatOptions.put(
 				"antialias",

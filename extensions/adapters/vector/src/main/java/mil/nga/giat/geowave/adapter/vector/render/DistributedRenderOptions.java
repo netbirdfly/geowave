@@ -4,33 +4,42 @@ import java.awt.Color;
 import java.awt.image.IndexColorModel;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.util.Collections;
 import java.util.List;
 
+import javax.media.jai.Interpolation;
+import javax.media.jai.InterpolationNearest;
 import javax.xml.transform.TransformerException;
 
+import org.geoserver.wms.DefaultWebMapService;
+import org.geoserver.wms.GetMapRequest;
 import org.geoserver.wms.WMS;
-import org.geoserver.wms.map.RenderedImageMapOutputFormat;
+import org.geoserver.wms.WMSMapContent;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.geotools.styling.NamedLayer;
-import org.geotools.styling.Rule;
+import org.geotools.map.Layer;
+import org.geotools.renderer.lite.StreamingRenderer;
 import org.geotools.styling.SLDParser;
 import org.geotools.styling.SLDTransformer;
 import org.geotools.styling.Style;
-import org.geotools.styling.StyledLayer;
-import org.geotools.styling.StyledLayerDescriptor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import mil.nga.giat.geowave.adapter.vector.render.param.ServerFeatureStyle;
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
+
 import mil.nga.giat.geowave.core.index.Persistable;
 
 public class DistributedRenderOptions implements
 		Persistable
 {
+	private static final Logger LOGGER = LoggerFactory.getLogger(
+			DistributedRenderOptions.class);
 	// it doesn't make sense to grab this from the context of the geoserver
 	// settings, although it is unclear whether in distributed rendering this
 	// should be enabled or disabled by default
 	private final static boolean USE_GLOBAL_RENDER_POOL = true;
-	
+
 	private String antialias;
 	private boolean continuousMapWrapping;
 	private boolean advancedProjectionHandlingEnabled;
@@ -43,31 +52,178 @@ public class DistributedRenderOptions implements
 	private boolean isMetatile;
 	private Color bgColor;
 	private int maxRenderTime;
+	private int maxErrors;
 	private boolean kmlPlacemark;
 	private int maxFilters;
 	private boolean optimizeLineWidth;
 	private ReferencedEnvelope envelope;
 	private boolean renderScaleMethodAccurate;
-	private int interpolationOrdinal;
+	private int wmsIterpolationOrdinal;
+	private List<Integer> interpolationOrdinals;
 
 	private Style style;
+
+	protected DistributedRenderOptions() {}
+
+	public DistributedRenderOptions(
+			final WMS wms,
+			final WMSMapContent mapContent,
+			final Layer layer ) {
+		optimizeLineWidth = DefaultWebMapService.isLineWidthOptimizationEnabled();
+		maxFilters = DefaultWebMapService.getMaxFilterRules();
+
+		transparent = mapContent.isTransparent();
+		buffer = mapContent.getBuffer();
+		angle = mapContent.getAngle();
+		mapWidth = mapContent.getMapWidth();
+		mapHeight = mapContent.getMapHeight();
+		bgColor = mapContent.getBgColor();
+		palette = mapContent.getPalette();
+		renderScaleMethodAccurate = StreamingRenderer.SCALE_ACCURATE.equals(
+				mapContent.getRendererScaleMethod());
+		wmsIterpolationOrdinal = wms.getInterpolation().ordinal();
+		maxErrors = wms.getMaxRenderingErrors();
+		style = layer.getStyle();
+
+		final GetMapRequest request = mapContent.getRequest();
+		final Object timeoutOption = request.getFormatOptions().get(
+				"timeout");
+		int localMaxRenderTime = 0;
+		if (timeoutOption != null) {
+			try {
+				// local render time is in millis, while WMS max render time is
+				// in seconds
+				localMaxRenderTime = Integer.parseInt(
+						timeoutOption.toString()) / 1000;
+			}
+			catch (final NumberFormatException e) {
+				LOGGER.warn(
+						"Could not parse format_option \"timeout\": " + timeoutOption,
+						e);
+			}
+		}
+		maxRenderTime = getMaxRenderTime(
+				localMaxRenderTime,
+				wms);
+		isMetatile = request.isTiled() && (request.getTilesOrigin() != null);
+		final Object antialiasObj = request.getFormatOptions().get(
+				"antialias");
+		if (antialiasObj != null) {
+			antialias = antialiasObj.toString();
+		}
+
+		if (request.getFormatOptions().get(
+				"kmplacemark") != null) {
+			kmlPlacemark = ((Boolean) request.getFormatOptions().get(
+					"kmplacemark")).booleanValue();
+		}
+		// turn on advanced projection handling
+		advancedProjectionHandlingEnabled = wms.isAdvancedProjectionHandlingEnabled();
+		final Object advancedProjectionObj = request.getFormatOptions().get(
+				WMS.ADVANCED_PROJECTION_KEY);
+		if ((advancedProjectionObj != null) && "false".equalsIgnoreCase(
+				advancedProjectionObj.toString())) {
+			advancedProjectionHandlingEnabled = false;
+			continuousMapWrapping = false;
+		}
+		final Object mapWrappingObj = request.getFormatOptions().get(
+				WMS.ADVANCED_PROJECTION_KEY);
+		if ((mapWrappingObj != null) && "false".equalsIgnoreCase(
+				mapWrappingObj.toString())) {
+			continuousMapWrapping = false;
+		}
+		final List<Interpolation> interpolations = request.getInterpolations();
+		if ((interpolations == null) || interpolations.isEmpty()) {
+			interpolationOrdinals = Collections.emptyList();
+		}
+		else {
+			interpolationOrdinals = Lists.transform(
+					interpolations,
+					new Function<Interpolation, Integer>() {
+
+						@Override
+						public Integer apply(
+								final Interpolation input ) {
+							if (input instanceof InterpolationNearest) {
+								return Interpolation.INTERP_NEAREST;
+							}
+							else if (input instanceof InterpolationNearest) {
+								return Interpolation.INTERP_NEAREST;
+							}
+							else if (input instanceof InterpolationNearest) {
+								return Interpolation.INTERP_NEAREST;
+							}
+							else if (input instanceof InterpolationNearest) {
+								return Interpolation.INTERP_NEAREST;
+							}
+							return Interpolation.INTERP_NEAREST;
+						}
+					});
+		}
+	}
+
+	public int getMaxRenderTime(
+			final int localMaxRenderTime,
+			final WMS wms ) {
+		int wmsMaxRenderTime = wms.getMaxRenderingTime();
+
+		if (wmsMaxRenderTime == 0) {
+			wmsMaxRenderTime = localMaxRenderTime;
+		}
+		else if (localMaxRenderTime != 0) {
+			maxRenderTime = Math.min(
+					maxRenderTime,
+					localMaxRenderTime);
+		}
+		return maxRenderTime;
+	}
 
 	public boolean isOptimizeLineWidth() {
 		return optimizeLineWidth;
 	}
 
+	public int getMaxErrors() {
+		return maxErrors;
+	}
+
+	public void setMaxErrors(
+			final int maxErrors ) {
+		this.maxErrors = maxErrors;
+	}
+
 	public void setOptimizeLineWidth(
-			boolean optimizeLineWidth ) {
+			final boolean optimizeLineWidth ) {
 		this.optimizeLineWidth = optimizeLineWidth;
+	}
+
+	public List<Integer> getInterpolationOrdinals() {
+		return interpolationOrdinals;
+	}
+
+	public List<Interpolation> getInterpolations() {
+		if ((interpolationOrdinals != null) && !interpolationOrdinals.isEmpty()) {
+			return Lists.transform(
+					interpolationOrdinals,
+					new Function<Integer, Interpolation>() {
+
+						@Override
+						public Interpolation apply(
+								final Integer input ) {
+							return Interpolation.getInstance(
+									input);
+						}
+					});
+		}
+		return Collections.emptyList();
+	}
+
+	public void setInterpolationOrdinals(
+			final List<Integer> interpolationOrdinals ) {
+		this.interpolationOrdinals = interpolationOrdinals;
 	}
 
 	public static boolean isUseGlobalRenderPool() {
 		return USE_GLOBAL_RENDER_POOL;
-	}
-
-	public void setMapHeight(
-			int mapHeight ) {
-		this.mapHeight = mapHeight;
 	}
 
 	public Style getStyle() {
@@ -75,17 +231,17 @@ public class DistributedRenderOptions implements
 	}
 
 	public void setStyle(
-			Style style ) {
+			final Style style ) {
 		this.style = style;
 	}
 
-	public int getInterpolationOrdinal() {
-		return interpolationOrdinal;
+	public int getWmsInterpolationOrdinal() {
+		return wmsIterpolationOrdinal;
 	}
 
-	public void setInterpolationOrdinal(
-			int interpolationOrdinal ) {
-		this.interpolationOrdinal = interpolationOrdinal;
+	public void setWmsInterpolationOrdinal(
+			final int wmsIterpolationOrdinal ) {
+		this.wmsIterpolationOrdinal = wmsIterpolationOrdinal;
 	}
 
 	public int getMaxRenderTime() {
@@ -93,17 +249,16 @@ public class DistributedRenderOptions implements
 	}
 
 	public void setMaxRenderTime(
-			int maxRenderTime ) {
+			final int maxRenderTime ) {
 		this.maxRenderTime = maxRenderTime;
 	}
-
 
 	public boolean isRenderScaleMethodAccurate() {
 		return renderScaleMethodAccurate;
 	}
 
 	public void setRenderScaleMethodAccurate(
-			boolean renderScaleMethodAccurate ) {
+			final boolean renderScaleMethodAccurate ) {
 		this.renderScaleMethodAccurate = renderScaleMethodAccurate;
 	}
 
@@ -112,12 +267,12 @@ public class DistributedRenderOptions implements
 	}
 
 	public void setBuffer(
-			int buffer ) {
+			final int buffer ) {
 		this.buffer = buffer;
 	}
 
 	public void setPalette(
-			IndexColorModel palette ) {
+			final IndexColorModel palette ) {
 		this.palette = palette;
 	}
 
@@ -126,7 +281,7 @@ public class DistributedRenderOptions implements
 	}
 
 	public void setAntialias(
-			String antialias ) {
+			final String antialias ) {
 		this.antialias = antialias;
 	}
 
@@ -135,7 +290,7 @@ public class DistributedRenderOptions implements
 	}
 
 	public void setContinuousMapWrapping(
-			boolean continuousMapWrapping ) {
+			final boolean continuousMapWrapping ) {
 		this.continuousMapWrapping = continuousMapWrapping;
 	}
 
@@ -144,7 +299,7 @@ public class DistributedRenderOptions implements
 	}
 
 	public void setAdvancedProjectionHandlingEnabled(
-			boolean advancedProjectionHandlingEnabled ) {
+			final boolean advancedProjectionHandlingEnabled ) {
 		this.advancedProjectionHandlingEnabled = advancedProjectionHandlingEnabled;
 	}
 
@@ -153,7 +308,7 @@ public class DistributedRenderOptions implements
 	}
 
 	public void setKmlPlacemark(
-			boolean kmlPlacemark ) {
+			final boolean kmlPlacemark ) {
 		this.kmlPlacemark = kmlPlacemark;
 	}
 
@@ -162,7 +317,7 @@ public class DistributedRenderOptions implements
 	}
 
 	public void setTransparent(
-			boolean transparent ) {
+			final boolean transparent ) {
 		this.transparent = transparent;
 	}
 
@@ -171,7 +326,7 @@ public class DistributedRenderOptions implements
 	}
 
 	public void setMetatile(
-			boolean isMetatile ) {
+			final boolean isMetatile ) {
 		this.isMetatile = isMetatile;
 	}
 
@@ -180,7 +335,7 @@ public class DistributedRenderOptions implements
 	}
 
 	public void setBgColor(
-			Color bgColor ) {
+			final Color bgColor ) {
 		this.bgColor = bgColor;
 	}
 
@@ -189,7 +344,7 @@ public class DistributedRenderOptions implements
 	}
 
 	public void setMapWidth(
-			int mapWidth ) {
+			final int mapWidth ) {
 		this.mapWidth = mapWidth;
 	}
 
@@ -197,8 +352,8 @@ public class DistributedRenderOptions implements
 		return mapHeight;
 	}
 
-	public void setPaintHeight(
-			int mapHeight ) {
+	public void setMapHeight(
+			final int mapHeight ) {
 		this.mapHeight = mapHeight;
 	}
 
@@ -207,7 +362,7 @@ public class DistributedRenderOptions implements
 	}
 
 	public void setAngle(
-			double angle ) {
+			final double angle ) {
 		this.angle = angle;
 	}
 
@@ -216,7 +371,7 @@ public class DistributedRenderOptions implements
 	}
 
 	public void setMaxFilters(
-			int maxFilters ) {
+			final int maxFilters ) {
 		this.maxFilters = maxFilters;
 	}
 
@@ -225,17 +380,17 @@ public class DistributedRenderOptions implements
 	}
 
 	public void setEnvelope(
-			ReferencedEnvelope envelope ) {
+			final ReferencedEnvelope envelope ) {
 		this.envelope = envelope;
 	}
-	
+
 	public IndexColorModel getPalette() {
 		return palette;
 	}
 
 	@Override
 	public byte[] toBinary() {
-		SLDTransformer transformer = new SLDTransformer();
+		final SLDTransformer transformer = new SLDTransformer();
 
 		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
@@ -251,19 +406,19 @@ public class DistributedRenderOptions implements
 					"Unable to create SLD from style",
 					e);
 		}
-		byte[] styleBinary = baos.toByteArray();
+		final byte[] styleBinary = baos.toByteArray();
 		return null;
 	}
 
 	@Override
 	public void fromBinary(
-			byte[] bytes ) {
+			final byte[] bytes ) {
 		final SLDParser parser = new SLDParser(
 				CommonFactoryFinder.getStyleFactory(
 						null),
 				new ByteArrayInputStream(
 						rulesBinary));
-		Style[] styles = parser.readDOM();
+		final Style[] styles = parser.readDOM();
 	}
 
 }

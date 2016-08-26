@@ -23,6 +23,7 @@ import java.util.TimeZone;
 import org.apache.log4j.Logger;
 import org.geotools.data.FeatureReader;
 import org.geotools.data.Query;
+import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.filter.FidFilterImpl;
 import org.geotools.geometry.jts.Decimator;
 import org.geotools.geometry.jts.ReferencedEnvelope;
@@ -44,7 +45,9 @@ import com.vividsolutions.jts.geom.Geometry;
 
 import mil.nga.giat.geowave.adapter.vector.plugin.transaction.GeoWaveTransaction;
 import mil.nga.giat.geowave.adapter.vector.query.cql.CQLQuery;
-import mil.nga.giat.geowave.adapter.vector.render.DistributableRenderer;
+import mil.nga.giat.geowave.adapter.vector.render.DistributedRenderAggregation;
+import mil.nga.giat.geowave.adapter.vector.render.DistributedRenderOptions;
+import mil.nga.giat.geowave.adapter.vector.render.DistributedRenderResult;
 import mil.nga.giat.geowave.adapter.vector.stats.FeatureStatistic;
 import mil.nga.giat.geowave.adapter.vector.util.QueryIndexHelper;
 import mil.nga.giat.geowave.core.geotime.GeometryUtils.GeoConstraintsWrapper;
@@ -54,7 +57,6 @@ import mil.nga.giat.geowave.core.geotime.store.query.IndexOnlySpatialQuery;
 import mil.nga.giat.geowave.core.geotime.store.query.SpatialQuery;
 import mil.nga.giat.geowave.core.geotime.store.query.TemporalConstraintsSet;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
-import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.index.dimension.NumericDimensionDefinition;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.CloseableIteratorWrapper;
@@ -75,7 +77,8 @@ import mil.nga.giat.geowave.core.store.query.QueryOptions;
 public class GeoWaveFeatureReader implements
 		FeatureReader<SimpleFeatureType, SimpleFeature>
 {
-	private final static Logger LOGGER = Logger.getLogger(GeoWaveFeatureReader.class);
+	private final static Logger LOGGER = Logger.getLogger(
+			GeoWaveFeatureReader.class);
 
 	private final GeoWaveDataStoreComponents components;
 	private final GeoWaveFeatureCollection featureCollection;
@@ -107,7 +110,8 @@ public class GeoWaveFeatureReader implements
 	public void close()
 			throws IOException {
 		if (featureCollection.getOpenIterator() != null) {
-			featureCollection.closeIterator(featureCollection.getOpenIterator());
+			featureCollection.closeIterator(
+					featureCollection.getOpenIterator());
 		}
 	}
 
@@ -179,16 +183,18 @@ public class GeoWaveFeatureReader implements
 		final BasicQuery query = composeQuery(
 				geoConstraints,
 				timeConstraints);
-		query.setExact(timeBounds.isExact());
+		query.setExact(
+				timeBounds.isExact());
 
 		try (CloseableIterator<Index<?, ?>> indexIt = getComponents().getIndices(
 				statsMap,
 				query)) {
 			while (indexIt.hasNext()) {
 				final PrimaryIndex index = (PrimaryIndex) indexIt.next();
-				results.add(issuer.query(
-						index,
-						query));
+				results.add(
+						issuer.query(
+								index,
+								query));
 
 			}
 		}
@@ -211,7 +217,8 @@ public class GeoWaveFeatureReader implements
 								}
 							}
 						},
-						Iterators.concat(results.iterator())));
+						Iterators.concat(
+								results.iterator())));
 	}
 
 	protected static boolean hasAtLeastSpatial(
@@ -333,7 +340,8 @@ public class GeoWaveFeatureReader implements
 					components.getAdapter(),
 					index,
 					transaction.composeAuthorizations());
-			options.setLimit(limit);
+			options.setLimit(
+					limit);
 			if (subsetRequested()) {
 				options.setFieldIds(
 						getSubset(),
@@ -352,11 +360,13 @@ public class GeoWaveFeatureReader implements
 										east,
 										south,
 										north),
-								CRS.decode("EPSG:4326")),
+								CRS.decode(
+										"EPSG:4326")),
 						new Rectangle(
 								width,
 								height));
-				final MathTransform2D fullTransform = (MathTransform2D) ProjectiveTransform.create(worldToScreen);
+				final MathTransform2D fullTransform = (MathTransform2D) ProjectiveTransform.create(
+						worldToScreen);
 				// calculate spans
 				try {
 					final double[] spans = Decimator.computeGeneralizationDistances(
@@ -365,7 +375,8 @@ public class GeoWaveFeatureReader implements
 									width,
 									height),
 							pixelSize);
-					options.setMaxResolutionSubsamplingPerDimension(spans);
+					options.setMaxResolutionSubsamplingPerDimension(
+							spans);
 					return components.getDataStore().query(
 							options,
 							CQLQuery.createOptimalQuery(
@@ -392,15 +403,16 @@ public class GeoWaveFeatureReader implements
 			BaseIssuer implements
 			QueryIssuer
 	{
-		final DistributableRenderer renderer;
+		final DistributedRenderOptions renderOptions;
 
 		public RenderQueryIssuer(
 				final Filter filter,
-				final DistributableRenderer renderer ) {
+				final Integer limit,
+				final DistributedRenderOptions renderOptions ) {
 			super(
 					filter,
-					null);
-			this.renderer = renderer;
+					limit);
+			this.renderOptions = renderOptions;
 
 		}
 
@@ -417,69 +429,47 @@ public class GeoWaveFeatureReader implements
 						getSubset(),
 						components.getAdapter());
 			}
-			queryOptions.setAggregation(aggregation, adapter);
-			return components.getDataStore().query(
+			queryOptions.setAggregation(
+					new DistributedRenderAggregation(
+							renderOptions),
+					components.getAdapter());
+			try (CloseableIterator<DistributedRenderResult> resultIt = components.getDataStore().query(
 					queryOptions,
 					CQLQuery.createOptimalQuery(
 							filter,
 							components.getAdapter(),
 							index,
-							query));
-		}
-	}
-
-	private class IdQueryIssuer extends
-			BaseIssuer implements
-			QueryIssuer
-	{
-		final List<ByteArrayId> ids;
-
-		public IdQueryIssuer(
-				final List<ByteArrayId> ids ) {
-			super(
-					null,
-					null);
-			this.ids = ids;
-
-		}
-
-		@SuppressWarnings("unchecked")
-		@Override
-		public CloseableIterator<SimpleFeature> query(
-				final PrimaryIndex index,
-				final BasicQuery query ) {
-			final QueryOptions queryOptions = new QueryOptions(
-					components.getAdapter(),
-					index,
-					limit,
-					null,
-					transaction.composeAuthorizations());
-			if (subsetRequested()) {
-				queryOptions.setFieldIds(
-						getSubset(),
-						components.getAdapter());
+							query))) {
+				if (resultIt.hasNext()) {
+					DistributedRenderResult result = resultIt.next();
+					// TODO wrap it in a simplefeature
+					// Iterators.singletonIterator(new
+					// SimpleFeatureBuilder(featureType));
+				}
 			}
-			return components.getDataStore().query(
-					queryOptions,
-					new DataIdQuery(
-							components.getAdapter().getAdapterId(),
-							ids));
-
+			catch (IOException e) {
+				LOGGER.warn(
+						"Unable to get distributed rendering result",
+						e);
+			}
+			return new CloseableIterator.Wrapper(
+					Iterators.emptyIterator());
 		}
-
 	}
 
 	public CloseableIterator<SimpleFeature> renderData(
 			final Geometry jtsBounds,
 			final TemporalConstraintsSet timeBounds,
 			final Filter filter,
-			final DistributableRenderer renderer ) {
+			final Integer limit,
+			final DistributedRenderOptions renderOptions ) {
 		return issueQuery(
 				jtsBounds,
 				timeBounds,
 				new RenderQueryIssuer(
 						filter,
-						renderer));
+						limit,
+						renderOptions));
 	}
 
 	public CloseableIterator<SimpleFeature> getData(
@@ -525,8 +515,9 @@ public class GeoWaveFeatureReader implements
 			final Set<String> fids = ((FidFilterImpl) filter).getIDs();
 			final List<ByteArrayId> ids = new ArrayList<ByteArrayId>();
 			for (final String fid : fids) {
-				ids.add(new ByteArrayId(
-						fid));
+				ids.add(
+						new ByteArrayId(
+								fid));
 			}
 
 			final PrimaryIndex[] writeIndices = components.getAdapterIndices();
@@ -582,7 +573,8 @@ public class GeoWaveFeatureReader implements
 			if ((stat.getValue() instanceof FeatureStatistic)
 					&& ((FeatureStatistic) stat.getValue()).getFieldName().endsWith(
 							name)) {
-				stats.add(stat.getValue());
+				stats.add(
+						stat.getValue());
 			}
 		}
 		return stats;
@@ -639,49 +631,71 @@ public class GeoWaveFeatureReader implements
 			final String attrName,
 			final Object value ) {
 		final SimpleFeatureType featureType = components.getAdapter().getType();
-		final AttributeDescriptor descriptor = featureType.getDescriptor(attrName);
+		final AttributeDescriptor descriptor = featureType.getDescriptor(
+				attrName);
 		if (descriptor == null) {
 			return value;
 		}
 		final Class<?> attrClass = descriptor.getType().getBinding();
-		if (attrClass.isInstance(value)) {
+		if (attrClass.isInstance(
+				value)) {
 			return value;
 		}
-		if (Number.class.isAssignableFrom(attrClass) && Number.class.isInstance(value)) {
-			if (Double.class.isAssignableFrom(attrClass)) {
+		if (Number.class.isAssignableFrom(
+				attrClass)
+				&& Number.class.isInstance(
+						value)) {
+			if (Double.class.isAssignableFrom(
+					attrClass)) {
 				return ((Number) value).doubleValue();
 			}
-			if (Float.class.isAssignableFrom(attrClass)) {
+			if (Float.class.isAssignableFrom(
+					attrClass)) {
 				return ((Number) value).floatValue();
 			}
-			if (Long.class.isAssignableFrom(attrClass)) {
+			if (Long.class.isAssignableFrom(
+					attrClass)) {
 				return ((Number) value).longValue();
 			}
-			if (Integer.class.isAssignableFrom(attrClass)) {
+			if (Integer.class.isAssignableFrom(
+					attrClass)) {
 				return ((Number) value).intValue();
 			}
-			if (Short.class.isAssignableFrom(attrClass)) {
+			if (Short.class.isAssignableFrom(
+					attrClass)) {
 				return ((Number) value).shortValue();
 			}
-			if (Byte.class.isAssignableFrom(attrClass)) {
+			if (Byte.class.isAssignableFrom(
+					attrClass)) {
 				return ((Number) value).byteValue();
 			}
-			if (BigInteger.class.isAssignableFrom(attrClass)) {
-				return BigInteger.valueOf(((Number) value).longValue());
+			if (BigInteger.class.isAssignableFrom(
+					attrClass)) {
+				return BigInteger.valueOf(
+						((Number) value).longValue());
 			}
-			if (BigDecimal.class.isAssignableFrom(attrClass)) {
-				return BigDecimal.valueOf(((Number) value).doubleValue());
+			if (BigDecimal.class.isAssignableFrom(
+					attrClass)) {
+				return BigDecimal.valueOf(
+						((Number) value).doubleValue());
 			}
 		}
-		if (Calendar.class.isAssignableFrom(attrClass)) {
-			if (Date.class.isInstance(value)) {
-				final Calendar c = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-				c.setTime((Date) value);
+		if (Calendar.class.isAssignableFrom(
+				attrClass)) {
+			if (Date.class.isInstance(
+					value)) {
+				final Calendar c = Calendar.getInstance(
+						TimeZone.getTimeZone(
+								"UTC"));
+				c.setTime(
+						(Date) value);
 				return c;
 			}
 		}
-		if (Timestamp.class.isAssignableFrom(attrClass)) {
-			if (Date.class.isInstance(value)) {
+		if (Timestamp.class.isAssignableFrom(
+				attrClass)) {
+			if (Date.class.isInstance(
+					value)) {
 				final Timestamp ts = new Timestamp(
 						((Date) value).getTime());
 				return ts;
@@ -701,6 +715,7 @@ public class GeoWaveFeatureReader implements
 		if (query == null) {
 			return Collections.emptyList();
 		}
-		return Arrays.asList(query.getPropertyNames());
+		return Arrays.asList(
+				query.getPropertyNames());
 	}
 }

@@ -37,10 +37,10 @@ import mil.nga.giat.geowave.adapter.vector.render.DistributedRenderOptions;
 @DescribeProcess(title = "DecimateToPixelResolution", description = "This process will enable GeoWave to decimate WMS rendering down to pixel resolution to not oversample data.  This will efficiently render overlapping geometry that would otherwise be hidden but it assume an opaque style and does not take transparency into account.")
 public class DistributedRenderProcess
 {
-	public static final Hints.Key STYLE = new Hints.Key(
-			Style.class);
 	public static final Hints.Key OPTIONS = new Hints.Key(
 			DistributedRenderOptions.class);
+	public static final Hints.Key ENABLE = new Hints.Key(
+			Boolean.class);
 
 	@DescribeResult(name = "result", description = "This is just a pass-through, the key is to provide enough information within invertQuery to perform a map to screen transform")
 	public GridCoverage2D execute(
@@ -103,16 +103,16 @@ public class DistributedRenderProcess
 			final GridGeometry targetGridGeometry )
 			throws ProcessException {
 		// add to the query hints
-		Style style = (Style) targetQuery.getHints().get(
-				STYLE);
-		if (style != null) {
-			DistributedRenderOptions options = new DistributedRenderOptions();
-			options.setStyle(
-					style);
+//		Style style = (Style) targetQuery.getHints().get(
+//				STYLE);
+//		if (style != null) {
+//			DistributedRenderOptions options = new DistributedRenderOptions();
+//			options.setStyle(
+//					style);
 			targetQuery.getHints().put(
-					OPTIONS,
-					options);
-		}
+					ENABLE,
+					Boolean.valueOf(true));
+//		}
 		return targetQuery;
 	}
 }

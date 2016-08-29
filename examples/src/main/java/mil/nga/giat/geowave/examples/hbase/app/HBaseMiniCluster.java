@@ -6,7 +6,6 @@ import java.util.concurrent.TimeUnit;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.junit.Assert;
 
 import com.github.sakserv.minicluster.config.ConfigVars;
 import com.github.sakserv.minicluster.impl.HbaseLocalCluster;
@@ -95,7 +94,6 @@ public class HBaseMiniCluster
 		catch (final Exception e) {
 			LOGGER.error("Exception starting zookeeperLocalCluster: " + e);
 			e.printStackTrace();
-			Assert.fail();
 		}
 
 		zookeeper = zookeeperLocalCluster.getZookeeperConnectionString();
@@ -122,7 +120,6 @@ public class HBaseMiniCluster
 		catch (final Exception e) {
 			LOGGER.error("Exception starting hbaseLocalCluster: " + e);
 			e.printStackTrace();
-			Assert.fail();
 		}
 	}
 

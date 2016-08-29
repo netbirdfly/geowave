@@ -87,9 +87,9 @@ public class BBOXQuery extends
 					options,
 					new SpatialQuery(
 							geom))) {
-				final CountResult result = ((CountResult) (it.next()));
+				final Long result = ((Long) (it.next()));
 				if (result != null) {
-					count += result.getCount();
+					count += result;
 				}
 			}
 			catch (final IOException e) {

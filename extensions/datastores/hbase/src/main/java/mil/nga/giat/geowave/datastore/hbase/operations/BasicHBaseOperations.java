@@ -121,6 +121,13 @@ public class BasicHBaseOperations implements
 					desc.addFamily(new HColumnDescriptor(
 							columnFamily));
 				}
+				
+				// register coprocessors (this is a hard-coded test, obviously)
+				desc.setValue("Coprocessor$1",
+					    "/mnt/geowave/deploy/target/geowave-tools.jar" +
+					    ":mil.nga.giat.geowave.datastore.hbase.query.RowCountEndpoint" +
+					    ":1001");
+				
 				if ((splits != null) && !splits.isEmpty()) {
 					final byte[][] splitKeys = new byte[splits.size()][];
 					int i = 0;

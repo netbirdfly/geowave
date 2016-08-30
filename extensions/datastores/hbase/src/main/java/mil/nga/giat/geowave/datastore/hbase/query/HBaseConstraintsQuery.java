@@ -25,15 +25,13 @@ import mil.nga.giat.geowave.core.store.query.Query;
 import mil.nga.giat.geowave.core.store.query.aggregate.Aggregation;
 import mil.nga.giat.geowave.datastore.hbase.operations.BasicHBaseOperations;
 import mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos;
-import mil.nga.giat.geowave.datastore.hbase.util.HBaseUtils;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.hadoop.hbase.HConstants;
+import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.client.Table;
+import org.apache.hadoop.hbase.client.coprocessor.AggregationClient;
 import org.apache.hadoop.hbase.client.coprocessor.Batch;
 import org.apache.hadoop.hbase.filter.Filter;
-import org.apache.hadoop.hbase.filter.MultiRowRangeFilter;
-import org.apache.hadoop.hbase.filter.MultiRowRangeFilter.RowRange;
 import org.apache.hadoop.hbase.ipc.BlockingRpcCallback;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -143,6 +141,69 @@ public class HBaseConstraintsQuery extends
 					limit);
 		}
 
+		return aggQuery(
+				operations,
+				adapterStore,
+				limit);
+	}
+
+	public CloseableIterator<Object> aggQuery(
+			final BasicHBaseOperations operations,
+			final AdapterStore adapterStore,
+			final Integer limit ) {
+		try {
+			if (!operations.tableExists(StringUtils.stringFromBinary(index.getId().getBytes()))) {
+				LOGGER.warn("Table does not exist " + StringUtils.stringFromBinary(index.getId().getBytes()));
+				return new CloseableIterator.Empty();
+			}
+		}
+		catch (final IOException ex) {
+			LOGGER.warn("Unable to check if " + StringUtils.stringFromBinary(index.getId().getBytes()) + " table exists");
+			return new CloseableIterator.Empty();
+		}
+
+		final String tableName = StringUtils.stringFromBinary(index.getId().getBytes());
+
+		final List<Filter> distributableFilters = getDistributableFilter();
+		CloseableIterator<DataAdapter<?>> adapters = null;
+
+		Scan multiScanner = getMultiScanner(
+				limit,
+				distributableFilters,
+				adapters);
+
+		AggregationClient aggregationClient = new AggregationClient(
+				operations.getConfig());
+
+		try {
+			LOGGER.debug("Calling aggregation client...");
+			
+			long total = aggregationClient.rowCount(
+					BasicHBaseOperations.getTableName(tableName),
+					null,
+					multiScanner);
+			
+			LOGGER.debug("Aggregation client returned " + total + " items.");
+			
+			aggregationClient.close();
+
+			return new Wrapper(
+					Iterators.singletonIterator(total));
+
+		}
+		catch (Throwable e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		LOGGER.error("Results were empty");
+		return new CloseableIterator.Empty();
+	}
+
+	private CloseableIterator<Object> oldAggQuery(
+			final BasicHBaseOperations operations,
+			final AdapterStore adapterStore,
+			final Integer limit ) {
 		// Use the row count coprocessor
 		final String tableName = StringUtils.stringFromBinary(index.getId().getBytes());
 		long total = 0;
@@ -160,8 +221,10 @@ public class HBaseConstraintsQuery extends
 			byte[] stopRow = null;
 
 			if ((rowRanges != null) && (rowRanges.size() == 2)) {
-				startRow = rowRanges.get(0).getStart().getBytes();
-				stopRow = rowRanges.get(0).getEnd().getBytes();
+				startRow = rowRanges.get(
+						0).getStart().getBytes();
+				stopRow = rowRanges.get(
+						0).getEnd().getBytes();
 			}
 
 			Map<byte[], Long> results = table.coprocessorService(
@@ -198,60 +261,5 @@ public class HBaseConstraintsQuery extends
 
 		return new Wrapper(
 				Iterators.singletonIterator(total));
-	}
-
-	private List<RowRange> getSortedRanges() {
-		List<RowRange> rowRanges = new ArrayList<RowRange>();
-
-		List<ByteArrayRange> ranges = getRanges();
-		if ((ranges == null) || ranges.isEmpty()) {
-			rowRanges.add(new RowRange(
-					HConstants.EMPTY_BYTE_ARRAY,
-					true,
-					HConstants.EMPTY_BYTE_ARRAY,
-					false));
-		}
-		else {
-			int rcount = 0;
-			LOGGER.debug("Row ranges for coprocessor aggregation...");
-
-			for (final ByteArrayRange range : ranges) {
-				if (range.getStart() != null) {
-					byte[] startRow = range.getStart().getBytes();
-					byte[] stopRow;
-					if (!range.isSingleValue()) {
-						stopRow = HBaseUtils.getNextPrefix(range.getEnd().getBytes());
-					}
-					else {
-						stopRow = HBaseUtils.getNextPrefix(range.getStart().getBytes());
-					}
-
-					RowRange rowRange = new RowRange(
-							startRow,
-							true,
-							stopRow,
-							true);
-
-					rowRanges.add(rowRange);
-
-					rcount++;
-					LOGGER.debug("Start row key(" + rcount + "): " + rowRange.getStartRow().toString());
-					LOGGER.debug(" Stop row key(" + rcount + "): " + rowRange.getStopRow().toString());
-				}
-			}
-		}
-
-		// Create the multi-range filter to do the sort/merge
-		try {
-			MultiRowRangeFilter filter = new MultiRowRangeFilter(
-					rowRanges);
-
-			rowRanges = filter.getRowRanges();
-		}
-		catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		return rowRanges;
 	}
 }

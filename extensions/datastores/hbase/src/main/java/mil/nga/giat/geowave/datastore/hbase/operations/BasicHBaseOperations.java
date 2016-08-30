@@ -10,6 +10,7 @@ import mil.nga.giat.geowave.datastore.hbase.operations.config.HBaseRequiredOptio
 import mil.nga.giat.geowave.datastore.hbase.util.ConnectionPool;
 import mil.nga.giat.geowave.datastore.hbase.util.HBaseUtils;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.TableName;
@@ -69,8 +70,12 @@ public class BasicHBaseOperations implements
 				options.getZookeeper(),
 				options.getGeowaveNamespace());
 	}
+	
+	public Configuration getConfig() {
+		return conn.getConfiguration();
+	}
 
-	private TableName getTableName(
+	public static TableName getTableName(
 			final String tableName ) {
 		return TableName.valueOf(tableName);
 	}

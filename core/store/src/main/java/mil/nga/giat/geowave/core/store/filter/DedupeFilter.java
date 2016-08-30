@@ -21,9 +21,11 @@ public class DedupeFilter implements
 	private final Map<ByteArrayId, Set<ByteArrayId>> adapterIdToVisitedDataIdMap;
 
 	private boolean dedupAcrossIndices = false;
+	private int countFailures;
 
 	public DedupeFilter() {
 		adapterIdToVisitedDataIdMap = new HashMap<ByteArrayId, Set<ByteArrayId>>();
+		countFailures = 0;
 	}
 
 	@Override
@@ -52,6 +54,9 @@ public class DedupeFilter implements
 					visitedDataIds);
 		}
 		else if (visitedDataIds.contains(dataId)) {
+			countFailures++;
+			System.err.println("Dedupe Filter count = " + countFailures);
+			
 			return false;
 		}
 		visitedDataIds.add(dataId);

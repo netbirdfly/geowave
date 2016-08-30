@@ -153,46 +153,39 @@ public class HBaseConstraintsQuery extends
 			final RowCountProtos.CountRequest request = RowCountProtos.CountRequest.getDefaultInstance();
 
 			// Determine total row range
-			List<RowRange> rowRanges = getSortedRanges();
-			LOGGER.debug("Got " + rowRanges.size() + " key range(s) for aggregation:");
+			List<ByteArrayRange> rowRanges = getRanges();
 
-			for (RowRange rowRange : rowRanges) {
-				byte[] startRow = null;
-				byte[] stopRow = null;
-				
-				if (!rowRange.getStartRow().equals(HConstants.EMPTY_BYTE_ARRAY)) {
-					startRow = rowRange.getStartRow();
-				}
+			// Set start and end row key to "null" to count all rows.
+			byte[] startRow = null;
+			byte[] stopRow = null;
 
-				if (!rowRange.getStopRow().equals(HConstants.EMPTY_BYTE_ARRAY)) {
-					stopRow = rowRange.getStopRow();
-				}
-				
-				LOGGER.debug("Start row key: " + rowRange.getStartRow().toString());
-				LOGGER.debug(" Stop row key: " + rowRange.getStopRow().toString() + "\n");
-
-				Map<byte[], Long> results = table.coprocessorService(
-						RowCountProtos.RowCountService.class,
-						startRow,
-						stopRow, // Set start and end row key to "null" to count all rows.
-						new Batch.Call<RowCountProtos.RowCountService, Long>() {
-							public Long call(
-									RowCountProtos.RowCountService counter )
-									throws IOException {
-								BlockingRpcCallback<RowCountProtos.CountResponse> rpcCallback = new BlockingRpcCallback<RowCountProtos.CountResponse>();
-								counter.getRowCount(
-										null,
-										request,
-										rpcCallback);
-								RowCountProtos.CountResponse response = rpcCallback.get();
-								return response.hasCount() ? response.getCount() : 0;
-							}
-						});
-
-				for (Map.Entry<byte[], Long> entry : results.entrySet()) {
-					total += entry.getValue().longValue();
-				}
+			if ((rowRanges != null) && (rowRanges.size() == 2)) {
+				startRow = rowRanges.get(0).getStart().getBytes();
+				stopRow = rowRanges.get(0).getEnd().getBytes();
 			}
+
+			Map<byte[], Long> results = table.coprocessorService(
+					RowCountProtos.RowCountService.class,
+					startRow,
+					stopRow,
+					new Batch.Call<RowCountProtos.RowCountService, Long>() {
+						public Long call(
+								RowCountProtos.RowCountService counter )
+								throws IOException {
+							BlockingRpcCallback<RowCountProtos.CountResponse> rpcCallback = new BlockingRpcCallback<RowCountProtos.CountResponse>();
+							counter.getRowCount(
+									null,
+									request,
+									rpcCallback);
+							RowCountProtos.CountResponse response = rpcCallback.get();
+							return response.hasCount() ? response.getCount() : 0;
+						}
+					});
+
+			for (Map.Entry<byte[], Long> entry : results.entrySet()) {
+				total += entry.getValue().longValue();
+			}
+
 		}
 		catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -210,7 +203,7 @@ public class HBaseConstraintsQuery extends
 	private List<RowRange> getSortedRanges() {
 		List<RowRange> rowRanges = new ArrayList<RowRange>();
 
-		List<ByteArrayRange> ranges = base.getRangesForCoprocessor();
+		List<ByteArrayRange> ranges = getRanges();
 		if ((ranges == null) || ranges.isEmpty()) {
 			rowRanges.add(new RowRange(
 					HConstants.EMPTY_BYTE_ARRAY,
@@ -221,7 +214,7 @@ public class HBaseConstraintsQuery extends
 		else {
 			int rcount = 0;
 			LOGGER.debug("Row ranges for coprocessor aggregation...");
-			
+
 			for (final ByteArrayRange range : ranges) {
 				if (range.getStart() != null) {
 					byte[] startRow = range.getStart().getBytes();
@@ -240,8 +233,7 @@ public class HBaseConstraintsQuery extends
 							true);
 
 					rowRanges.add(rowRange);
-					
-					
+
 					rcount++;
 					LOGGER.debug("Start row key(" + rcount + "): " + rowRange.getStartRow().toString());
 					LOGGER.debug(" Stop row key(" + rcount + "): " + rowRange.getStopRow().toString());

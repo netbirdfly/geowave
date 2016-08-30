@@ -106,14 +106,6 @@ public class ConstraintsQuery
 		}
 	}
 
-	public List<ByteArrayRange> getRangesForCoprocessor() {
-		return DataStoreUtils.constraintsToByteArrayRanges(
-				constraints,
-				index.getIndexStrategy(),
-				MAX_RANGE_DECOMPOSITION,
-				indexMetaData);
-	}
-
 	private SplitFilterLists splitList(
 			final List<QueryFilter> allFilters ) {
 		final List<DistributableQueryFilter> distributableFilters = new ArrayList<DistributableQueryFilter>();

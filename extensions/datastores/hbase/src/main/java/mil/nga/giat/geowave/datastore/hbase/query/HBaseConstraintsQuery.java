@@ -210,7 +210,7 @@ public class HBaseConstraintsQuery extends
 	private List<RowRange> getSortedRanges() {
 		List<RowRange> rowRanges = new ArrayList<RowRange>();
 
-		List<ByteArrayRange> ranges = getRanges();
+		List<ByteArrayRange> ranges = base.getRangesForCoprocessor();
 		if ((ranges == null) || ranges.isEmpty()) {
 			rowRanges.add(new RowRange(
 					HConstants.EMPTY_BYTE_ARRAY,

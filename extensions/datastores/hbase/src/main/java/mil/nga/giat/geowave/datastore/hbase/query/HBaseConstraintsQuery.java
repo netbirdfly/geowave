@@ -153,6 +153,10 @@ public class HBaseConstraintsQuery extends
 			final AdapterStore adapterStore,
 			final Integer limit ) {
 		try {
+			if (!validateAdapters(operations)) {
+				LOGGER.warn("Query contains no valid adapters.");
+				return new CloseableIterator.Empty();
+			}
 			if (!operations.tableExists(StringUtils.stringFromBinary(index.getId().getBytes()))) {
 				LOGGER.warn("Table does not exist " + StringUtils.stringFromBinary(index.getId().getBytes()));
 				return new CloseableIterator.Empty();
@@ -167,6 +171,9 @@ public class HBaseConstraintsQuery extends
 
 		final List<Filter> distributableFilters = getDistributableFilter();
 		CloseableIterator<DataAdapter<?>> adapters = null;
+		if ((fieldIds != null) && !fieldIds.isEmpty()) {
+			adapters = adapterStore.getAdapters();
+		}
 
 		Scan multiScanner = getMultiScanner(
 				limit,

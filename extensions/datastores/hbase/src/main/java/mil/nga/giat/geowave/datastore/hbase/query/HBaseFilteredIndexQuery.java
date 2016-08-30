@@ -34,6 +34,7 @@ import org.apache.hadoop.hbase.filter.Filter;
 import org.apache.hadoop.hbase.filter.FilterList;
 import org.apache.hadoop.hbase.filter.MultiRowRangeFilter;
 import org.apache.hadoop.hbase.filter.MultiRowRangeFilter.RowRange;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import com.google.common.collect.Iterators;
@@ -42,11 +43,11 @@ public abstract class HBaseFilteredIndexQuery extends
 		HBaseQuery implements
 		FilteredIndexQuery
 {
+	private final static Logger LOGGER = Logger.getLogger(HBaseFilteredIndexQuery.class);
 
 	protected final ScanCallback<?> scanCallback;
 	protected List<QueryFilter> clientFilters;
-	private final static Logger LOGGER = Logger.getLogger(HBaseFilteredIndexQuery.class);
-	private Collection<String> fieldIds = null;
+	protected Collection<String> fieldIds = null;
 
 	public HBaseFilteredIndexQuery(
 			final List<ByteArrayId> adapterIds,
@@ -58,6 +59,7 @@ public abstract class HBaseFilteredIndexQuery extends
 				index,
 				authorizations);
 		this.scanCallback = scanCallback;
+		LOGGER.setLevel(Level.DEBUG);
 	}
 
 	@Override
@@ -71,7 +73,7 @@ public abstract class HBaseFilteredIndexQuery extends
 		this.fieldIds = fieldIds;
 	}
 
-	private boolean validateAdapters(
+	protected boolean validateAdapters(
 			final BasicHBaseOperations operations )
 			throws IOException {
 		if ((adapterIds == null) || adapterIds.isEmpty()) {
@@ -108,12 +110,13 @@ public abstract class HBaseFilteredIndexQuery extends
 			}
 		}
 		catch (final IOException ex) {
-			LOGGER.warn("Unabe to check if " + StringUtils.stringFromBinary(index.getId().getBytes()) + " table exists");
+			LOGGER.warn("Unabe to check if " + StringUtils.stringFromBinary(index.getId().getBytes())
+							+ " table exists");
 			return new CloseableIterator.Empty();
 		}
 
 		final String tableName = StringUtils.stringFromBinary(index.getId().getBytes());
-
+		
 		final List<Filter> distributableFilters = getDistributableFilter();
 
 		CloseableIterator<DataAdapter<?>> adapters = null;
@@ -309,8 +312,9 @@ public abstract class HBaseFilteredIndexQuery extends
 				adapterStore,
 				index,
 				resultsIterator,
-				filters.isEmpty() ? null : filters.size() == 1 ? filters.get(0) : new mil.nga.giat.geowave.core.store.filter.FilterList<QueryFilter>(
-						filters),
+				filters.isEmpty() ? null : filters.size() == 1 ? filters.get(0)
+						: new mil.nga.giat.geowave.core.store.filter.FilterList<QueryFilter>(
+								filters),
 				scanCallback);
 	}
 

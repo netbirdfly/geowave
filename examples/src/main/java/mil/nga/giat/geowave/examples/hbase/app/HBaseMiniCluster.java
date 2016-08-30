@@ -3,8 +3,6 @@ package mil.nga.giat.geowave.examples.hbase.app;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-import mil.nga.giat.geowave.datastore.hbase.query.RowCountEndpoint;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.coprocessor.AggregateImplementation;
 import org.apache.hadoop.hbase.coprocessor.CoprocessorHost;

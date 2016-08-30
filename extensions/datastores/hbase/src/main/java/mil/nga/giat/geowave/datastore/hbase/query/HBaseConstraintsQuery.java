@@ -35,6 +35,7 @@ import org.apache.hadoop.hbase.filter.Filter;
 import org.apache.hadoop.hbase.filter.MultiRowRangeFilter;
 import org.apache.hadoop.hbase.filter.MultiRowRangeFilter.RowRange;
 import org.apache.hadoop.hbase.ipc.BlockingRpcCallback;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import com.google.common.collect.Iterators;
@@ -101,6 +102,7 @@ public class HBaseConstraintsQuery extends
 			// Because aggregations are done client-side make sure to set
 			// the adapter ID here
 			this.adapterIds = Collections.singletonList(aggregation.getLeft().getAdapterId());
+			LOGGER.setLevel(Level.DEBUG);
 		}
 	}
 
@@ -152,6 +154,7 @@ public class HBaseConstraintsQuery extends
 
 			// Determine total row range
 			List<RowRange> rowRanges = getSortedRanges();
+			LOGGER.debug("Got " + rowRanges.size() + " key range(s) for aggregation:");
 
 			for (RowRange rowRange : rowRanges) {
 				byte[] startRow = null;
@@ -164,6 +167,9 @@ public class HBaseConstraintsQuery extends
 				if (!rowRange.getStopRow().equals(HConstants.EMPTY_BYTE_ARRAY)) {
 					stopRow = rowRange.getStopRow();
 				}
+				
+				LOGGER.debug("Start row key: " + rowRange.getStartRow().toString());
+				LOGGER.debug(" Stop row key: " + rowRange.getStopRow().toString() + "\n");
 
 				Map<byte[], Long> results = table.coprocessorService(
 						RowCountProtos.RowCountService.class,
@@ -213,6 +219,9 @@ public class HBaseConstraintsQuery extends
 					false));
 		}
 		else {
+			int rcount = 0;
+			LOGGER.debug("Row ranges for coprocessor aggregation...");
+			
 			for (final ByteArrayRange range : ranges) {
 				if (range.getStart() != null) {
 					byte[] startRow = range.getStart().getBytes();
@@ -231,6 +240,11 @@ public class HBaseConstraintsQuery extends
 							true);
 
 					rowRanges.add(rowRange);
+					
+					
+					rcount++;
+					LOGGER.debug("Start row key(" + rcount + "): " + rowRange.getStartRow().toString());
+					LOGGER.debug(" Stop row key(" + rcount + "): " + rowRange.getStopRow().toString());
 				}
 			}
 		}

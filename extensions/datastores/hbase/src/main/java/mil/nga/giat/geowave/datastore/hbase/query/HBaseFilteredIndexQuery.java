@@ -34,6 +34,7 @@ import org.apache.hadoop.hbase.filter.Filter;
 import org.apache.hadoop.hbase.filter.FilterList;
 import org.apache.hadoop.hbase.filter.MultiRowRangeFilter;
 import org.apache.hadoop.hbase.filter.MultiRowRangeFilter.RowRange;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import com.google.common.collect.Iterators;
@@ -58,6 +59,7 @@ public abstract class HBaseFilteredIndexQuery extends
 				index,
 				authorizations);
 		this.scanCallback = scanCallback;
+		LOGGER.setLevel(Level.DEBUG);
 	}
 
 	@Override
@@ -219,6 +221,7 @@ public abstract class HBaseFilteredIndexQuery extends
 					false));
 		}
 		else {
+			int rcount = 0;
 			for (final ByteArrayRange range : ranges) {
 				if (range.getStart() != null) {
 					byte[] startRow = range.getStart().getBytes();
@@ -237,6 +240,10 @@ public abstract class HBaseFilteredIndexQuery extends
 							true);
 
 					rowRanges.add(rowRange);
+					
+					rcount++;
+					LOGGER.debug("Start row key(" + rcount + "): " + rowRange.getStartRow().toString());
+					LOGGER.debug(" Stop row key(" + rcount + "): " + rowRange.getStopRow().toString());
 				}
 			}
 		}

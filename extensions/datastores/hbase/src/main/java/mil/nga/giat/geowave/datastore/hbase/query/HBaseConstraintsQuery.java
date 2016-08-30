@@ -34,6 +34,7 @@ import org.apache.hadoop.hbase.client.coprocessor.Batch;
 import org.apache.hadoop.hbase.client.coprocessor.LongColumnInterpreter;
 import org.apache.hadoop.hbase.filter.Filter;
 import org.apache.hadoop.hbase.ipc.BlockingRpcCallback;
+import org.apache.hadoop.hbase.security.visibility.Authorizations;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
@@ -179,6 +180,11 @@ public class HBaseConstraintsQuery extends
 				limit,
 				distributableFilters,
 				adapters);
+		
+		if (authorizations != null) {
+			multiScanner.setAuthorizations(new Authorizations(
+					authorizations));
+		}
 
 		AggregationClient aggregationClient = new AggregationClient(
 				operations.getConfig());

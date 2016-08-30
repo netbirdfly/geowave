@@ -26,6 +26,7 @@ public class DedupeFilter implements
 	public DedupeFilter() {
 		adapterIdToVisitedDataIdMap = new HashMap<ByteArrayId, Set<ByteArrayId>>();
 		countFailures = 0;
+		System.out.println("Using a Dedupe Filter");
 	}
 
 	@Override
@@ -55,8 +56,7 @@ public class DedupeFilter implements
 		}
 		else if (visitedDataIds.contains(dataId)) {
 			countFailures++;
-			System.err.println("Dedupe Filter count = " + countFailures);
-			
+			System.out.println("Dedupe Filter count = " + countFailures);			
 			return false;
 		}
 		visitedDataIds.add(dataId);

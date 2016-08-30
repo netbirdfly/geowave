@@ -31,6 +31,7 @@ import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.client.coprocessor.AggregationClient;
 import org.apache.hadoop.hbase.client.coprocessor.Batch;
+import org.apache.hadoop.hbase.client.coprocessor.LongColumnInterpreter;
 import org.apache.hadoop.hbase.filter.Filter;
 import org.apache.hadoop.hbase.ipc.BlockingRpcCallback;
 import org.apache.log4j.Level;
@@ -180,7 +181,7 @@ public class HBaseConstraintsQuery extends
 			
 			long total = aggregationClient.rowCount(
 					BasicHBaseOperations.getTableName(tableName),
-					null,
+					new LongColumnInterpreter(),
 					multiScanner);
 			
 			LOGGER.debug("Aggregation client returned " + total + " items.");

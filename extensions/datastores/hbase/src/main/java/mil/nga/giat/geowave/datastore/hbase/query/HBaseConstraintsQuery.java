@@ -25,11 +25,15 @@ import mil.nga.giat.geowave.core.store.query.Query;
 import mil.nga.giat.geowave.core.store.query.aggregate.Aggregation;
 import mil.nga.giat.geowave.datastore.hbase.operations.BasicHBaseOperations;
 import mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos;
+import mil.nga.giat.geowave.datastore.hbase.util.HBaseUtils;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.hadoop.hbase.HConstants;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.client.coprocessor.Batch;
 import org.apache.hadoop.hbase.filter.Filter;
+import org.apache.hadoop.hbase.filter.MultiRowRangeFilter;
+import org.apache.hadoop.hbase.filter.MultiRowRangeFilter.RowRange;
 import org.apache.hadoop.hbase.ipc.BlockingRpcCallback;
 import org.apache.log4j.Logger;
 
@@ -146,27 +150,42 @@ public class HBaseConstraintsQuery extends
 
 			final RowCountProtos.CountRequest request = RowCountProtos.CountRequest.getDefaultInstance();
 
-			// TODO: use row ranges
-			Map<byte[], Long> results = table.coprocessorService(
-					RowCountProtos.RowCountService.class,
-					null,
-					null, // Set start and end row key to "null" to count all rows.
-					new Batch.Call<RowCountProtos.RowCountService, Long>() {
-						public Long call(
-								RowCountProtos.RowCountService counter )
-								throws IOException {
-							BlockingRpcCallback<RowCountProtos.CountResponse> rpcCallback = new BlockingRpcCallback<RowCountProtos.CountResponse>();
-							counter.getRowCount(
-									null,
-									request,
-									rpcCallback);
-							RowCountProtos.CountResponse response = rpcCallback.get();
-							return response.hasCount() ? response.getCount() : 0;
-						}
-					});
+			// Determine total row range
+			List<RowRange> rowRanges = getSortedRanges();
 
-			for (Map.Entry<byte[], Long> entry : results.entrySet()) {
-				total += entry.getValue().longValue();
+			for (RowRange rowRange : rowRanges) {
+				byte[] startRow = null;
+				byte[] stopRow = null;
+				
+				if (!rowRange.getStartRow().equals(HConstants.EMPTY_BYTE_ARRAY)) {
+					startRow = rowRange.getStartRow();
+				}
+
+				if (!rowRange.getStopRow().equals(HConstants.EMPTY_BYTE_ARRAY)) {
+					stopRow = rowRange.getStopRow();
+				}
+
+				Map<byte[], Long> results = table.coprocessorService(
+						RowCountProtos.RowCountService.class,
+						startRow,
+						stopRow, // Set start and end row key to "null" to count all rows.
+						new Batch.Call<RowCountProtos.RowCountService, Long>() {
+							public Long call(
+									RowCountProtos.RowCountService counter )
+									throws IOException {
+								BlockingRpcCallback<RowCountProtos.CountResponse> rpcCallback = new BlockingRpcCallback<RowCountProtos.CountResponse>();
+								counter.getRowCount(
+										null,
+										request,
+										rpcCallback);
+								RowCountProtos.CountResponse response = rpcCallback.get();
+								return response.hasCount() ? response.getCount() : 0;
+							}
+						});
+
+				for (Map.Entry<byte[], Long> entry : results.entrySet()) {
+					total += entry.getValue().longValue();
+				}
 			}
 		}
 		catch (Exception e) {
@@ -179,6 +198,54 @@ public class HBaseConstraintsQuery extends
 		}
 
 		return new Wrapper(
-				Iterators.singletonIterator(total));	
+				Iterators.singletonIterator(total));
+	}
+
+	private List<RowRange> getSortedRanges() {
+		List<RowRange> rowRanges = new ArrayList<RowRange>();
+
+		List<ByteArrayRange> ranges = getRanges();
+		if ((ranges == null) || ranges.isEmpty()) {
+			rowRanges.add(new RowRange(
+					HConstants.EMPTY_BYTE_ARRAY,
+					true,
+					HConstants.EMPTY_BYTE_ARRAY,
+					false));
+		}
+		else {
+			for (final ByteArrayRange range : ranges) {
+				if (range.getStart() != null) {
+					byte[] startRow = range.getStart().getBytes();
+					byte[] stopRow;
+					if (!range.isSingleValue()) {
+						stopRow = HBaseUtils.getNextPrefix(range.getEnd().getBytes());
+					}
+					else {
+						stopRow = HBaseUtils.getNextPrefix(range.getStart().getBytes());
+					}
+
+					RowRange rowRange = new RowRange(
+							startRow,
+							true,
+							stopRow,
+							true);
+
+					rowRanges.add(rowRange);
+				}
+			}
+		}
+
+		// Create the multi-range filter to do the sort/merge
+		try {
+			MultiRowRangeFilter filter = new MultiRowRangeFilter(
+					rowRanges);
+
+			rowRanges = filter.getRowRanges();
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		return rowRanges;
 	}
 }

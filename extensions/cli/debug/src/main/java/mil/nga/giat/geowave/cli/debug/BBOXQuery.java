@@ -77,6 +77,8 @@ public class BBOXQuery extends
 
 		long count = 0;
 		if (useAggregation) {
+			stopWatch.start();
+
 			final QueryOptions options = new QueryOptions(
 					adapterId,
 					indexId);
@@ -95,6 +97,9 @@ public class BBOXQuery extends
 			catch (final IOException e) {
 				e.printStackTrace();
 			}
+
+			stopWatch.stop();
+			System.out.println("BBOX query results aggregation took " + stopWatch.toString());
 		}
 		else {
 			stopWatch.start();

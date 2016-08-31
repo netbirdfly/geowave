@@ -5,15 +5,14 @@ option java_generate_equals_and_hash = true;
 option optimize_for = SPEED;
 
 message CountRequest {
+  optional bytes filter = 1;
 }
 
 message CountResponse {
-  required int64 count = 1 [default = 0];
+  required int64 count = 2 [default = 0];
 }
 
 service RowCountService {
   rpc getRowCount(CountRequest)
-    returns (CountResponse);
-  rpc getCellCount(CountRequest)
     returns (CountResponse);
 }

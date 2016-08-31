@@ -70,7 +70,7 @@ public class BasicHBaseOperations implements
 				options.getZookeeper(),
 				options.getGeowaveNamespace());
 	}
-	
+
 	public Configuration getConfig() {
 		return conn.getConfiguration();
 	}
@@ -126,7 +126,7 @@ public class BasicHBaseOperations implements
 					desc.addFamily(new HColumnDescriptor(
 							columnFamily));
 				}
-				
+
 				if ((splits != null) && !splits.isEmpty()) {
 					final byte[][] splitKeys = new byte[splits.size()][];
 					int i = 0;

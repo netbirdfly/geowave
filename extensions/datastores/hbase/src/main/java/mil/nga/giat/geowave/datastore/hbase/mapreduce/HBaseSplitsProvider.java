@@ -169,8 +169,7 @@ public class HBaseSplitsProvider extends
 					regionLocator);
 		}
 
-		for (final Entry<HRegionLocation, Map<HRegionInfo, List<ByteArrayRange>>> locationEntry : binnedRanges
-				.entrySet()) {
+		for (final Entry<HRegionLocation, Map<HRegionInfo, List<ByteArrayRange>>> locationEntry : binnedRanges.entrySet()) {
 			final String hostname = locationEntry.getKey().getHostname();
 
 			for (final Entry<HRegionInfo, List<ByteArrayRange>> regionEntry : locationEntry.getValue().entrySet()) {

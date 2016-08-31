@@ -14,8 +14,9 @@ import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.coprocessor.CoprocessorException;
 import org.apache.hadoop.hbase.coprocessor.CoprocessorService;
 import org.apache.hadoop.hbase.coprocessor.RegionCoprocessorEnvironment;
+import org.apache.hadoop.hbase.exceptions.DeserializationException;
 import org.apache.hadoop.hbase.filter.Filter;
-import org.apache.hadoop.hbase.filter.FirstKeyOnlyFilter;
+import org.apache.hadoop.hbase.filter.MultiRowRangeFilter;
 import org.apache.hadoop.hbase.protobuf.ResponseConverter;
 import org.apache.hadoop.hbase.regionserver.InternalScanner;
 
@@ -62,31 +63,16 @@ public class RowCountEndpoint extends
 			RowCountProtos.CountRequest request,
 			RpcCallback<RowCountProtos.CountResponse> done ) {
 		RowCountProtos.CountResponse response = null;
-		try {
-			long count = getCount(
-					new FirstKeyOnlyFilter(),
-					false);
-			response = RowCountProtos.CountResponse.newBuilder().setCount(
-					count).build();
-		}
-		catch (IOException ioe) {
-			ResponseConverter.setControllerException(
-					controller,
-					ioe);
-		}
-		done.run(response);
-	}
 
-	@Override
-	public void getCellCount(
-			RpcController controller,
-			RowCountProtos.CountRequest request,
-			RpcCallback<RowCountProtos.CountResponse> done ) {
-		RowCountProtos.CountResponse response = null;
+		byte[] filterBytes = request.getFilter().toByteArray();
+
 		try {
+			final MultiRowRangeFilter multiFilter = MultiRowRangeFilter.parseFrom(filterBytes);
+
 			long count = getCount(
-					null,
-					true);
+					multiFilter,
+					false);
+
 			response = RowCountProtos.CountResponse.newBuilder().setCount(
 					count).build();
 		}
@@ -95,6 +81,10 @@ public class RowCountEndpoint extends
 					controller,
 					ioe);
 		}
+		catch (DeserializationException de) {
+			de.printStackTrace();
+		}
+
 		done.run(response);
 	}
 

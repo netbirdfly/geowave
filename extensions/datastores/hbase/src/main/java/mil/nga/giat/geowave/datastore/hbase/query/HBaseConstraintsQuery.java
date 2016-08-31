@@ -25,20 +25,25 @@ import mil.nga.giat.geowave.core.store.query.Query;
 import mil.nga.giat.geowave.core.store.query.aggregate.Aggregation;
 import mil.nga.giat.geowave.datastore.hbase.operations.BasicHBaseOperations;
 import mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos;
+import mil.nga.giat.geowave.datastore.hbase.util.HBaseUtils;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.hadoop.hbase.HConstants;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.client.coprocessor.AggregationClient;
 import org.apache.hadoop.hbase.client.coprocessor.Batch;
 import org.apache.hadoop.hbase.client.coprocessor.LongColumnInterpreter;
 import org.apache.hadoop.hbase.filter.Filter;
+import org.apache.hadoop.hbase.filter.MultiRowRangeFilter;
+import org.apache.hadoop.hbase.filter.MultiRowRangeFilter.RowRange;
 import org.apache.hadoop.hbase.ipc.BlockingRpcCallback;
 import org.apache.hadoop.hbase.security.visibility.Authorizations;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import com.google.common.collect.Iterators;
+import com.google.protobuf.ByteString;
 
 public class HBaseConstraintsQuery extends
 		HBaseFilteredIndexQuery
@@ -149,7 +154,7 @@ public class HBaseConstraintsQuery extends
 				limit);
 	}
 
-	public CloseableIterator<Object> aggQuery(
+	private CloseableIterator<Object> aggQueryTest(
 			final BasicHBaseOperations operations,
 			final AdapterStore adapterStore,
 			final Integer limit ) {
@@ -180,7 +185,7 @@ public class HBaseConstraintsQuery extends
 				limit,
 				distributableFilters,
 				adapters);
-		
+
 		if (authorizations != null) {
 			multiScanner.setAuthorizations(new Authorizations(
 					authorizations));
@@ -191,14 +196,14 @@ public class HBaseConstraintsQuery extends
 
 		try {
 			LOGGER.debug("Calling aggregation client...");
-			
+
 			long total = aggregationClient.rowCount(
 					BasicHBaseOperations.getTableName(tableName),
 					new LongColumnInterpreter(),
 					multiScanner);
-			
+
 			LOGGER.debug("Aggregation client returned " + total + " items.");
-			
+
 			aggregationClient.close();
 
 			return new Wrapper(
@@ -214,7 +219,7 @@ public class HBaseConstraintsQuery extends
 		return new CloseableIterator.Empty();
 	}
 
-	private CloseableIterator<Object> oldAggQuery(
+	private CloseableIterator<Object> aggQuery(
 			final BasicHBaseOperations operations,
 			final AdapterStore adapterStore,
 			final Integer limit ) {
@@ -225,7 +230,12 @@ public class HBaseConstraintsQuery extends
 		try {
 			Table table = operations.getTable(tableName);
 
-			final RowCountProtos.CountRequest request = RowCountProtos.CountRequest.getDefaultInstance();
+			MultiRowRangeFilter multiFilter = getMultiFilter();
+
+			final RowCountProtos.CountRequest.Builder requestBuilder = RowCountProtos.CountRequest.newBuilder();
+			requestBuilder.setFilter(ByteString.copyFrom(multiFilter.toByteArray()));
+
+			final RowCountProtos.CountRequest request = requestBuilder.build();
 
 			// Determine total row range
 			List<ByteArrayRange> rowRanges = getRanges();
@@ -275,5 +285,54 @@ public class HBaseConstraintsQuery extends
 
 		return new Wrapper(
 				Iterators.singletonIterator(total));
+	}
+
+	protected MultiRowRangeFilter getMultiFilter() {
+		// create the multi-row filter
+		final List<RowRange> rowRanges = new ArrayList<RowRange>();
+
+		List<ByteArrayRange> ranges = getRanges();
+		if ((ranges == null) || ranges.isEmpty()) {
+			rowRanges.add(new RowRange(
+					HConstants.EMPTY_BYTE_ARRAY,
+					true,
+					HConstants.EMPTY_BYTE_ARRAY,
+					false));
+		}
+		else {
+			for (final ByteArrayRange range : ranges) {
+				if (range.getStart() != null) {
+					byte[] startRow = range.getStart().getBytes();
+					byte[] stopRow;
+					if (!range.isSingleValue()) {
+						stopRow = HBaseUtils.getNextPrefix(range.getEnd().getBytes());
+					}
+					else {
+						stopRow = HBaseUtils.getNextPrefix(range.getStart().getBytes());
+					}
+
+					RowRange rowRange = new RowRange(
+							startRow,
+							true,
+							stopRow,
+							true);
+
+					rowRanges.add(rowRange);
+				}
+			}
+		}
+
+		// Create the multi-range filter
+		try {
+			MultiRowRangeFilter filter = new MultiRowRangeFilter(
+					rowRanges);
+
+			return filter;
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		return null;
 	}
 }

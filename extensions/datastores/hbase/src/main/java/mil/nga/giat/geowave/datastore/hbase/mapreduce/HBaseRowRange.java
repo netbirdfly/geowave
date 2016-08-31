@@ -96,8 +96,7 @@ public class HBaseRowRange implements
 		if (range.getStart().compareTo(
 				range.getEnd()) > 0) {
 			throw new InvalidObjectException(
-					"Start key must be less than end key in range (" + range.getStart().getString() + ", "
-							+ range.getEnd().getString() + ")");
+					"Start key must be less than end key in range (" + range.getStart().getString() + ", " + range.getEnd().getString() + ")");
 		}
 
 	}

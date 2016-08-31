@@ -30,8 +30,8 @@
 	<scm>
 		<url>https://github.com/ngageoint/geowave.git</url>
 		<connection>scm:git:https://github.com/ngageoint/geowave.git</connection>
-	  <tag>HEAD</tag>
-  </scm>
+		<tag>HEAD</tag>
+	</scm>
 	<properties>
 		<geotools.version>14.2</geotools.version>
 		<hadoop.env.classifier>hadoop2</hadoop.env.classifier>
@@ -478,6 +478,15 @@
 					<artifactId>formatter-maven-plugin</artifactId>
 					<version>0.5.2</version>
 				</plugin>
+				<plugin>
+					<groupId>org.apache.hadoop</groupId>
+					<artifactId>hadoop-maven-plugins</artifactId>
+					<version>${hadoop.version}</version>
+					<configuration>
+						<protocVersion>2.5.0</protocVersion>
+						<protocCommand>/Apps/Protoc/bin/protoc</protocCommand>
+					</configuration>
+				</plugin>
 			</plugins>
 		</pluginManagement>
 		<plugins>
@@ -724,19 +733,15 @@
 					</execution>
 				</executions>
 			</plugin>
-			<!-- for incrementing version numbers and tagging repositories 
-			To Use:
-			0. Ensure all files checked into master (clean environment).  Make sure
-			   you have access to both mvn and git on your command line, and you are
-			   in a terminal that has push access (credentials are setup and correct).
-			   Make sure you have the branch active in git you want to tag.
-			   If something goes wrong pushing, you will most likely have outstanding
-			   commits in your local repo you will have to revert/remove.
-			1. mvn release:prepare -DdryRun=true 
-			2. Inspect and ensure the correct pom.xml files will be modified
-			3. mvn release:prepare
-			4. mvn release:clean
-			-->
+			<!-- for incrementing version numbers and tagging repositories To Use: 
+				0. Ensure all files checked into master (clean environment). Make sure you 
+				have access to both mvn and git on your command line, and you are in a terminal 
+				that has push access (credentials are setup and correct). Make sure you have 
+				the branch active in git you want to tag. If something goes wrong pushing, 
+				you will most likely have outstanding commits in your local repo you will 
+				have to revert/remove. 1. mvn release:prepare -DdryRun=true 2. Inspect and 
+				ensure the correct pom.xml files will be modified 3. mvn release:prepare 
+				4. mvn release:clean -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-release-plugin</artifactId>

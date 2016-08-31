@@ -292,7 +292,8 @@ public class HBaseConstraintsQuery extends
 		// create the multi-row filter
 		final List<RowRange> rowRanges = new ArrayList<RowRange>();
 
-		List<ByteArrayRange> ranges = getRanges();
+		List<ByteArrayRange> ranges = base.getAllRanges();
+		
 		if ((ranges == null) || ranges.isEmpty()) {
 			rowRanges.add(new RowRange(
 					HConstants.EMPTY_BYTE_ARRAY,

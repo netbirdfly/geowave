@@ -231,6 +231,7 @@ public class HBaseConstraintsQuery extends
 			Table table = operations.getTable(tableName);
 
 			MultiRowRangeFilter multiFilter = getMultiFilter();
+			LOGGER.debug("Client: Multi-filter has " + multiFilter.getRowRanges().size() + " ranges.");
 
 			final RowCountProtos.CountRequest.Builder requestBuilder = RowCountProtos.CountRequest.newBuilder();
 			requestBuilder.setFilter(ByteString.copyFrom(multiFilter.toByteArray()));

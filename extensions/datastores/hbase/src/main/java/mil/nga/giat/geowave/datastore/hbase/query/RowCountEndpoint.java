@@ -68,10 +68,9 @@ public class RowCountEndpoint extends
 
 		try {
 			final MultiRowRangeFilter multiFilter = MultiRowRangeFilter.parseFrom(filterBytes);
+			System.out.println("Coprocessor: Multi-filter has " + multiFilter.getRowRanges().size() + " ranges.");
 
-			long count = getCount(
-					multiFilter,
-					false);
+			long count = getCount(multiFilter);
 
 			response = RowCountProtos.CountResponse.newBuilder().setCount(
 					count).build();
@@ -99,16 +98,17 @@ public class RowCountEndpoint extends
 	 * @throws IOException
 	 *             When something fails with the scan.
 	 */
-	private long getCount(
-			Filter filter,
-			boolean countCells )
+	private long getCount(Filter filter )
 			throws IOException {
 		long count = 0;
+		
 		Scan scan = new Scan();
 		scan.setMaxVersions(1);
+		
 		if (filter != null) {
 			scan.setFilter(filter);
 		}
+		
 		try (InternalScanner scanner = env.getRegion().getScanner(
 				scan);) {
 			List<Cell> results = new ArrayList<Cell>();
@@ -117,16 +117,12 @@ public class RowCountEndpoint extends
 			do {
 				hasMore = scanner.next(results);
 				for (Cell cell : results) {
-					if (!countCells) {
-						if (lastRow == null || !CellUtil.matchingRow(
-								cell,
-								lastRow)) {
-							lastRow = CellUtil.cloneRow(cell);
-							count++;
-						}
-					}
-					else
+					if (lastRow == null || !CellUtil.matchingRow(
+							cell,
+							lastRow)) {
+						lastRow = CellUtil.cloneRow(cell);
 						count++;
+					}
 				}
 				results.clear();
 			}

@@ -4,11 +4,19 @@ import java.awt.Color;
 import java.awt.image.IndexColorModel;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Collections;
 import java.util.List;
 
 import javax.media.jai.Interpolation;
 import javax.media.jai.InterpolationNearest;
+import javax.media.jai.remote.SerializableState;
+import javax.media.jai.remote.SerializerFactory;
 import javax.xml.transform.TransformerException;
 
 import org.geoserver.wms.DefaultWebMapService;
@@ -18,17 +26,22 @@ import org.geoserver.wms.WMSMapContent;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.map.Layer;
+import org.geotools.referencing.CRS;
 import org.geotools.renderer.lite.StreamingRenderer;
 import org.geotools.styling.SLDParser;
 import org.geotools.styling.SLDTransformer;
 import org.geotools.styling.Style;
+import org.opengis.referencing.FactoryException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 
+import mil.nga.giat.geowave.adapter.vector.plugin.GeoWaveGTDataStore;
 import mil.nga.giat.geowave.core.index.Persistable;
+import mil.nga.giat.geowave.core.index.StringUtils;
 
 public class DistributedRenderOptions implements
 		Persistable
@@ -43,21 +56,21 @@ public class DistributedRenderOptions implements
 	private String antialias;
 	private boolean continuousMapWrapping;
 	private boolean advancedProjectionHandlingEnabled;
+	private boolean optimizeLineWidth;
+	private boolean transparent;
+	private boolean isMetatile;
+	private boolean kmlPlacemark;
+	private boolean renderScaleMethodAccurate;
 	private int mapWidth;
 	private int mapHeight;
 	private int buffer;
 	private double angle;
 	private IndexColorModel palette;
-	private boolean transparent;
-	private boolean isMetatile;
 	private Color bgColor;
 	private int maxRenderTime;
 	private int maxErrors;
-	private boolean kmlPlacemark;
 	private int maxFilters;
-	private boolean optimizeLineWidth;
 	private ReferencedEnvelope envelope;
-	private boolean renderScaleMethodAccurate;
 	private int wmsIterpolationOrdinal;
 	private List<Integer> interpolationOrdinals;
 
@@ -68,7 +81,7 @@ public class DistributedRenderOptions implements
 	public DistributedRenderOptions(
 			final WMS wms,
 			final WMSMapContent mapContent,
-			final Layer layer ) {
+			final Style style ) {
 		optimizeLineWidth = DefaultWebMapService.isLineWidthOptimizationEnabled();
 		maxFilters = DefaultWebMapService.getMaxFilterRules();
 
@@ -83,7 +96,8 @@ public class DistributedRenderOptions implements
 				mapContent.getRendererScaleMethod());
 		wmsIterpolationOrdinal = wms.getInterpolation().ordinal();
 		maxErrors = wms.getMaxRenderingErrors();
-		style = layer.getStyle();
+		this.style = style;
+		envelope = mapContent.getRenderingArea();
 
 		final GetMapRequest request = mapContent.getRequest();
 		final Object timeoutOption = request.getFormatOptions().get(
@@ -390,35 +404,376 @@ public class DistributedRenderOptions implements
 
 	@Override
 	public byte[] toBinary() {
-		final SLDTransformer transformer = new SLDTransformer();
+		// combine booleans into a bitset
+		final BitSet bitSet = new BitSet(
+				15);
+		bitSet.set(
+				0,
+				continuousMapWrapping);
+		bitSet.set(
+				1,
+				advancedProjectionHandlingEnabled);
+		bitSet.set(
+				2,
+				optimizeLineWidth);
+		bitSet.set(
+				3,
+				transparent);
+		bitSet.set(
+				4,
+				isMetatile);
+		bitSet.set(
+				5,
+				kmlPlacemark);
+		bitSet.set(
+				6,
+				renderScaleMethodAccurate);
+		boolean storeInterpolationOrdinals = ((interpolationOrdinals != null) && !interpolationOrdinals.isEmpty());
+		bitSet.set(
+				7,
+				storeInterpolationOrdinals);
+		bitSet.set(
+				8,
+				palette != null);
+		bitSet.set(
+				9,
+				maxRenderTime > 0);
+		bitSet.set(
+				10,
+				maxErrors > 0);
+		bitSet.set(
+				11,
+				angle != 0);
+		bitSet.set(
+				12,
+				buffer > 0);
+		bitSet.set(
+				13,
+				bgColor != null);
+		bitSet.set(
+				14,
+				style != null);
+		final boolean storeCRS = !((envelope.getCoordinateReferenceSystem() == null)
+				|| GeoWaveGTDataStore.DEFAULT_CRS.equals(
+						envelope.getCoordinateReferenceSystem()));
+		bitSet.set(
+				15,
+				storeCRS);
 
-		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		final double minX = envelope.getMinX();
+		final double minY = envelope.getMinY();
+		final double maxX = envelope.getMaxX();
+		final double maxY = envelope.getMaxY();
+		// required bytes include 32 for envelope doubles,
+		// 8 for map width and height ints, and 2 for the bitset, and 4 for
+		// maxFilters
+		int bufferSize = 46;
 
-		try {
-			transformer.transform(
-					new Style[] {
-						style
-					},
-					baos);
+		final byte[] wktBinary;
+		if (storeCRS) {
+			final String wkt = envelope.getCoordinateReferenceSystem().toWKT();
+			wktBinary = StringUtils.stringToBinary(
+					wkt);
+			bufferSize += (wktBinary.length + 4);
 		}
-		catch (final TransformerException e) {
-			LOGGER.warn(
-					"Unable to create SLD from style",
-					e);
+		else {
+			wktBinary = null;
 		}
-		final byte[] styleBinary = baos.toByteArray();
-		return null;
+		if (storeInterpolationOrdinals) {
+			bufferSize += (4 * interpolationOrdinals.size()) + 4;
+		}
+
+		final byte[] paletteBinary;
+		if (palette != null) {
+			final SerializableState serializableColorModel = SerializerFactory.getState(
+					palette);
+			final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			try {
+				final ObjectOutputStream oos = new ObjectOutputStream(
+						baos);
+				oos.writeObject(
+						serializableColorModel);
+			}
+			catch (final IOException e) {
+				LOGGER.warn(
+						"Unable to serialize sample model",
+						e);
+			}
+			paletteBinary = baos.toByteArray();
+			bufferSize += (paletteBinary.length + 4);
+		}
+		else {
+			paletteBinary = null;
+		}
+		if (maxRenderTime > 0) {
+			bufferSize += 4;
+		}
+		if (maxErrors > 0) {
+			bufferSize += 4;
+		}
+		if (angle != 0) {
+			bufferSize += 8;
+		}
+		if (buffer > 0) {
+			bufferSize += 4;
+		}
+		if (bgColor != null) {
+			bufferSize += 4;
+		}
+
+		final byte[] styleBinary;
+		if (style != null) {
+			final SLDTransformer transformer = new SLDTransformer();
+
+			final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+			try {
+				transformer.transform(
+						new Style[] {
+							style
+						},
+						baos);
+			}
+			catch (final TransformerException e) {
+				LOGGER.warn(
+						"Unable to create SLD from style",
+						e);
+			}
+			styleBinary = baos.toByteArray();
+			bufferSize += (styleBinary.length + 4);
+		}
+		else {
+			styleBinary = null;
+		}
+		final ByteBuffer byteBuffer = ByteBuffer.allocate(
+				bufferSize);
+		byteBuffer.put(
+				bitSet.toByteArray());
+		byteBuffer.putDouble(
+				minX);
+		byteBuffer.putDouble(
+				minY);
+		byteBuffer.putDouble(
+				maxX);
+		byteBuffer.putDouble(
+				maxY);
+		byteBuffer.putInt(
+				mapWidth);
+		byteBuffer.putInt(
+				mapHeight);
+		if (wktBinary != null) {
+			byteBuffer.putInt(
+					wktBinary.length);
+			byteBuffer.put(
+					wktBinary);
+		}
+		if (storeInterpolationOrdinals) {
+			byteBuffer.putInt(
+					interpolationOrdinals.size());
+			for (final Integer interpOrd : interpolationOrdinals) {
+				byteBuffer.putInt(
+						interpOrd);
+			}
+		}
+		if (paletteBinary != null) {
+			byteBuffer.putInt(
+					paletteBinary.length);
+			byteBuffer.put(
+					paletteBinary);
+		}
+		if (maxRenderTime > 0) {
+			byteBuffer.putInt(
+					maxRenderTime);
+		}
+		if (maxErrors > 0) {
+			byteBuffer.putInt(
+					maxErrors);
+		}
+		if (angle != 0) {
+			byteBuffer.putDouble(
+					angle);
+		}
+		if (buffer > 0) {
+			byteBuffer.putInt(
+					buffer);
+		}
+		if (bgColor != null) {
+			byteBuffer.putInt(
+					bgColor.getRGB());
+		}
+		if (styleBinary != null) {
+			byteBuffer.putInt(
+					styleBinary.length);
+			byteBuffer.put(
+					styleBinary);
+		}
+		return byteBuffer.array();
 	}
 
 	@Override
 	public void fromBinary(
 			final byte[] bytes ) {
-		final SLDParser parser = new SLDParser(
-				CommonFactoryFinder.getStyleFactory(
-						null),
-				new ByteArrayInputStream(
-						rulesBinary));
-		final Style[] styles = parser.readDOM();
+		final ByteBuffer buf = ByteBuffer.wrap(
+				bytes);
+		final byte[] bitSetBytes = new byte[2];
+		buf.get(
+				bitSetBytes);
+		final BitSet bitSet = BitSet.valueOf(
+				bitSetBytes);
+		continuousMapWrapping = bitSet.get(
+				0);
+		advancedProjectionHandlingEnabled = bitSet.get(
+				1);
+		optimizeLineWidth = bitSet.get(
+				2);
+		transparent = bitSet.get(
+				3);
+		isMetatile = bitSet.get(
+				4);
+		kmlPlacemark = bitSet.get(
+				5);
+		renderScaleMethodAccurate = bitSet.get(
+				6);
+		final boolean interpolationOrdinalsStored = bitSet.get(
+				7);
+		final boolean paletteStored = bitSet.get(
+				8);
+		final boolean maxRenderTimeStored = bitSet.get(
+				9);
+		final boolean maxErrorsStored = bitSet.get(
+				10);
+		final boolean angleStored = bitSet.get(
+				11);
+		final boolean bufferStored = bitSet.get(
+				12);
+		final boolean bgColorStored = bitSet.get(
+				13);
+		final boolean styleStored = bitSet.get(
+				14);
+		final boolean crsStored = bitSet.get(
+				15);
+		CoordinateReferenceSystem crs;
+		final double minX = buf.getDouble();
+		final double minY = buf.getDouble();
+		final double maxX = buf.getDouble();
+		final double maxY = buf.getDouble();
+		mapWidth = buf.getInt();
+		mapHeight = buf.getInt();
+		if (crsStored) {
+			final byte[] wktBinary = new byte[buf.getInt()];
+			buf.get(wktBinary);
+			final String wkt = StringUtils.stringFromBinary(
+					wktBinary);
+			try {
+				crs = CRS.parseWKT(
+						wkt);
+			}
+			catch (final FactoryException e) {
+				LOGGER.warn(
+						"Unable to parse coordinate reference system",
+						e);
+				crs = GeoWaveGTDataStore.DEFAULT_CRS;
+			}
+		}
+		else {
+			crs = GeoWaveGTDataStore.DEFAULT_CRS;
+		}
+		envelope = new ReferencedEnvelope(
+				minX,
+				maxX,
+				minY,
+				maxY,
+				crs);
+		if (interpolationOrdinalsStored) {
+			final int interpolationsLength = buf.getInt();
+			interpolationOrdinals = new ArrayList<>(
+					interpolationsLength);
+			for (int i = 0; i < interpolationsLength; i++) {
+				interpolationOrdinals.add(
+						buf.getInt());
+			}
+		}
+		else {
+			interpolationOrdinals = Collections.emptyList();
+		}
+		if (paletteStored) {
+			final byte[] colorModelBinary = new byte[buf.getInt()];
+			buf.get(
+					colorModelBinary);
+			try {
+				final ByteArrayInputStream bais = new ByteArrayInputStream(
+						colorModelBinary);
+				final ObjectInputStream ois = new ObjectInputStream(
+						bais);
+				final Object o = ois.readObject();
+				if ((o instanceof SerializableState)
+						&& (((SerializableState) o).getObject() instanceof IndexColorModel)) {
+					palette = (IndexColorModel) ((SerializableState) o).getObject();
+				}
+			}
+			catch (final Exception e) {
+				LOGGER.warn(
+						"Unable to deserialize color model",
+						e);
+				palette = null;
+			}
+		}
+		else {
+			palette = null;
+		}
+		if (maxRenderTimeStored) {
+			maxRenderTime = buf.getInt();
+		}
+		else {
+			maxRenderTime = 0;
+		}
+		if (maxErrorsStored) {
+			maxErrors = buf.getInt();
+		}
+		else {
+			maxErrors = 0;
+		}
+		if (angleStored) {
+			angle = buf.getDouble();
+		}
+		else {
+			angle = 0;
+		}
+		if (bufferStored) {
+			buffer = buf.getInt();
+		}
+		else {
+			buffer = 0;
+		}
+		if (bgColorStored) {
+			bgColor = new Color(
+					buf.getInt());
+		}
+		else {
+			bgColor = null;
+		}
+		if (styleStored) {
+			final byte[] styleBinary = new byte[buf.getInt()];
+			buf.get(
+					styleBinary);
+			final SLDParser parser = new SLDParser(
+					CommonFactoryFinder.getStyleFactory(
+							null),
+					new ByteArrayInputStream(
+							styleBinary));
+			final Style[] styles = parser.readXML();
+			if ((styles != null) && (styles.length > 0)) {
+				style = styles[0];
+			}
+			else {
+				LOGGER.warn(
+						"Unable to deserialize style");
+				style = null;
+			}
+		}
+		else {
+			style = null;
+		}
 	}
 
 }

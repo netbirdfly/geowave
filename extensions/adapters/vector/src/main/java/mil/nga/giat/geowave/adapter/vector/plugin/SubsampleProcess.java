@@ -12,9 +12,9 @@ import org.geotools.process.gs.GSProcess;
 import org.opengis.coverage.grid.GridGeometry;
 
 /**
- * This class can be used as a GeoTools Render Transform ('nga:Decimation')
+ * This class can be used as a GeoTools Render Transform ('geowave:Subsample')
  * within an SLD on any layer that uses the GeoWave Data Store. An example SLD
- * is provided (example-slds/DecimatePoints.sld). The pixel-size allows you to
+ * is provided (example-slds/SubsamplePoints.sld). The pixel-size allows you to
  * skip more than a single pixel. For example, a pixel size of 3 would skip an
  * estimated 3x3 pixel cell in GeoWave's row IDs. Note that rows are only
  * skipped when a feature successfully passes filters.

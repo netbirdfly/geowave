@@ -1,7 +1,9 @@
 package mil.nga.giat.geowave.adapter.vector.render;
 
 import org.geoserver.wms.WMS;
+import org.geoserver.wms.WMSInfo;
 import org.geoserver.wms.WMSInfo.WMSInterpolation;
+import org.geoserver.wms.WMSInfoImpl;
 
 public class DistributedRenderWMSFacade extends
 		WMS
@@ -43,6 +45,11 @@ public class DistributedRenderWMSFacade extends
 	@Override
 	public boolean isAdvancedProjectionHandlingEnabled() {
 		return options.isAdvancedProjectionHandlingEnabled();
+	}
+
+	@Override
+	public WMSInfo getServiceInfo() {
+		return new WMSInfoImpl();
 	}
 
 	@Override

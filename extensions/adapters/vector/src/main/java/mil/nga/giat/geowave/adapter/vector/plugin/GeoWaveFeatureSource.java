@@ -3,6 +3,18 @@ package mil.nga.giat.geowave.adapter.vector.plugin;
 import java.io.IOException;
 import java.util.Map;
 
+import org.geotools.data.FeatureReader;
+import org.geotools.data.FeatureWriter;
+import org.geotools.data.Query;
+import org.geotools.data.store.ContentEntry;
+import org.geotools.data.store.ContentFeatureCollection;
+import org.geotools.data.store.ContentFeatureStore;
+import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.filter.Filter;
+import org.opengis.geometry.BoundingBox;
+
 import mil.nga.giat.geowave.adapter.vector.GeotoolsFeatureDataAdapter;
 import mil.nga.giat.geowave.adapter.vector.plugin.transaction.GeoWaveEmptyTransaction;
 import mil.nga.giat.geowave.adapter.vector.plugin.transaction.GeoWaveTransactionState;
@@ -12,17 +24,6 @@ import mil.nga.giat.geowave.core.geotime.store.statistics.BoundingBoxDataStatist
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.adapter.statistics.CountDataStatistics;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatistics;
-
-import org.geotools.data.FeatureReader;
-import org.geotools.data.FeatureWriter;
-import org.geotools.data.Query;
-import org.geotools.data.store.ContentEntry;
-import org.geotools.data.store.ContentFeatureStore;
-import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.filter.Filter;
-import org.opengis.geometry.BoundingBox;
 
 @SuppressWarnings("unchecked")
 public class GeoWaveFeatureSource extends
@@ -63,9 +64,9 @@ public class GeoWaveFeatureSource extends
 				Filter.INCLUDE)) {
 			final Map<ByteArrayId, DataStatistics<SimpleFeature>> stats = new GeoWaveEmptyTransaction(
 					components).getDataStatistics();
-			bboxStats = stats.get(FeatureBoundingBoxStatistics.composeId(getFeatureType()
-					.getGeometryDescriptor()
-					.getLocalName()));
+			bboxStats = stats.get(
+					FeatureBoundingBoxStatistics.composeId(
+							getFeatureType().getGeometryDescriptor().getLocalName()));
 		}
 		if (bboxStats != null) {
 			minx = ((BoundingBoxDataStatistics) bboxStats).getMinX();
@@ -119,7 +120,8 @@ public class GeoWaveFeatureSource extends
 			throws IOException {
 		final Map<ByteArrayId, DataStatistics<SimpleFeature>> stats = new GeoWaveEmptyTransaction(
 				components).getDataStatistics();
-		final DataStatistics<SimpleFeature> countStats = stats.get(CountDataStatistics.STATS_ID);
+		final DataStatistics<SimpleFeature> countStats = stats.get(
+				CountDataStatistics.STATS_ID);
 		if ((countStats != null) && query.getFilter().equals(
 				Filter.INCLUDE)) {
 			return (int) ((CountDataStatistics) countStats).getCount();
@@ -154,7 +156,8 @@ public class GeoWaveFeatureSource extends
 				this);
 		return new GeoWaveFeatureReader(
 				query,
-				state.getGeoWaveTransaction(query.getTypeName()),
+				state.getGeoWaveTransaction(
+						query.getTypeName()),
 				components);
 	}
 
@@ -168,8 +171,10 @@ public class GeoWaveFeatureSource extends
 				this);
 		return new GeoWaveFeatureWriter(
 				components,
-				state.getGeoWaveTransaction(query.getTypeName()),
-				(GeoWaveFeatureReader) getReaderInternal(query));
+				state.getGeoWaveTransaction(
+						query.getTypeName()),
+				(GeoWaveFeatureReader) getReaderInternal(
+						query));
 	}
 
 	@Override
@@ -200,6 +205,19 @@ public class GeoWaveFeatureSource extends
 	@Override
 	protected boolean canFilter() {
 		return true;
+	}
+
+	@Override
+	protected Query resolvePropertyNames(
+			Query query ) {
+		if (GeoWaveFeatureCollection.isDistributedRenderQuery(
+				query)) {
+			// this is intentional to avoid retyping within ContentFeatureSource
+			query.setPropertyNames(
+					Query.ALL_NAMES);
+		}
+		return super.resolvePropertyNames(
+				query);
 	}
 
 	@Override

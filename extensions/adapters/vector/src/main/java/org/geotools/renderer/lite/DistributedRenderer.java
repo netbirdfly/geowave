@@ -3,7 +3,6 @@ package org.geotools.renderer.lite;
 import java.awt.Composite;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
-import java.awt.image.RenderedImage;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -13,10 +12,12 @@ import java.util.Map.Entry;
 import java.util.concurrent.BlockingQueue;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.geotools.process.function.ProcessFunction;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 
+import mil.nga.giat.geowave.adapter.vector.plugin.DistributedRenderProcess;
 import mil.nga.giat.geowave.adapter.vector.render.DistributedRenderOptions;
 import mil.nga.giat.geowave.adapter.vector.render.DistributedRenderResult;
 import mil.nga.giat.geowave.adapter.vector.render.DistributedRenderResult.CompositeGroupResult;
@@ -48,7 +49,13 @@ public class DistributedRenderer extends
 			// distributed render transform so for now let's just not allow
 			// other rendering transformations when distributed rendering is
 			// employed and strip all transformations
-			transformLfts.transformation = null;
+			if (transformLfts.transformation instanceof ProcessFunction) {
+				if ((((ProcessFunction) transformLfts.transformation).getName() != null)
+						&& ((ProcessFunction) transformLfts.transformation).getName().equals(
+								DistributedRenderProcess.PROCESS_NAME)) {
+					transformLfts.transformation = null;
+				}
+			}
 		}
 		return retVal;
 
@@ -59,7 +66,11 @@ public class DistributedRenderer extends
 			final Map hints ) {
 		hints.put(
 				"maxFiltersToSendToDatastore",
-				options);
+				options.getMaxFilters());
+
+		hints.put(
+				StreamingRenderer.LINE_WIDTH_OPTIMIZATION_KEY,
+				options.isOptimizeLineWidth());
 		super.setRendererHints(
 				hints);
 	}
@@ -72,7 +83,7 @@ public class DistributedRenderer extends
 	}
 
 	public DistributedRenderResult getResult(
-			final RenderedImage parentImage ) {
+			final BufferedImage parentImage ) {
 		return renderQueue.getResult(
 				parentImage);
 	}
@@ -108,8 +119,13 @@ public class DistributedRenderer extends
 									Pair.of(
 											styleGraphic.image,
 											lfts.composite));
+							continue;
 						}
 					}
+					// if no style graphic was added, add a null value as a
+					// placeholder in the list
+					styleGraphics.add(
+							null);
 				}
 				compositeGroupGraphicsToStyleGraphicsMapping.put(
 						parentGraphics,
@@ -127,7 +143,7 @@ public class DistributedRenderer extends
 		}
 
 		public DistributedRenderResult getResult(
-				final RenderedImage parentImage ) {
+				final BufferedImage parentImage ) {
 			final List<CompositeGroupResult> compositeGroups = new ArrayList<>();
 			for (final Entry<Graphics2D, List<Pair<BufferedImage, Composite>>> e : compositeGroupGraphicsToStyleGraphicsMapping
 					.entrySet()) {
@@ -139,6 +155,9 @@ public class DistributedRenderer extends
 							@Override
 							public Pair<PersistableRenderedImage, PersistableComposite> apply(
 									final Pair<BufferedImage, Composite> input ) {
+								if (input == null) {
+									return null;
+								}
 								return Pair.of(
 										new PersistableRenderedImage(
 												input.getKey()),
@@ -149,17 +168,13 @@ public class DistributedRenderer extends
 				if (compositeGroupGraphic instanceof DelayedBackbufferGraphic) {
 					final Composite compositeGroupComposite = compositeGroupGraphicsToCompositeMapping.get(
 							compositeGroupGraphic);
-					PersistableRenderedImage compositeGroupImage = null;
+					// because mergelayers wasn't writing to the composite
+					// image, their won't be an image to persist
 					final PersistableComposite persistableCGC = compositeGroupComposite == null ? null
 							: new PersistableComposite(
 									compositeGroupComposite);
-					if (((DelayedBackbufferGraphic) compositeGroupGraphic).image != null) {
-						compositeGroupImage = new PersistableRenderedImage(
-								((DelayedBackbufferGraphic) compositeGroupGraphic).image);
-					}
 					compositeGroups.add(
 							new CompositeGroupResult(
-									compositeGroupImage,
 									persistableCGC,
 									orderedStyles));
 				}
@@ -167,13 +182,14 @@ public class DistributedRenderer extends
 					// it must be the parent image
 					compositeGroups.add(
 							new CompositeGroupResult(
-									new PersistableRenderedImage(
-											parentImage),
 									null,
 									orderedStyles));
 				}
 			}
+
 			return new DistributedRenderResult(
+					new PersistableRenderedImage(
+							parentImage),
 					compositeGroups);
 		}
 	}

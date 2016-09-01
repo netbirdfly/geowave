@@ -1,5 +1,6 @@
 package mil.nga.giat.geowave.adapter.vector.render;
 
+import java.awt.image.BufferedImage;
 import java.awt.image.IndexColorModel;
 import java.awt.image.RenderedImage;
 
@@ -12,7 +13,7 @@ public class DistributedRenderMapOutputFormat extends
 {
 	private final DistributedRenderOptions options;
 	private DistributedRenderer currentRenderer;
-	private RenderedImage currentImage;
+	private BufferedImage currentImage;
 
 	public DistributedRenderMapOutputFormat(
 			final DistributedRenderOptions options ) {
@@ -40,7 +41,7 @@ public class DistributedRenderMapOutputFormat extends
 			final int height,
 			final IndexColorModel palette,
 			final boolean transparent ) {
-		currentImage = super.prepareImage(
+		currentImage = (BufferedImage) super.prepareImage(
 				width,
 				height,
 				palette,

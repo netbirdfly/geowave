@@ -15,6 +15,7 @@ import org.geoserver.wms.WMSMapContent;
 import org.geotools.map.FeatureLayer;
 import org.geotools.map.MapViewport;
 import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.feature.simple.SimpleFeatureType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,7 +54,8 @@ public class DistributedRenderAggregation implements
 		this.options = options;
 	}
 
-	private void initRenderer() {
+	private void initRenderer(
+			final SimpleFeatureType type ) {
 		currentRenderer = new DistributedRenderMapOutputFormat(
 				options);
 		final WMSMapContent mapContent = new WMSMapContent();
@@ -91,7 +93,8 @@ public class DistributedRenderAggregation implements
 						options.getEnvelope()));
 		request.setBbox(
 				options.getEnvelope());
-		request.setInterpolations(options.getInterpolations());
+		request.setInterpolations(
+				options.getInterpolations());
 		final Map formatOptions = new HashMap<>();
 		formatOptions.put(
 				"antialias",
@@ -106,6 +109,11 @@ public class DistributedRenderAggregation implements
 		// this sets a static variable, but its the only method available
 		// (multiple geoserver clients with different settings hitting the same
 		// distributed backend, may conflict on these settings)
+
+		// we get around this by overriding these settings on the renderHints
+		// object within DistributedRenderer so it is no longer using these
+		// static settings, but these static properties must be set to avoid
+		// NPEs
 		GeoServerExtensionsHelper.property(
 				"OPTIMIZE_LINE_WIDTH",
 				Boolean.toString(
@@ -126,8 +134,9 @@ public class DistributedRenderAggregation implements
 				options.getMapHeight());
 		request.setTiled(
 				options.isMetatile());
-		request.setScaleMethod(options.isRenderScaleMethodAccurate() ? ScaleComputationMethod.Accurate : ScaleComputationMethod.OGC);
-		
+		request.setScaleMethod(
+				options.isRenderScaleMethodAccurate() ? ScaleComputationMethod.Accurate : ScaleComputationMethod.OGC);
+
 		if (options.isMetatile()) {
 			// it doesn't matter what this is, as long as its not null, we are
 			// just ensuring proper transparency usage based on meta-tiling
@@ -141,6 +150,7 @@ public class DistributedRenderAggregation implements
 		mapContent.addLayer(
 				new FeatureLayer(
 						new AsyncQueueFeatureCollection(
+								type,
 								queue),
 						options.getStyle()));
 		// produce map in a separate thread...
@@ -192,7 +202,7 @@ public class DistributedRenderAggregation implements
 		if (currentRenderer != null) {
 			currentRenderer.stopRendering();
 		}
-		if (asyncRenderer == null) {
+		if (asyncRenderer != null) {
 			asyncRenderer.cancel(
 					true);
 		}
@@ -204,16 +214,19 @@ public class DistributedRenderAggregation implements
 		asyncRenderer = null;
 	}
 
-	private synchronized void ensureOpen() {
+	private synchronized void ensureOpen(
+			final SimpleFeatureType type ) {
 		if (currentRenderer == null) {
-			initRenderer();
+			initRenderer(
+					type);
 		}
 	}
 
 	@Override
 	public void aggregate(
 			final SimpleFeature entry ) {
-		ensureOpen();
+		ensureOpen(
+				entry.getFeatureType());
 		queue.add(
 				entry);
 	}

@@ -27,7 +27,7 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 
 import mil.nga.giat.geowave.adapter.vector.render.DistributedRenderOptions;
-import mil.nga.giat.geowave.adapter.vector.render.PersistableRenderedImage;
+import mil.nga.giat.geowave.adapter.vector.render.DistributedRenderResult;
 import mil.nga.giat.geowave.adapter.vector.stats.FeatureBoundingBoxStatistics;
 import mil.nga.giat.geowave.adapter.vector.stats.FeatureNumericRangeStatistics;
 import mil.nga.giat.geowave.adapter.vector.stats.FeatureTimeRangeStatistics;
@@ -199,10 +199,13 @@ public class GeoWaveFeatureCollection extends
 	private static SimpleFeatureType createDistributedRenderFeatureType() {
 		final SimpleFeatureTypeBuilder typeBuilder = new SimpleFeatureTypeBuilder();
 		typeBuilder.setName(
-				"image_type");
+				"distributed_render");
 		typeBuilder.add(
-				"Image",
-				PersistableRenderedImage.class);
+				"result",
+				DistributedRenderResult.class);
+		typeBuilder.add(
+				"options",
+				DistributedRenderOptions.class);
 		return typeBuilder.buildFeatureType();
 	}
 
@@ -214,7 +217,7 @@ public class GeoWaveFeatureCollection extends
 	protected static final boolean isDistributedRenderQuery(
 			final Query query ) {
 		return query.getHints().containsKey(
-				DistributedRenderProcess.ENABLE);
+				DistributedRenderProcess.OPTIONS);
 	}
 
 	private static SimpleFeatureType getSchema(

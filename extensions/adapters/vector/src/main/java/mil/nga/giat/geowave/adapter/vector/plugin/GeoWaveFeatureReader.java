@@ -117,9 +117,9 @@ public class GeoWaveFeatureReader implements
 
 	@Override
 	public SimpleFeatureType getFeatureType() {
-		if (featureCollection.isDistributedRenderQuery()) {
-			return GeoWaveFeatureCollection.getDistributedRenderFeatureType();
-		}
+//		if (featureCollection.isDistributedRenderQuery()) {
+//			return GeoWaveFeatureCollection.getDistributedRenderFeatureType();
+//		}
 		return components.getAdapter().getType();
 	}
 
@@ -441,13 +441,19 @@ public class GeoWaveFeatureReader implements
 							index,
 							query))) {
 				if (resultIt.hasNext()) {
-					DistributedRenderResult result = resultIt.next();
-					// TODO wrap it in a simplefeature
-					// Iterators.singletonIterator(new
-					// SimpleFeatureBuilder(featureType));
+					final DistributedRenderResult result = resultIt.next();
+					return new CloseableIterator.Wrapper(
+							Iterators.singletonIterator(
+									SimpleFeatureBuilder.build(
+											GeoWaveFeatureCollection.getDistributedRenderFeatureType(),
+											new Object[] {
+												result,
+												renderOptions
+											},
+											"render")));
 				}
 			}
-			catch (IOException e) {
+			catch (final IOException e) {
 				LOGGER.warn(
 						"Unable to get distributed rendering result",
 						e);

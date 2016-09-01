@@ -29,7 +29,8 @@ import mil.nga.giat.geowave.datastore.accumulo.util.AccumuloUtils;
  */
 abstract public class AccumuloQuery
 {
-	private final static Logger LOGGER = Logger.getLogger(AccumuloQuery.class);
+	private final static Logger LOGGER = Logger.getLogger(
+			AccumuloQuery.class);
 	protected final List<ByteArrayId> adapterIds;
 	protected final PrimaryIndex index;
 	protected final Pair<List<String>, DataAdapter<?>> fieldIdsAdapterPair;
@@ -77,48 +78,59 @@ abstract public class AccumuloQuery
 			final double[] maxResolutionSubsamplingPerDimension,
 			final Integer limit ) {
 		final List<ByteArrayRange> ranges = getRanges();
-		final String tableName = StringUtils.stringFromBinary(index.getId().getBytes());
+		final String tableName = StringUtils.stringFromBinary(
+				index.getId().getBytes());
 		ScannerBase scanner;
 		try {
 			if (!isAggregation() && (ranges != null) && (ranges.size() == 1)) {
 				scanner = accumuloOperations.createScanner(
 						tableName,
 						getAdditionalAuthorizations());
-				final ByteArrayRange r = ranges.get(0);
+				final ByteArrayRange r = ranges.get(
+						0);
 				if (r.isSingleValue()) {
-					((Scanner) scanner).setRange(Range.exact(new Text(
-							r.getStart().getBytes())));
+					((Scanner) scanner).setRange(
+							Range.exact(
+									new Text(
+											r.getStart().getBytes())));
 				}
 				else {
-					((Scanner) scanner).setRange(AccumuloUtils.byteArrayRangeToAccumuloRange(r));
+					((Scanner) scanner).setRange(
+							AccumuloUtils.byteArrayRangeToAccumuloRange(
+									r));
 				}
 				if ((limit != null) && (limit > 0) && (limit < ((Scanner) scanner).getBatchSize())) {
 					// do allow the limit to be set to some enormous size.
-					((Scanner) scanner).setBatchSize(Math.min(
-							1024,
-							limit));
+					((Scanner) scanner).setBatchSize(
+							Math.min(
+									1024,
+									limit));
 				}
 			}
 			else {
 				scanner = accumuloOperations.createBatchScanner(
 						tableName,
 						getAdditionalAuthorizations());
-				((BatchScanner) scanner).setRanges(AccumuloUtils.byteArrayRangesToAccumuloRanges(ranges));
+				((BatchScanner) scanner).setRanges(
+						AccumuloUtils.byteArrayRangesToAccumuloRanges(
+								ranges));
 			}
 			if (maxResolutionSubsamplingPerDimension != null) {
 				if (maxResolutionSubsamplingPerDimension.length != index
 						.getIndexStrategy()
 						.getOrderedDimensionDefinitions().length) {
-					LOGGER.warn("Unable to subsample for table '" + tableName + "'. Subsample dimensions = "
-							+ maxResolutionSubsamplingPerDimension.length + " when indexed dimensions = "
-							+ index.getIndexStrategy().getOrderedDimensionDefinitions().length);
+					LOGGER.warn(
+							"Unable to subsample for table '" + tableName + "'. Subsample dimensions = "
+									+ maxResolutionSubsamplingPerDimension.length + " when indexed dimensions = "
+									+ index.getIndexStrategy().getOrderedDimensionDefinitions().length);
 				}
 				else {
 
-					final int cardinalityToSubsample = (int) Math.round(IndexUtils.getDimensionalBitsUsed(
-							index.getIndexStrategy(),
-							maxResolutionSubsamplingPerDimension)
-							+ (8 * index.getIndexStrategy().getByteOffsetFromDimensionalIndex()));
+					final int cardinalityToSubsample = (int) Math.round(
+							IndexUtils.getDimensionalBitsUsed(
+									index.getIndexStrategy(),
+									maxResolutionSubsamplingPerDimension)
+									+ (8 * index.getIndexStrategy().getByteOffsetFromDimensionalIndex()));
 
 					final IteratorSetting iteratorSettings = new IteratorSetting(
 							FixedCardinalitySkippingIterator.CARDINALITY_SKIPPING_ITERATOR_PRIORITY,
@@ -126,8 +138,10 @@ abstract public class AccumuloQuery
 							FixedCardinalitySkippingIterator.class);
 					iteratorSettings.addOption(
 							FixedCardinalitySkippingIterator.CARDINALITY_SKIP_INTERVAL,
-							Integer.toString(cardinalityToSubsample));
-					scanner.addScanIterator(iteratorSettings);
+							Integer.toString(
+									cardinalityToSubsample));
+					scanner.addScanIterator(
+							iteratorSettings);
 				}
 			}
 		}
@@ -139,8 +153,9 @@ abstract public class AccumuloQuery
 		}
 		if ((adapterIds != null) && !adapterIds.isEmpty()) {
 			for (final ByteArrayId adapterId : adapterIds) {
-				scanner.fetchColumnFamily(new Text(
-						adapterId.getBytes()));
+				scanner.fetchColumnFamily(
+						new Text(
+								adapterId.getBytes()));
 			}
 		}
 		return scanner;
@@ -148,7 +163,7 @@ abstract public class AccumuloQuery
 
 	protected void addFieldSubsettingToIterator(
 			final ScannerBase scanner ) {
-		if (fieldIdsAdapterPair != null) {
+		if ((fieldIdsAdapterPair != null) && !isAggregation()) {
 			final List<String> fieldIds = fieldIdsAdapterPair.getLeft();
 			final DataAdapter<?> associatedAdapter = fieldIdsAdapterPair.getRight();
 			if ((fieldIds != null) && (!fieldIds.isEmpty()) && (associatedAdapter != null)) {
@@ -162,8 +177,10 @@ abstract public class AccumuloQuery
 
 				iteratorSetting.addOption(
 						AttributeSubsettingIterator.WHOLE_ROW_ENCODED_KEY,
-						Boolean.toString(useWholeRowIterator()));
-				scanner.addScanIterator(iteratorSetting);
+						Boolean.toString(
+								useWholeRowIterator()));
+				scanner.addScanIterator(
+						iteratorSetting);
 			}
 		}
 	}

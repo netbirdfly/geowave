@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.ByteArrayRange;
@@ -24,10 +25,13 @@ import mil.nga.giat.geowave.core.store.query.ConstraintsQuery;
 import mil.nga.giat.geowave.core.store.query.Query;
 import mil.nga.giat.geowave.core.store.query.aggregate.Aggregation;
 import mil.nga.giat.geowave.datastore.hbase.operations.BasicHBaseOperations;
+import mil.nga.giat.geowave.datastore.hbase.operations.config.HBaseOptions;
 import mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos;
 import mil.nga.giat.geowave.datastore.hbase.util.HBaseUtils;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hbase.Coprocessor;
 import org.apache.hadoop.hbase.HConstants;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.client.Table;
@@ -42,6 +46,7 @@ import org.apache.hadoop.hbase.security.visibility.Authorizations;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.Iterators;
 import com.google.protobuf.ByteString;
 
@@ -49,6 +54,7 @@ public class HBaseConstraintsQuery extends
 		HBaseFilteredIndexQuery
 {
 	protected final ConstraintsQuery base;
+	protected HBaseOptions options = null;
 
 	private final static Logger LOGGER = Logger.getLogger(HBaseConstraintsQuery.class);
 
@@ -110,6 +116,11 @@ public class HBaseConstraintsQuery extends
 			LOGGER.setLevel(Level.DEBUG);
 		}
 	}
+	
+	public void setOptions(
+			HBaseOptions options ) {
+		this.options = options;
+	}
 
 	protected boolean isAggregation() {
 		return base.isAggregation();
@@ -149,7 +160,12 @@ public class HBaseConstraintsQuery extends
 		}
 
 		//TODO: determine whether we can use the coprocessor
-		return aggQuery(
+		if (options == null || !options.isEnableCoprocessors()) {
+			// TODO: client-side aggregation here...
+		}
+		
+		// If we made it this far, we're using a coprocessor for aggregation
+		return aggregateWithCoprocessor(
 				operations,
 				adapterStore,
 				limit);
@@ -220,24 +236,30 @@ public class HBaseConstraintsQuery extends
 		return new CloseableIterator.Empty();
 	}
 
-	private CloseableIterator<Object> aggQuery(
+	private CloseableIterator<Object> aggregateWithCoprocessor(
 			final BasicHBaseOperations operations,
 			final AdapterStore adapterStore,
 			final Integer limit ) {
-		// Use the row count coprocessor
 		final String tableName = StringUtils.stringFromBinary(index.getId().getBytes());
 		long total = 0;
 
 		try {
 			Table table = operations.getTable(tableName);
 
+			// Use the row count coprocessor
 			if (!table.getTableDescriptor().hasCoprocessor(
 					RowCountEndpoint.class.getName())) {
 				LOGGER.debug(tableName + " does not have coprocessor. Adding " + RowCountEndpoint.class.getName());
 				
-				// TODO: retrieve coprocessor jar path from config
+				// Retrieve coprocessor jar path from config
+				Path hdfsJarPath = new Path(options.getCoprocessorJar());
+				LOGGER.debug("Coprocessor jar path: " + hdfsJarPath.toString());
+				
 				table.getTableDescriptor().addCoprocessor(
-						RowCountEndpoint.class.getName());
+						RowCountEndpoint.class.getName(),
+						hdfsJarPath,
+						Coprocessor.PRIORITY_USER,
+						null);
 			}
 			else {
 				LOGGER.debug(tableName + " has coprocessor " + RowCountEndpoint.class.getName());
@@ -250,6 +272,9 @@ public class HBaseConstraintsQuery extends
 			requestBuilder.setFilter(ByteString.copyFrom(multiFilter.toByteArray()));
 
 			final RowCountProtos.CountRequest request = requestBuilder.build();
+			
+			final Stopwatch stopwatch = new Stopwatch();
+			stopwatch.start();
 
 			Map<byte[], Long> results = table.coprocessorService(
 					RowCountProtos.RowCountService.class,
@@ -265,6 +290,8 @@ public class HBaseConstraintsQuery extends
 									request,
 									rpcCallback);
 							RowCountProtos.CountResponse response = rpcCallback.get();
+							stopwatch.stop();
+							LOGGER.debug("Coprocessor call took " + stopwatch.elapsed(TimeUnit.MILLISECONDS) + " ms");
 							return response.hasCount() ? response.getCount() : 0;
 						}
 					});

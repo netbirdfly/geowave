@@ -7,6 +7,8 @@ import com.beust.jcommander.Parameter;
 public class HBaseOptions implements
 		DataStoreOptions
 {
+	public static final String COPROCESSOR_JAR_KEY = "coprocessorJar";
+
 	@Parameter(names = "--persistAdapter", hidden = true, arity = 1)
 	protected boolean persistAdapter = true;
 
@@ -28,8 +30,14 @@ public class HBaseOptions implements
 	@Parameter(names = "--enableBlockCache", hidden = true, arity = 1)
 	protected boolean enableBlockCache = true;
 
-	@Parameter(names = "--enableCoprocessors", hidden = true, arity = 1)
-	protected boolean enableCoprocessors = true;
+	@Parameter(names = "--enableCoprocessors")
+	protected boolean enableCoprocessors = false;
+	
+	@Parameter(names = {
+			"--" + COPROCESSOR_JAR_KEY
+		}, description = "Path (HDFS URL) to the jar containing coprocessor classes")
+		private String coprocessorJar;
+
 
 	public boolean isPersistDataStatistics() {
 		return persistDataStatistics;
@@ -101,5 +109,14 @@ public class HBaseOptions implements
 	public void setEnableCoprocessors(
 			boolean enableCoprocessors ) {
 		this.enableCoprocessors = enableCoprocessors;
+	}
+
+	public String getCoprocessorJar() {
+		return coprocessorJar;
+	}
+
+	public void setCoprocessorJar(
+			String coprocessorJar ) {
+		this.coprocessorJar = coprocessorJar;
 	}
 }

@@ -273,9 +273,6 @@ public class HBaseConstraintsQuery extends
 
 			final RowCountProtos.CountRequest request = requestBuilder.build();
 			
-			final Stopwatch stopwatch = new Stopwatch();
-			stopwatch.start();
-
 			Map<byte[], Long> results = table.coprocessorService(
 					RowCountProtos.RowCountService.class,
 					null,
@@ -290,8 +287,6 @@ public class HBaseConstraintsQuery extends
 									request,
 									rpcCallback);
 							RowCountProtos.CountResponse response = rpcCallback.get();
-							stopwatch.stop();
-							LOGGER.debug("Coprocessor call took " + stopwatch.elapsed(TimeUnit.MILLISECONDS) + " ms");
 							return response.hasCount() ? response.getCount() : 0;
 						}
 					});

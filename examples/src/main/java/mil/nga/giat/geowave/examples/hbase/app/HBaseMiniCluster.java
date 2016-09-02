@@ -111,8 +111,8 @@ public class HBaseMiniCluster
 					"true");
 			
 			// Set list of coprocessors here (one for test, so far)
-			conf.set(CoprocessorHost.REGION_COPROCESSOR_CONF_KEY,
-					RowCountEndpoint.class.getName());
+//			conf.set(CoprocessorHost.REGION_COPROCESSOR_CONF_KEY,
+//					RowCountEndpoint.class.getName());
 			
 			hbaseLocalCluster = new HbaseLocalCluster.Builder().setHbaseMasterPort(
 					Integer.parseInt(propertyParser.getProperty(ConfigVars.HBASE_MASTER_PORT_KEY))).setHbaseMasterInfoPort(

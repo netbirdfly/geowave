@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.ByteArrayRange;
@@ -30,8 +29,6 @@ import mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos;
 import mil.nga.giat.geowave.datastore.hbase.util.HBaseUtils;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hbase.Coprocessor;
 import org.apache.hadoop.hbase.HConstants;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.client.Table;
@@ -46,7 +43,6 @@ import org.apache.hadoop.hbase.security.visibility.Authorizations;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import com.google.common.base.Stopwatch;
 import com.google.common.collect.Iterators;
 import com.google.protobuf.ByteString;
 
@@ -116,7 +112,7 @@ public class HBaseConstraintsQuery extends
 			LOGGER.setLevel(Level.DEBUG);
 		}
 	}
-	
+
 	public void setOptions(
 			HBaseOptions options ) {
 		this.options = options;
@@ -159,11 +155,11 @@ public class HBaseConstraintsQuery extends
 					limit);
 		}
 
-		//TODO: determine whether we can use the coprocessor
+		// TODO: determine whether we can use the coprocessor
 		if (options == null || !options.isEnableCoprocessors()) {
 			// TODO: client-side aggregation here...
 		}
-		
+
 		// If we made it this far, we're using a coprocessor for aggregation
 		return aggregateWithCoprocessor(
 				operations,
@@ -244,26 +240,11 @@ public class HBaseConstraintsQuery extends
 		long total = 0;
 
 		try {
-			Table table = operations.getTable(tableName);
-
 			// Use the row count coprocessor
-			if (!table.getTableDescriptor().hasCoprocessor(
-					RowCountEndpoint.class.getName())) {
-				LOGGER.debug(tableName + " does not have coprocessor. Adding " + RowCountEndpoint.class.getName());
-				
-				// Retrieve coprocessor jar path from config
-				Path hdfsJarPath = new Path(options.getCoprocessorJar());
-				LOGGER.debug("Coprocessor jar path: " + hdfsJarPath.toString());
-				
-				table.getTableDescriptor().addCoprocessor(
-						RowCountEndpoint.class.getName(),
-						hdfsJarPath,
-						Coprocessor.PRIORITY_USER,
-						null);
-			}
-			else {
-				LOGGER.debug(tableName + " has coprocessor " + RowCountEndpoint.class.getName());
-			}
+			operations.verifyCoprocessor(
+					tableName,
+					RowCountEndpoint.class.getName(),
+					options.getCoprocessorJar());
 
 			MultiRowRangeFilter multiFilter = getMultiFilter();
 			LOGGER.debug("Client: Multi-filter has " + multiFilter.getRowRanges().size() + " ranges.");
@@ -272,7 +253,9 @@ public class HBaseConstraintsQuery extends
 			requestBuilder.setFilter(ByteString.copyFrom(multiFilter.toByteArray()));
 
 			final RowCountProtos.CountRequest request = requestBuilder.build();
-			
+
+			Table table = operations.getTable(tableName);
+
 			Map<byte[], Long> results = table.coprocessorService(
 					RowCountProtos.RowCountService.class,
 					null,

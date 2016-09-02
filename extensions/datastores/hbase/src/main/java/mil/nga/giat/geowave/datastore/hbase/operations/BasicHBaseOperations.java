@@ -7,19 +7,24 @@ import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.DataStoreOperations;
 import mil.nga.giat.geowave.datastore.hbase.io.HBaseWriter;
 import mil.nga.giat.geowave.datastore.hbase.operations.config.HBaseRequiredOptions;
+import mil.nga.giat.geowave.datastore.hbase.query.RowCountEndpoint;
 import mil.nga.giat.geowave.datastore.hbase.util.ConnectionPool;
 import mil.nga.giat.geowave.datastore.hbase.util.HBaseUtils;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hbase.Coprocessor;
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.client.Admin;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.RegionLocator;
 import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.security.visibility.Authorizations;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 public class BasicHBaseOperations implements
@@ -31,6 +36,11 @@ public class BasicHBaseOperations implements
 
 	private final Connection conn;
 	private final String tableNamespace;
+	
+	// Test Only!
+	static {
+		LOGGER.setLevel(Level.DEBUG);
+	}
 
 	public BasicHBaseOperations(
 			final String zookeeperInstances,
@@ -256,5 +266,41 @@ public class BasicHBaseOperations implements
 			final String tableName )
 			throws IOException {
 		return conn.getTable(getTableName(getQualifiedTableName(tableName)));
+	}
+
+	public void verifyCoprocessor(
+			String tableNameStr,
+			String coprocessorName,
+			String coprocessorJar ) {
+		try {
+			Admin admin = conn.getAdmin();
+			TableName tableName = getTableName(getQualifiedTableName(tableNameStr));
+			HTableDescriptor td = admin.getTableDescriptor(tableName);
+
+			if (!td.hasCoprocessor(coprocessorName)) {
+				LOGGER.debug(tableNameStr + " does not have coprocessor. Adding " + coprocessorName);
+
+				// Retrieve coprocessor jar path from config
+				Path hdfsJarPath = new Path(
+						coprocessorJar);
+				LOGGER.debug("Coprocessor jar path: " + hdfsJarPath.toString());
+				
+				admin.disableTable(tableName);
+
+				td.addCoprocessor(
+						RowCountEndpoint.class.getName(),
+						hdfsJarPath,
+						Coprocessor.PRIORITY_USER,
+						null);
+				
+				admin.modifyTable(tableName, td);
+				admin.enableTable(tableName);
+				
+				LOGGER.debug("Successfully added coprocessor");
+			}
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }

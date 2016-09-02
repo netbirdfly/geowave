@@ -148,6 +148,7 @@ public class HBaseConstraintsQuery extends
 					limit);
 		}
 
+		//TODO: determine whether we can use the coprocessor
 		return aggQuery(
 				operations,
 				adapterStore,
@@ -230,6 +231,18 @@ public class HBaseConstraintsQuery extends
 		try {
 			Table table = operations.getTable(tableName);
 
+			if (!table.getTableDescriptor().hasCoprocessor(
+					RowCountEndpoint.class.getName())) {
+				LOGGER.debug(tableName + " does not have coprocessor. Adding " + RowCountEndpoint.class.getName());
+				
+				// TODO: retrieve coprocessor jar path from config
+				table.getTableDescriptor().addCoprocessor(
+						RowCountEndpoint.class.getName());
+			}
+			else {
+				LOGGER.debug(tableName + " has coprocessor " + RowCountEndpoint.class.getName());
+			}
+
 			MultiRowRangeFilter multiFilter = getMultiFilter();
 			LOGGER.debug("Client: Multi-filter has " + multiFilter.getRowRanges().size() + " ranges.");
 
@@ -238,24 +251,10 @@ public class HBaseConstraintsQuery extends
 
 			final RowCountProtos.CountRequest request = requestBuilder.build();
 
-			// Determine total row range
-			List<ByteArrayRange> rowRanges = getRanges();
-
-			// Set start and end row key to "null" to count all rows.
-			byte[] startRow = null;
-			byte[] stopRow = null;
-
-			if ((rowRanges != null) && (rowRanges.size() == 2)) {
-				startRow = rowRanges.get(
-						0).getStart().getBytes();
-				stopRow = rowRanges.get(
-						0).getEnd().getBytes();
-			}
-
 			Map<byte[], Long> results = table.coprocessorService(
 					RowCountProtos.RowCountService.class,
-					startRow,
-					stopRow,
+					null,
+					null,
 					new Batch.Call<RowCountProtos.RowCountService, Long>() {
 						public Long call(
 								RowCountProtos.RowCountService counter )
@@ -276,11 +275,9 @@ public class HBaseConstraintsQuery extends
 
 		}
 		catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		catch (Throwable e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -293,7 +290,7 @@ public class HBaseConstraintsQuery extends
 		final List<RowRange> rowRanges = new ArrayList<RowRange>();
 
 		List<ByteArrayRange> ranges = base.getAllRanges();
-		
+
 		if ((ranges == null) || ranges.isEmpty()) {
 			rowRanges.add(new RowRange(
 					HConstants.EMPTY_BYTE_ARRAY,

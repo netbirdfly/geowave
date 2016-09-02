@@ -98,17 +98,18 @@ public class RowCountEndpoint extends
 	 * @throws IOException
 	 *             When something fails with the scan.
 	 */
-	private long getCount(Filter filter )
+	private long getCount(
+			Filter filter )
 			throws IOException {
 		long count = 0;
-		
+
 		Scan scan = new Scan();
 		scan.setMaxVersions(1);
-		
+
 		if (filter != null) {
 			scan.setFilter(filter);
 		}
-		
+
 		try (InternalScanner scanner = env.getRegion().getScanner(
 				scan);) {
 			List<Cell> results = new ArrayList<Cell>();

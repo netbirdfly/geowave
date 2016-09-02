@@ -1,8 +1,8 @@
 package mil.nga.giat.geowave.datastore.hbase.operations.config;
 
-import com.beust.jcommander.Parameter;
-
 import mil.nga.giat.geowave.core.store.DataStoreOptions;
+
+import com.beust.jcommander.Parameter;
 
 public class HBaseOptions implements
 		DataStoreOptions
@@ -27,6 +27,9 @@ public class HBaseOptions implements
 
 	@Parameter(names = "--enableBlockCache", hidden = true, arity = 1)
 	protected boolean enableBlockCache = true;
+
+	@Parameter(names = "--enableCoprocessors", hidden = true, arity = 1)
+	protected boolean enableCoprocessors = true;
 
 	public boolean isPersistDataStatistics() {
 		return persistDataStatistics;
@@ -89,5 +92,14 @@ public class HBaseOptions implements
 	public void setEnableBlockCache(
 			boolean enableBlockCache ) {
 		this.enableBlockCache = enableBlockCache;
+	}
+
+	public boolean isEnableCoprocessors() {
+		return enableCoprocessors;
+	}
+
+	public void setEnableCoprocessors(
+			boolean enableCoprocessors ) {
+		this.enableCoprocessors = enableCoprocessors;
 	}
 }

@@ -285,21 +285,26 @@ public class BasicHBaseOperations implements
 						coprocessorJar);
 				LOGGER.debug("Coprocessor jar path: " + hdfsJarPath.toString());
 				
-				admin.disableTable(tableName);
-				
-				// This should be done in config
-				td.setConfiguration("hbase.rpc.timeout", "600000");
-
-				td.addCoprocessor(
-						RowCountEndpoint.class.getName(),
-						hdfsJarPath,
-						Coprocessor.PRIORITY_USER,
-						null);
-				
-				admin.modifyTable(tableName, td);
-				admin.enableTable(tableName);
-				
-				LOGGER.debug("Successfully added coprocessor");
+				// Handle timeouts on the coprocessor
+				try {
+					admin.disableTable(tableName);
+					
+					td.addCoprocessor(
+							RowCountEndpoint.class.getName(),
+							hdfsJarPath,
+							Coprocessor.PRIORITY_USER,
+							null);
+					
+					admin.modifyTable(tableName, td);
+					
+					LOGGER.debug("Successfully added coprocessor");
+				}
+				catch (Exception e) {
+					e.printStackTrace();
+				}
+				finally {
+					admin.enableTable(tableName);
+				}		
 			}
 		}
 		catch (IOException e) {

@@ -36,7 +36,7 @@ public class BasicHBaseOperations implements
 
 	private final Connection conn;
 	private final String tableNamespace;
-	
+
 	// Test Only!
 	static {
 		LOGGER.setLevel(Level.DEBUG);
@@ -284,27 +284,26 @@ public class BasicHBaseOperations implements
 				Path hdfsJarPath = new Path(
 						coprocessorJar);
 				LOGGER.debug("Coprocessor jar path: " + hdfsJarPath.toString());
+
+				LOGGER.debug("- disable " + tableName + "...");				
+				admin.disableTable(tableName);
+
+				LOGGER.debug("- add coprocessor...");
+				td.addCoprocessor(
+						RowCountEndpoint.class.getName(),
+						hdfsJarPath,
+						Coprocessor.PRIORITY_USER,
+						null);
+
+				LOGGER.debug("- modify table...");
+				admin.modifyTable(
+						tableName,
+						td);
 				
-				// Handle timeouts on the coprocessor
-				try {
-					admin.disableTable(tableName);
-					
-					td.addCoprocessor(
-							RowCountEndpoint.class.getName(),
-							hdfsJarPath,
-							Coprocessor.PRIORITY_USER,
-							null);
-					
-					admin.modifyTable(tableName, td);
-					
-					LOGGER.debug("Successfully added coprocessor");
-				}
-				catch (Exception e) {
-					e.printStackTrace();
-				}
-				finally {
-					admin.enableTable(tableName);
-				}		
+				LOGGER.debug("- enable " + tableName + "...");			
+				admin.enableTable(tableName);
+
+				LOGGER.debug("Successfully added coprocessor");
 			}
 		}
 		catch (IOException e) {

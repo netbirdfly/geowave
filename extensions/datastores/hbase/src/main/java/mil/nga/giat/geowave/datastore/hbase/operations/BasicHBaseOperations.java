@@ -285,7 +285,7 @@ public class BasicHBaseOperations implements
 						coprocessorJar);
 				LOGGER.debug("Coprocessor jar path: " + hdfsJarPath.toString());
 
-				LOGGER.debug("- disable " + tableName + "...");				
+				LOGGER.debug("- disable table...");				
 				admin.disableTable(tableName);
 
 				LOGGER.debug("- add coprocessor...");
@@ -300,7 +300,7 @@ public class BasicHBaseOperations implements
 						tableName,
 						td);
 				
-				LOGGER.debug("- enable " + tableName + "...");			
+				LOGGER.debug("- enable table...");			
 				admin.enableTable(tableName);
 
 				LOGGER.debug("Successfully added coprocessor");

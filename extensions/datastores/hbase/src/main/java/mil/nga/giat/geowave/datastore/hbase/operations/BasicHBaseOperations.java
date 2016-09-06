@@ -286,6 +286,8 @@ public class BasicHBaseOperations implements
 				LOGGER.debug("Coprocessor jar path: " + hdfsJarPath.toString());
 				
 				admin.disableTable(tableName);
+				
+				td.setConfiguration("hbase.table.sanity.checks", "false");
 
 				td.addCoprocessor(
 						RowCountEndpoint.class.getName(),

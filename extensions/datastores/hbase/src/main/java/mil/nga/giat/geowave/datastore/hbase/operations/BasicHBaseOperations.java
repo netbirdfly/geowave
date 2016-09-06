@@ -33,9 +33,12 @@ public class BasicHBaseOperations implements
 	private final static Logger LOGGER = Logger.getLogger(BasicHBaseOperations.class);
 	private static final String DEFAULT_TABLE_NAMESPACE = "";
 	public static final Object ADMIN_MUTEX = new Object();
+	private static final long SLEEP_INTERVAL_FOR_CF_VERIFY = 100L;
 
 	private final Connection conn;
-	private final String tableNamespace;
+	private final String tableNamespace;	
+	private final boolean schemaUpdateEnabled;
+
 
 	// Test Only!
 	static {
@@ -49,6 +52,10 @@ public class BasicHBaseOperations implements
 		conn = ConnectionPool.getInstance().getConnection(
 				zookeeperInstances);
 		tableNamespace = geowaveNamespace;
+		
+		schemaUpdateEnabled = conn.getConfiguration().getBoolean(
+				"hbase.online.schema.update.enable",
+				false);
 	}
 
 	public BasicHBaseOperations(
@@ -71,6 +78,10 @@ public class BasicHBaseOperations implements
 			final Connection connector ) {
 		this.tableNamespace = tableNamespace;
 		conn = connector;
+		
+		schemaUpdateEnabled = conn.getConfiguration().getBoolean(
+				"hbase.online.schema.update.enable",
+				false);
 	}
 
 	public static BasicHBaseOperations createOperations(
@@ -285,8 +296,10 @@ public class BasicHBaseOperations implements
 						coprocessorJar);
 				LOGGER.debug("Coprocessor jar path: " + hdfsJarPath.toString());
 
-				LOGGER.debug("- disable table...");				
-				admin.disableTable(tableName);
+				if (!schemaUpdateEnabled && !admin.isTableDisabled(tableName)) {
+					LOGGER.debug("- disable table...");				
+					admin.disableTable(tableName);
+				}
 
 				LOGGER.debug("- add coprocessor...");
 				td.addCoprocessor(
@@ -300,9 +313,26 @@ public class BasicHBaseOperations implements
 						tableName,
 						td);
 				
-				LOGGER.debug("- enable table...");			
-				admin.enableTable(tableName);
-
+				if (schemaUpdateEnabled) {
+					do {
+						try {
+							Thread.sleep(SLEEP_INTERVAL_FOR_CF_VERIFY);
+						}
+						catch (final InterruptedException e) {
+							LOGGER.warn(
+									"Sleeping while coprocessor added interrupted",
+									e);
+						}
+					}
+					while (admin.getAlterStatus(
+							tableName).getFirst() > 0);
+				}
+				
+				if (!schemaUpdateEnabled) {
+					LOGGER.debug("- enable table...");			
+					admin.enableTable(tableName);
+				}
+				
 				LOGGER.debug("Successfully added coprocessor");
 			}
 		}

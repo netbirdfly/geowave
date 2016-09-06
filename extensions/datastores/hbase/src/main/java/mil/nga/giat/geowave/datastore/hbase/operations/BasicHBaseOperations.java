@@ -287,7 +287,8 @@ public class BasicHBaseOperations implements
 				
 				admin.disableTable(tableName);
 				
-				td.setConfiguration("hbase.table.sanity.checks", "false");
+				// This should be done in config
+				td.setConfiguration("hbase.rpc.timeout", "600000");
 
 				td.addCoprocessor(
 						RowCountEndpoint.class.getName(),

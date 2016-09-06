@@ -33,7 +33,7 @@ public class BasicHBaseOperations implements
 	private final static Logger LOGGER = Logger.getLogger(BasicHBaseOperations.class);
 	private static final String DEFAULT_TABLE_NAMESPACE = "";
 	public static final Object ADMIN_MUTEX = new Object();
-	private static final long SLEEP_INTERVAL_FOR_CF_VERIFY = 100L;
+	private static final long SLEEP_INTERVAL = 10000L;
 
 	private final Connection conn;
 	private final String tableNamespace;	
@@ -314,18 +314,22 @@ public class BasicHBaseOperations implements
 						td);
 				
 				if (schemaUpdateEnabled) {
+					int regionsLeft;
+					
 					do {
+						regionsLeft = admin.getAlterStatus(tableName).getFirst();
+						LOGGER.debug(regionsLeft + " regions remaining in table modify");
+						
 						try {
-							Thread.sleep(SLEEP_INTERVAL_FOR_CF_VERIFY);
+							Thread.sleep(SLEEP_INTERVAL);
 						}
 						catch (final InterruptedException e) {
 							LOGGER.warn(
-									"Sleeping while coprocessor added interrupted",
+									"Sleeping while coprocessor add interrupted",
 									e);
 						}
 					}
-					while (admin.getAlterStatus(
-							tableName).getFirst() > 0);
+					while (regionsLeft > 0);
 				}
 				
 				if (!schemaUpdateEnabled) {

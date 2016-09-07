@@ -8,7 +8,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.geoserver.platform.GeoServerExtensionsHelper;
+import org.geoserver.wms.DefaultWebMapService;
 import org.geoserver.wms.GetMapRequest;
 import org.geoserver.wms.ScaleComputationMethod;
 import org.geoserver.wms.WMSMapContent;
@@ -114,18 +114,19 @@ public class DistributedRenderAggregation implements
 		// object within DistributedRenderer so it is no longer using these
 		// static settings, but these static properties must be set to avoid
 		// NPEs
-		GeoServerExtensionsHelper.property(
+		System.setProperty(
 				"OPTIMIZE_LINE_WIDTH",
 				Boolean.toString(
 						options.isOptimizeLineWidth()));
-		GeoServerExtensionsHelper.property(
+		System.setProperty(
 				"MAX_FILTER_RULES",
 				Integer.toString(
 						options.getMaxFilters()));
-		GeoServerExtensionsHelper.property(
+		System.setProperty(
 				"USE_GLOBAL_RENDERING_POOL",
 				Boolean.toString(
 						DistributedRenderOptions.isUseGlobalRenderPool()));
+		new DefaultWebMapService(null).setApplicationContext(null);
 		request.setFormatOptions(
 				formatOptions);
 		request.setWidth(
@@ -157,7 +158,7 @@ public class DistributedRenderAggregation implements
 		asyncRenderer = CompletableFuture.supplyAsync(
 				() -> {
 					currentRenderer.produceMap(
-							mapContent);
+							mapContent).dispose();
 					return currentRenderer.getDistributedRenderResult();
 				});
 	}

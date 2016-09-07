@@ -20,6 +20,7 @@ import com.google.common.collect.Lists;
 import mil.nga.giat.geowave.adapter.vector.plugin.DistributedRenderProcess;
 import mil.nga.giat.geowave.adapter.vector.render.DistributedRenderOptions;
 import mil.nga.giat.geowave.adapter.vector.render.DistributedRenderResult;
+import mil.nga.giat.geowave.adapter.vector.render.InternalDistributedRenderProcess;
 import mil.nga.giat.geowave.adapter.vector.render.DistributedRenderResult.CompositeGroupResult;
 import mil.nga.giat.geowave.adapter.vector.render.PersistableComposite;
 import mil.nga.giat.geowave.adapter.vector.render.PersistableRenderedImage;

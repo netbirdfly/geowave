@@ -20,6 +20,7 @@ import org.apache.accumulo.core.client.AccumuloSecurityException;
 import org.apache.accumulo.core.client.BatchDeleter;
 import org.apache.accumulo.core.client.BatchScanner;
 import org.apache.accumulo.core.client.BatchWriterConfig;
+import org.apache.accumulo.core.client.ClientSideIteratorScanner;
 import org.apache.accumulo.core.client.Connector;
 import org.apache.accumulo.core.client.Instance;
 import org.apache.accumulo.core.client.IteratorSetting;
@@ -818,7 +819,8 @@ public class BasicAccumuloOperations implements
 										// the entry sets and check that they
 										// are equivalent
 										final Set<Entry<String, String>> existingEntries = existingOptions.entrySet();
-										final Set<Entry<String, String>> configuredEntries = configuredOptions.entrySet();
+										final Set<Entry<String, String>> configuredEntries = configuredOptions
+												.entrySet();
 										if (existingEntries.size() != configuredEntries.size()) {
 											mustDelete = true;
 										}

@@ -6,7 +6,8 @@ import org.geoserver.wms.WMSMapContent;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.map.FeatureLayer;
 import org.geotools.map.Layer;
-import org.geotools.map.StyleLayer;
+import org.geotools.process.Processors;
+import org.geotools.process.function.DistributedRenderProcessUtils;
 import org.geotools.process.function.ProcessFunction;
 import org.geotools.styling.FeatureTypeStyle;
 import org.geotools.styling.RasterSymbolizer;
@@ -17,6 +18,7 @@ import org.geotools.styling.visitor.DuplicatingStyleVisitor;
 import org.opengis.filter.expression.Expression;
 
 import mil.nga.giat.geowave.adapter.vector.plugin.DistributedRenderProcess;
+import mil.nga.giat.geowave.adapter.vector.plugin.InternalProcessFactory;
 
 /**
  * The purpose of this callback is completely to get the layer Style accessible
@@ -69,12 +71,15 @@ public class DistributedRenderCallback extends
 				// so the GridCoverage result of the distributed rendering
 				// process is directly rendered to the map in place of the
 				// original style
+
 				final Style directRasterStyle = (Style) cloner.getCopy();
 				directRasterStyle.featureTypeStyles().clear();
+				Processors.addProcessFactory(
+						new InternalProcessFactory());
 				directRasterStyle.featureTypeStyles().add(
 						getDirectRasterStyle(
 								layer.getFeatureSource().getSchema().getGeometryDescriptor().getLocalName(),
-								style.getTransformation()));
+								DistributedRenderProcessUtils.getRenderingProcess()));
 				((FeatureLayer) layer).setStyle(
 						directRasterStyle);
 			}

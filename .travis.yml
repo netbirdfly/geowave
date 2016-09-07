@@ -14,8 +14,8 @@ env:
 cache:
   directories:
   - $HOME/.m2
-install: "mvn -q clean install -Dfindbugs.skip -Daccumulo.version=${ACCUMULO_VERSION} -Daccumulo.api=${ACCUMULO_API} -Dhbase.version=${HBASE_VERSION} -Dhadoop.version=${HADOOP_VERSION} -Dgeotools.version=${GEOTOOLS_VERSION} -Dgeoserver.version=${GEOSERVER_VERSION} -DskipITs=true -DskipTests=true -Dformatter.skip=true -P ${PLATFORM_VERSION}; .utility/build-docs-site.sh"
-script: "mvn -q verify -Daccumulo.version=${ACCUMULO_VERSION} -Daccumulo.api=${ACCUMULO_API} -Dhbase.version=${HBASE_VERSION} -Dhadoop.version=${HADOOP_VERSION} -Dgeotools.version=${GEOTOOLS_VERSION} -Dgeoserver.version=${GEOSERVER_VERSION} -P ${PLATFORM_VERSION}"
+install: "mvn clean install -Dfindbugs.skip -Daccumulo.version=${ACCUMULO_VERSION} -Daccumulo.api=${ACCUMULO_API} -Dhbase.version=${HBASE_VERSION} -Dhadoop.version=${HADOOP_VERSION} -Dgeotools.version=${GEOTOOLS_VERSION} -Dgeoserver.version=${GEOSERVER_VERSION} -DskipITs=true -DskipTests=true -Dformatter.skip=true -P ${PLATFORM_VERSION}; .utility/build-docs-site.sh"
+script: "mvn verify -Daccumulo.version=${ACCUMULO_VERSION} -Daccumulo.api=${ACCUMULO_API} -Dhbase.version=${HBASE_VERSION} -Dhadoop.version=${HADOOP_VERSION} -Dgeotools.version=${GEOTOOLS_VERSION} -Dgeoserver.version=${GEOSERVER_VERSION} -P ${PLATFORM_VERSION}"
 before_install:
   - echo "MAVEN_OPTS='-Xmx1024m -XX:CompressedClassSpaceSize=192m -XX:MetaspaceSize=256m -Dorg.slf4j.simpleLogger.defaultLogLevel=warn'" > $HOME/.mavenrc
   - chmod +x .utility/build-docs-site.sh

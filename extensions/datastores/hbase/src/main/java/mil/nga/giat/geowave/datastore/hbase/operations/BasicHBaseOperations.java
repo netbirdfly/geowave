@@ -296,10 +296,10 @@ public class BasicHBaseOperations implements
 						coprocessorJar);
 				LOGGER.debug("Coprocessor jar path: " + hdfsJarPath.toString());
 
-				if (!schemaUpdateEnabled && !admin.isTableDisabled(tableName)) {
+//				if (!schemaUpdateEnabled && !admin.isTableDisabled(tableName)) {
 					LOGGER.debug("- disable table...");				
 					admin.disableTable(tableName);
-				}
+//				}
 
 				LOGGER.debug("- add coprocessor...");
 				td.addCoprocessor(
@@ -313,7 +313,12 @@ public class BasicHBaseOperations implements
 						tableName,
 						td);
 				
-				if (schemaUpdateEnabled) {
+//				if (!schemaUpdateEnabled) {
+					LOGGER.debug("- enable table...");			
+					admin.enableTable(tableName);
+//				}
+				
+//				if (schemaUpdateEnabled) {
 					int regionsLeft;
 					
 					do {
@@ -330,12 +335,7 @@ public class BasicHBaseOperations implements
 						}
 					}
 					while (regionsLeft > 0);
-				}
-				
-				if (!schemaUpdateEnabled) {
-					LOGGER.debug("- enable table...");			
-					admin.enableTable(tableName);
-				}
+//				}
 				
 				LOGGER.debug("Successfully added coprocessor");
 			}

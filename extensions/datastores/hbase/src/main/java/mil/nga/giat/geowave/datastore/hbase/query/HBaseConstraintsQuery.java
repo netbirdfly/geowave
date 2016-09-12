@@ -34,6 +34,7 @@ import org.apache.hadoop.hbase.HConstants;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.client.coprocessor.Batch;
 import org.apache.hadoop.hbase.filter.Filter;
+import org.apache.hadoop.hbase.filter.FilterList;
 import org.apache.hadoop.hbase.filter.MultiRowRangeFilter;
 import org.apache.hadoop.hbase.filter.MultiRowRangeFilter.RowRange;
 import org.apache.hadoop.hbase.ipc.BlockingRpcCallback;
@@ -210,9 +211,11 @@ public class HBaseConstraintsQuery extends
 
 			MultiRowRangeFilter multiFilter = getMultiFilter();
 			LOGGER.debug("Client: Multi-filter has " + multiFilter.getRowRanges().size() + " ranges.");
+			
+			FilterList filterList = new FilterList(multiFilter);
 
 			final RowCountProtos.CountRequest.Builder requestBuilder = RowCountProtos.CountRequest.newBuilder();
-			requestBuilder.setFilter(ByteString.copyFrom(multiFilter.toByteArray()));
+			requestBuilder.setFilter(ByteString.copyFrom(filterList.toByteArray()));
 
 			final RowCountProtos.CountRequest request = requestBuilder.build();
 

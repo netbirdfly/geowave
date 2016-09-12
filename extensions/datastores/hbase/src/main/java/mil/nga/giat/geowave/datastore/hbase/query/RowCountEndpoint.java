@@ -16,7 +16,7 @@ import org.apache.hadoop.hbase.coprocessor.CoprocessorService;
 import org.apache.hadoop.hbase.coprocessor.RegionCoprocessorEnvironment;
 import org.apache.hadoop.hbase.exceptions.DeserializationException;
 import org.apache.hadoop.hbase.filter.Filter;
-import org.apache.hadoop.hbase.filter.MultiRowRangeFilter;
+import org.apache.hadoop.hbase.filter.FilterList;
 import org.apache.hadoop.hbase.protobuf.ResponseConverter;
 import org.apache.hadoop.hbase.regionserver.InternalScanner;
 
@@ -67,10 +67,9 @@ public class RowCountEndpoint extends
 		byte[] filterBytes = request.getFilter().toByteArray();
 
 		try {
-			final MultiRowRangeFilter multiFilter = MultiRowRangeFilter.parseFrom(filterBytes);
-			System.out.println("Coprocessor: Multi-filter has " + multiFilter.getRowRanges().size() + " ranges.");
+			final FilterList filterList = FilterList.parseFrom(filterBytes);
 
-			long count = getCount(multiFilter);
+			long count = getCount(filterList);
 
 			response = RowCountProtos.CountResponse.newBuilder().setCount(
 					count).build();

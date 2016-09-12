@@ -23,6 +23,7 @@ import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.core.store.query.ConstraintsQuery;
 import mil.nga.giat.geowave.core.store.query.Query;
 import mil.nga.giat.geowave.core.store.query.aggregate.Aggregation;
+import mil.nga.giat.geowave.core.store.query.aggregate.CountResult;
 import mil.nga.giat.geowave.datastore.hbase.operations.BasicHBaseOperations;
 import mil.nga.giat.geowave.datastore.hbase.operations.config.HBaseOptions;
 import mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos;
@@ -30,16 +31,12 @@ import mil.nga.giat.geowave.datastore.hbase.util.HBaseUtils;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hbase.HConstants;
-import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.client.Table;
-import org.apache.hadoop.hbase.client.coprocessor.AggregationClient;
 import org.apache.hadoop.hbase.client.coprocessor.Batch;
-import org.apache.hadoop.hbase.client.coprocessor.LongColumnInterpreter;
 import org.apache.hadoop.hbase.filter.Filter;
 import org.apache.hadoop.hbase.filter.MultiRowRangeFilter;
 import org.apache.hadoop.hbase.filter.MultiRowRangeFilter.RowRange;
 import org.apache.hadoop.hbase.ipc.BlockingRpcCallback;
-import org.apache.hadoop.hbase.security.visibility.Authorizations;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
@@ -155,9 +152,39 @@ public class HBaseConstraintsQuery extends
 					limit);
 		}
 
-		// TODO: determine whether we can use the coprocessor
+		// Aggregate without coprocessor
 		if (options == null || !options.isEnableCoprocessors()) {
-			// TODO: client-side aggregation here...
+			final CloseableIterator<Object> it = super.query(
+					operations,
+					adapterStore,
+					limit);
+
+			if ((it != null) && it.hasNext()) {
+				final Aggregation aggregationFunction = base.aggregation.getRight();
+				synchronized (aggregationFunction) {
+
+					aggregationFunction.clearResult();
+					while (it.hasNext()) {
+						final Object input = it.next();
+						if (input != null) {
+							aggregationFunction.aggregate(input);
+						}
+					}
+					try {
+						it.close();
+					}
+					catch (final IOException e) {
+						LOGGER.warn(
+								"Unable to close hbase scanner",
+								e);
+					}
+
+					return new Wrapper(
+							Iterators.singletonIterator(aggregationFunction.getResult()));
+				}
+			}
+
+			return new CloseableIterator.Empty();
 		}
 
 		// If we made it this far, we're using a coprocessor for aggregation
@@ -165,71 +192,6 @@ public class HBaseConstraintsQuery extends
 				operations,
 				adapterStore,
 				limit);
-	}
-
-	private CloseableIterator<Object> aggQueryTest(
-			final BasicHBaseOperations operations,
-			final AdapterStore adapterStore,
-			final Integer limit ) {
-		try {
-			if (!validateAdapters(operations)) {
-				LOGGER.warn("Query contains no valid adapters.");
-				return new CloseableIterator.Empty();
-			}
-			if (!operations.tableExists(StringUtils.stringFromBinary(index.getId().getBytes()))) {
-				LOGGER.warn("Table does not exist " + StringUtils.stringFromBinary(index.getId().getBytes()));
-				return new CloseableIterator.Empty();
-			}
-		}
-		catch (final IOException ex) {
-			LOGGER.warn("Unable to check if " + StringUtils.stringFromBinary(index.getId().getBytes()) + " table exists");
-			return new CloseableIterator.Empty();
-		}
-
-		final String tableName = StringUtils.stringFromBinary(index.getId().getBytes());
-
-		final List<Filter> distributableFilters = getDistributableFilter();
-		CloseableIterator<DataAdapter<?>> adapters = null;
-		if ((fieldIds != null) && !fieldIds.isEmpty()) {
-			adapters = adapterStore.getAdapters();
-		}
-
-		Scan multiScanner = getMultiScanner(
-				limit,
-				distributableFilters,
-				adapters);
-
-		if (authorizations != null) {
-			multiScanner.setAuthorizations(new Authorizations(
-					authorizations));
-		}
-
-		AggregationClient aggregationClient = new AggregationClient(
-				operations.getConfig());
-
-		try {
-			LOGGER.debug("Calling aggregation client...");
-
-			long total = aggregationClient.rowCount(
-					BasicHBaseOperations.getTableName(tableName),
-					new LongColumnInterpreter(),
-					multiScanner);
-
-			LOGGER.debug("Aggregation client returned " + total + " items.");
-
-			aggregationClient.close();
-
-			return new Wrapper(
-					Iterators.singletonIterator(total));
-
-		}
-		catch (Throwable e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		LOGGER.error("Results were empty");
-		return new CloseableIterator.Empty();
 	}
 
 	private CloseableIterator<Object> aggregateWithCoprocessor(
@@ -286,8 +248,11 @@ public class HBaseConstraintsQuery extends
 			e.printStackTrace();
 		}
 
+		CountResult result = new CountResult(
+				total);
+
 		return new Wrapper(
-				Iterators.singletonIterator(total));
+				Iterators.singletonIterator(result));
 	}
 
 	protected MultiRowRangeFilter getMultiFilter() {

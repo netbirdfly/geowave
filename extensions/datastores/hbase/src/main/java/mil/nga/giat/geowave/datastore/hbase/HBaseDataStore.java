@@ -311,7 +311,7 @@ public class HBaseDataStore extends
 						statisticsStore,
 						sanitizedQueryOptions.getAuthorizations()),
 				sanitizedQueryOptions.getAuthorizations());
-		
+
 		hbaseQuery.setOptions(options);
 
 		return hbaseQuery.query(

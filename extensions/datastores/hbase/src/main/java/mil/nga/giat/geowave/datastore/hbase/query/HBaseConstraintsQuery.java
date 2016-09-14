@@ -9,6 +9,7 @@ import java.util.Map;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.ByteArrayRange;
 import mil.nga.giat.geowave.core.index.IndexMetaData;
+import mil.nga.giat.geowave.core.index.Mergeable;
 import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
@@ -26,6 +27,7 @@ import mil.nga.giat.geowave.core.store.query.aggregate.Aggregation;
 import mil.nga.giat.geowave.core.store.query.aggregate.CountResult;
 import mil.nga.giat.geowave.datastore.hbase.operations.BasicHBaseOperations;
 import mil.nga.giat.geowave.datastore.hbase.operations.config.HBaseOptions;
+import mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos;
 import mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos;
 import mil.nga.giat.geowave.datastore.hbase.util.HBaseUtils;
 
@@ -200,7 +202,7 @@ public class HBaseConstraintsQuery extends
 			final AdapterStore adapterStore,
 			final Integer limit ) {
 		final String tableName = StringUtils.stringFromBinary(index.getId().getBytes());
-		long total = 0;
+		Mergeable total = null;
 
 		try {
 			// Use the row count coprocessor
@@ -210,37 +212,50 @@ public class HBaseConstraintsQuery extends
 					options.getCoprocessorJar());
 
 			MultiRowRangeFilter multiFilter = getMultiFilter();
-			LOGGER.debug("Client: Multi-filter has " + multiFilter.getRowRanges().size() + " ranges.");
 			
-			FilterList filterList = new FilterList(multiFilter);
+			final Aggregation aggregation = base.aggregation.getRight();
+			total = aggregation.getResult().getClass().newInstance();
 
-			final RowCountProtos.CountRequest.Builder requestBuilder = RowCountProtos.CountRequest.newBuilder();
+			FilterList filterList = new FilterList(
+					multiFilter);
+			
+			AggregationProtos.AggregationType.Builder aggregationBuilder = AggregationProtos.AggregationType.newBuilder();
+			aggregationBuilder.setName(aggregation.getClass().getName());
+
+			final AggregationProtos.AggregationRequest.Builder requestBuilder = AggregationProtos.AggregationRequest.newBuilder();
+			requestBuilder.setType(aggregationBuilder.build());
+			
 			requestBuilder.setFilter(ByteString.copyFrom(filterList.toByteArray()));
 
-			final RowCountProtos.CountRequest request = requestBuilder.build();
+			final AggregationProtos.AggregationRequest request = requestBuilder.build();
 
 			Table table = operations.getTable(tableName);
 
-			Map<byte[], Long> results = table.coprocessorService(
-					RowCountProtos.RowCountService.class,
+			Map<byte[], ByteString> results = table.coprocessorService(
+					AggregationProtos.AggregationService.class,
 					null,
 					null,
-					new Batch.Call<RowCountProtos.RowCountService, Long>() {
-						public Long call(
-								RowCountProtos.RowCountService counter )
+					new Batch.Call<AggregationProtos.AggregationService, ByteString>() {
+						public ByteString call(
+								AggregationProtos.AggregationService counter )
 								throws IOException {
-							BlockingRpcCallback<RowCountProtos.CountResponse> rpcCallback = new BlockingRpcCallback<RowCountProtos.CountResponse>();
-							counter.getRowCount(
+							BlockingRpcCallback<AggregationProtos.AggregationResponse> rpcCallback = new BlockingRpcCallback<AggregationProtos.AggregationResponse>();
+							counter.aggregate(
 									null,
 									request,
 									rpcCallback);
-							RowCountProtos.CountResponse response = rpcCallback.get();
-							return response.hasCount() ? response.getCount() : 0;
+							AggregationProtos.AggregationResponse response = rpcCallback.get();
+							return response.hasValue() ? response.getValue() : null;
 						}
 					});
+			
 
-			for (Map.Entry<byte[], Long> entry : results.entrySet()) {
-				total += entry.getValue().longValue();
+			for (Map.Entry<byte[], ByteString> entry : results.entrySet()) {
+				byte[] bvalue = entry.getValue().toByteArray(); // instance of Mergeable
+				Mergeable mvalue = aggregation.getResult().getClass().newInstance();
+				mvalue.fromBinary(bvalue);
+				
+				total.merge(mvalue);
 			}
 
 		}
@@ -251,11 +266,8 @@ public class HBaseConstraintsQuery extends
 			e.printStackTrace();
 		}
 
-		CountResult result = new CountResult(
-				total);
-
 		return new Wrapper(
-				Iterators.singletonIterator(result));
+				Iterators.singletonIterator(total));
 	}
 
 	protected MultiRowRangeFilter getMultiFilter() {

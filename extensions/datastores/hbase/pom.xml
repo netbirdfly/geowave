@@ -141,6 +141,7 @@
 										<!-- Unfortunately, Hadoop plugin does not support *.proto. We 
 											have to individually list every proto file here -->
 										<includes>
+											<include>AggregationService.proto</include>
 											<include>RowCountService.proto</include>
 											<include>SingleEntryFilter.proto</include>
 										</includes>

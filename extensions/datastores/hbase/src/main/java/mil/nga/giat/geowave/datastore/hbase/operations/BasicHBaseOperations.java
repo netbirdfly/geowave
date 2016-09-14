@@ -7,7 +7,6 @@ import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.DataStoreOperations;
 import mil.nga.giat.geowave.datastore.hbase.io.HBaseWriter;
 import mil.nga.giat.geowave.datastore.hbase.operations.config.HBaseRequiredOptions;
-import mil.nga.giat.geowave.datastore.hbase.query.RowCountEndpoint;
 import mil.nga.giat.geowave.datastore.hbase.util.ConnectionPool;
 import mil.nga.giat.geowave.datastore.hbase.util.HBaseUtils;
 
@@ -303,7 +302,7 @@ public class BasicHBaseOperations implements
 
 				LOGGER.debug("- add coprocessor...");
 				td.addCoprocessor(
-						RowCountEndpoint.class.getName(),
+						coprocessorName,
 						hdfsJarPath,
 						Coprocessor.PRIORITY_USER,
 						null);

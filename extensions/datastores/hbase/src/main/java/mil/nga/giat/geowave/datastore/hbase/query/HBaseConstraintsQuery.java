@@ -208,7 +208,7 @@ public class HBaseConstraintsQuery extends
 			// Use the row count coprocessor
 			operations.verifyCoprocessor(
 					tableName,
-					RowCountEndpoint.class.getName(),
+					AggregationEndpoint.class.getName(),
 					options.getCoprocessorJar());
 
 			MultiRowRangeFilter multiFilter = getMultiFilter();

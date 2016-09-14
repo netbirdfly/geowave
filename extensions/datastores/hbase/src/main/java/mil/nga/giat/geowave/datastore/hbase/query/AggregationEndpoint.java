@@ -138,7 +138,7 @@ public class AggregationEndpoint extends
 		boolean hasMore = false;
 
 		do {
-			hasMore = scanner.nextRaw(results);			
+			hasMore = scanner.nextRaw(results);
 			aggregation.aggregate(results);
 		}
 		while (hasMore);

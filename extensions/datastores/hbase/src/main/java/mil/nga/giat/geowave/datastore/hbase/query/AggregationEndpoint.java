@@ -20,6 +20,7 @@ import org.apache.hadoop.hbase.exceptions.DeserializationException;
 import org.apache.hadoop.hbase.filter.Filter;
 import org.apache.hadoop.hbase.filter.FilterList;
 import org.apache.hadoop.hbase.protobuf.ResponseConverter;
+import org.apache.hadoop.hbase.regionserver.Region;
 import org.apache.hadoop.hbase.regionserver.RegionScanner;
 
 import com.google.protobuf.ByteString;
@@ -128,19 +129,22 @@ public class AggregationEndpoint extends
 
 		aggregation.clearResult();
 
-		try (RegionScanner scanner = env.getRegion().getScanner(
-				scan);) {
-			List<Cell> results = new ArrayList<Cell>();
-			boolean hasMore = false;
+		Region region = env.getRegion();
 
-			do {
-				hasMore = scanner.next(results);
-				aggregation.aggregate(results);
+		RegionScanner scanner = region.getScanner(scan);
+		region.startRegionOperation();
 
-				results.clear();
-			}
-			while (hasMore);
+		List<Cell> results = new ArrayList<Cell>();
+		boolean hasMore = false;
+
+		do {
+			hasMore = scanner.nextRaw(results);			
+			aggregation.aggregate(results);
 		}
+		while (hasMore);
+
+		scanner.close();
+		region.closeRegionOperation();
 
 		return aggregation.getResult();
 	}

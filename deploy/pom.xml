@@ -36,6 +36,11 @@
 			<artifactId>geowave-datastore-accumulo</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>mil.nga.giat</groupId>
+			<artifactId>geowave-datastore-hbase</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<resources>
@@ -515,15 +520,6 @@
 		</profile>
 		<profile>
 			<id>hbase-singlejar</id>
-			<dependencyManagement>
-				<dependencies>
-					<dependency>
-						<groupId>mil.nga.giat</groupId>
-						<artifactId>geowave-datastore-hbase</artifactId>
-						<version>${project.version}</version>
-					</dependency>
-				</dependencies>
-			</dependencyManagement>
 			<build>
 				<plugins>
 					<plugin>
@@ -569,8 +565,8 @@
 
 									</transformers>
 									<createDependencyReducedPom>false</createDependencyReducedPom>
-									<minimizeJar>true</minimizeJar>
-									<finalName>${project.build.finalName}-hbase-min-singlejar</finalName>
+									<minimizeJar>false</minimizeJar>
+									<finalName>${project.build.finalName}-hbase-singlejar</finalName>
 								</configuration>
 							</execution>
 						</executions>

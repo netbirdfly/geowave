@@ -212,19 +212,19 @@ public class HBaseConstraintsQuery extends
 					options.getCoprocessorJar());
 
 			MultiRowRangeFilter multiFilter = getMultiFilter();
-			
+
 			final Aggregation aggregation = base.aggregation.getRight();
 			total = aggregation.getResult().getClass().newInstance();
 
 			FilterList filterList = new FilterList(
 					multiFilter);
-			
+
 			AggregationProtos.AggregationType.Builder aggregationBuilder = AggregationProtos.AggregationType.newBuilder();
 			aggregationBuilder.setName(aggregation.getClass().getName());
 
 			final AggregationProtos.AggregationRequest.Builder requestBuilder = AggregationProtos.AggregationRequest.newBuilder();
 			requestBuilder.setType(aggregationBuilder.build());
-			
+
 			requestBuilder.setFilter(ByteString.copyFrom(filterList.toByteArray()));
 
 			final AggregationProtos.AggregationRequest request = requestBuilder.build();
@@ -248,13 +248,13 @@ public class HBaseConstraintsQuery extends
 							return response.hasValue() ? response.getValue() : null;
 						}
 					});
-			
 
 			for (Map.Entry<byte[], ByteString> entry : results.entrySet()) {
-				byte[] bvalue = entry.getValue().toByteArray(); // instance of Mergeable
+				byte[] bvalue = entry.getValue().toByteArray(); // instance of
+																// Mergeable
 				Mergeable mvalue = aggregation.getResult().getClass().newInstance();
 				mvalue.fromBinary(bvalue);
-				
+
 				total.merge(mvalue);
 			}
 

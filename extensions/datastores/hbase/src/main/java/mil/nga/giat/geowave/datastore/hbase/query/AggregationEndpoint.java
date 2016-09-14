@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import mil.nga.giat.geowave.core.index.Mergeable;
+import mil.nga.giat.geowave.core.index.PersistenceUtils;
 import mil.nga.giat.geowave.core.store.query.aggregate.Aggregation;
 import mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos;
 
@@ -98,7 +99,8 @@ public class AggregationEndpoint extends
 						aggregation,
 						filterList);
 
-				value = ByteString.copyFrom(mvalue.toBinary());
+				byte[] bvalue = PersistenceUtils.toBinary(mvalue);
+				value = ByteString.copyFrom(bvalue);
 			}
 			catch (IOException ioe) {
 				ResponseConverter.setControllerException(

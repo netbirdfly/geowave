@@ -1,6 +1,7 @@
 package mil.nga.giat.geowave.datastore.hbase.query;
 
 import java.io.IOException;
+import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -10,6 +11,7 @@ import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.ByteArrayRange;
 import mil.nga.giat.geowave.core.index.IndexMetaData;
 import mil.nga.giat.geowave.core.index.Mergeable;
+import mil.nga.giat.geowave.core.index.PersistenceUtils;
 import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
@@ -214,7 +216,6 @@ public class HBaseConstraintsQuery extends
 			MultiRowRangeFilter multiFilter = getMultiFilter();
 
 			final Aggregation aggregation = base.aggregation.getRight();
-			total = aggregation.getResult().getClass().newInstance();
 
 			FilterList filterList = new FilterList(
 					multiFilter);
@@ -250,12 +251,17 @@ public class HBaseConstraintsQuery extends
 					});
 
 			for (Map.Entry<byte[], ByteString> entry : results.entrySet()) {
-				byte[] bvalue = entry.getValue().toByteArray(); // instance of
-																// Mergeable
-				Mergeable mvalue = aggregation.getResult().getClass().newInstance();
-				mvalue.fromBinary(bvalue);
-
-				total.merge(mvalue);
+				byte[] bvalue = entry.getValue().toByteArray();
+				if (total == null) {
+					total = PersistenceUtils.fromBinary(
+							bvalue,
+							Mergeable.class);
+				}
+				else {
+					total.merge(PersistenceUtils.fromBinary(
+							bvalue,
+							Mergeable.class));
+				}
 			}
 
 		}

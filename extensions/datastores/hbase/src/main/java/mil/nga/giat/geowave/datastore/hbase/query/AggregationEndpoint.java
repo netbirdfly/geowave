@@ -89,25 +89,29 @@ public class AggregationEndpoint extends
 		}
 
 		if (aggregation != null) {
-			System.out.println("Using aggregation type: " + aggregation.getClass().getName());
+			try {
+				System.out.println("Using aggregation type: " + aggregation.getClass().getName());
 
-			if (request.getFilter() != null && request.getModel() != null) {
-				byte[] filterBytes = request.getFilter().toByteArray();
-				byte[] modelBytes = request.getModel().toByteArray();
+				if (request.getFilter() != null && request.getModel() != null) {
+					byte[] filterBytes = request.getFilter().toByteArray();
+					byte[] modelBytes = request.getModel().toByteArray();
 
-				HBaseDistributableFilter hdFilter = new HBaseDistributableFilter(
-						filterBytes,
-						modelBytes);
-				
-				filterList = new FilterList(hdFilter);
+					HBaseDistributableFilter hdFilter = new HBaseDistributableFilter(
+							filterBytes,
+							modelBytes);
+					
+					filterList = new FilterList(hdFilter);
 
-				System.out.println("Created distributable filter...");
+					System.out.println("Created distributable filter...");
+				}
+			}
+			catch (Exception e) {
+				e.printStackTrace();
 			}
 			
 			if (request.getRangefilter() != null) {
 				byte[] rfilterBytes = request.getRangefilter().toByteArray();
 				
-
 				try {
 					MultiRowRangeFilter rangeFilter = MultiRowRangeFilter.parseFrom(rfilterBytes);
 					
@@ -120,8 +124,8 @@ public class AggregationEndpoint extends
 
 					System.out.println("Created range filter...");
 				}
-				catch (DeserializationException de) {
-					de.printStackTrace();
+				catch (Exception e) {
+					e.printStackTrace();
 				}
 			}
 
@@ -142,6 +146,9 @@ public class AggregationEndpoint extends
 				ResponseConverter.setControllerException(
 						controller,
 						ioe);
+			}
+			catch (Exception e) {
+				e.printStackTrace();
 			}
 		}
 

@@ -131,6 +131,7 @@
 									<artifactSet>
 										<includes>
 											<include>mil.nga.giat:geowave-core-store</include>
+											<include>mil.nga.giat:geowave-core-geotime</include>
 											<include>mil.nga.giat:geowave-core-index</include>
 										</includes>
 									</artifactSet>

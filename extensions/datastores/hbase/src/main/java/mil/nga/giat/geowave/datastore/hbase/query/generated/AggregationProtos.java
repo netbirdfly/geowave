@@ -731,16 +731,38 @@ public final class AggregationProtos
 		 */
 		mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationTypeOrBuilder getTypeOrBuilder();
 
-		// optional bytes filter = 2;
+		// optional bytes rangefilter = 2;
 		/**
-		 * <code>optional bytes filter = 2;</code>
+		 * <code>optional bytes rangefilter = 2;</code>
+		 */
+		boolean hasRangefilter();
+
+		/**
+		 * <code>optional bytes rangefilter = 2;</code>
+		 */
+		com.google.protobuf.ByteString getRangefilter();
+
+		// optional bytes filter = 3;
+		/**
+		 * <code>optional bytes filter = 3;</code>
 		 */
 		boolean hasFilter();
 
 		/**
-		 * <code>optional bytes filter = 2;</code>
+		 * <code>optional bytes filter = 3;</code>
 		 */
 		com.google.protobuf.ByteString getFilter();
+
+		// optional bytes model = 4;
+		/**
+		 * <code>optional bytes model = 4;</code>
+		 */
+		boolean hasModel();
+
+		/**
+		 * <code>optional bytes model = 4;</code>
+		 */
+		com.google.protobuf.ByteString getModel();
 	}
 
 	/**
@@ -822,7 +844,17 @@ public final class AggregationProtos
 						}
 						case 18: {
 							bitField0_ |= 0x00000002;
+							rangefilter_ = input.readBytes();
+							break;
+						}
+						case 26: {
+							bitField0_ |= 0x00000004;
 							filter_ = input.readBytes();
+							break;
+						}
+						case 34: {
+							bitField0_ |= 0x00000008;
+							model_ = input.readBytes();
 							break;
 						}
 					}
@@ -893,27 +925,65 @@ public final class AggregationProtos
 			return type_;
 		}
 
-		// optional bytes filter = 2;
-		public static final int FILTER_FIELD_NUMBER = 2;
-		private com.google.protobuf.ByteString filter_;
+		// optional bytes rangefilter = 2;
+		public static final int RANGEFILTER_FIELD_NUMBER = 2;
+		private com.google.protobuf.ByteString rangefilter_;
 
 		/**
-		 * <code>optional bytes filter = 2;</code>
+		 * <code>optional bytes rangefilter = 2;</code>
 		 */
-		public boolean hasFilter() {
+		public boolean hasRangefilter() {
 			return ((bitField0_ & 0x00000002) == 0x00000002);
 		}
 
 		/**
-		 * <code>optional bytes filter = 2;</code>
+		 * <code>optional bytes rangefilter = 2;</code>
+		 */
+		public com.google.protobuf.ByteString getRangefilter() {
+			return rangefilter_;
+		}
+
+		// optional bytes filter = 3;
+		public static final int FILTER_FIELD_NUMBER = 3;
+		private com.google.protobuf.ByteString filter_;
+
+		/**
+		 * <code>optional bytes filter = 3;</code>
+		 */
+		public boolean hasFilter() {
+			return ((bitField0_ & 0x00000004) == 0x00000004);
+		}
+
+		/**
+		 * <code>optional bytes filter = 3;</code>
 		 */
 		public com.google.protobuf.ByteString getFilter() {
 			return filter_;
 		}
 
+		// optional bytes model = 4;
+		public static final int MODEL_FIELD_NUMBER = 4;
+		private com.google.protobuf.ByteString model_;
+
+		/**
+		 * <code>optional bytes model = 4;</code>
+		 */
+		public boolean hasModel() {
+			return ((bitField0_ & 0x00000008) == 0x00000008);
+		}
+
+		/**
+		 * <code>optional bytes model = 4;</code>
+		 */
+		public com.google.protobuf.ByteString getModel() {
+			return model_;
+		}
+
 		private void initFields() {
 			type_ = mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationType.getDefaultInstance();
+			rangefilter_ = com.google.protobuf.ByteString.EMPTY;
 			filter_ = com.google.protobuf.ByteString.EMPTY;
+			model_ = com.google.protobuf.ByteString.EMPTY;
 		}
 
 		private byte memoizedIsInitialized = -1;
@@ -946,7 +1016,17 @@ public final class AggregationProtos
 			if (((bitField0_ & 0x00000002) == 0x00000002)) {
 				output.writeBytes(
 						2,
+						rangefilter_);
+			}
+			if (((bitField0_ & 0x00000004) == 0x00000004)) {
+				output.writeBytes(
+						3,
 						filter_);
+			}
+			if (((bitField0_ & 0x00000008) == 0x00000008)) {
+				output.writeBytes(
+						4,
+						model_);
 			}
 			getUnknownFields().writeTo(
 					output);
@@ -967,7 +1047,17 @@ public final class AggregationProtos
 			if (((bitField0_ & 0x00000002) == 0x00000002)) {
 				size += com.google.protobuf.CodedOutputStream.computeBytesSize(
 						2,
+						rangefilter_);
+			}
+			if (((bitField0_ & 0x00000004) == 0x00000004)) {
+				size += com.google.protobuf.CodedOutputStream.computeBytesSize(
+						3,
 						filter_);
+			}
+			if (((bitField0_ & 0x00000008) == 0x00000008)) {
+				size += com.google.protobuf.CodedOutputStream.computeBytesSize(
+						4,
+						model_);
 			}
 			size += getUnknownFields().getSerializedSize();
 			memoizedSerializedSize = size;
@@ -999,10 +1089,20 @@ public final class AggregationProtos
 				result = result && getType().equals(
 						other.getType());
 			}
+			result = result && (hasRangefilter() == other.hasRangefilter());
+			if (hasRangefilter()) {
+				result = result && getRangefilter().equals(
+						other.getRangefilter());
+			}
 			result = result && (hasFilter() == other.hasFilter());
 			if (hasFilter()) {
 				result = result && getFilter().equals(
 						other.getFilter());
+			}
+			result = result && (hasModel() == other.hasModel());
+			if (hasModel()) {
+				result = result && getModel().equals(
+						other.getModel());
 			}
 			result = result && getUnknownFields().equals(
 					other.getUnknownFields());
@@ -1022,9 +1122,17 @@ public final class AggregationProtos
 				hash = (37 * hash) + TYPE_FIELD_NUMBER;
 				hash = (53 * hash) + getType().hashCode();
 			}
+			if (hasRangefilter()) {
+				hash = (37 * hash) + RANGEFILTER_FIELD_NUMBER;
+				hash = (53 * hash) + getRangefilter().hashCode();
+			}
 			if (hasFilter()) {
 				hash = (37 * hash) + FILTER_FIELD_NUMBER;
 				hash = (53 * hash) + getFilter().hashCode();
+			}
+			if (hasModel()) {
+				hash = (37 * hash) + MODEL_FIELD_NUMBER;
+				hash = (53 * hash) + getModel().hashCode();
 			}
 			hash = (29 * hash) + getUnknownFields().hashCode();
 			memoizedHashCode = hash;
@@ -1181,8 +1289,12 @@ public final class AggregationProtos
 					typeBuilder_.clear();
 				}
 				bitField0_ = (bitField0_ & ~0x00000001);
-				filter_ = com.google.protobuf.ByteString.EMPTY;
+				rangefilter_ = com.google.protobuf.ByteString.EMPTY;
 				bitField0_ = (bitField0_ & ~0x00000002);
+				filter_ = com.google.protobuf.ByteString.EMPTY;
+				bitField0_ = (bitField0_ & ~0x00000004);
+				model_ = com.google.protobuf.ByteString.EMPTY;
+				bitField0_ = (bitField0_ & ~0x00000008);
 				return this;
 			}
 
@@ -1224,7 +1336,15 @@ public final class AggregationProtos
 				if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
 					to_bitField0_ |= 0x00000002;
 				}
+				result.rangefilter_ = rangefilter_;
+				if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+					to_bitField0_ |= 0x00000004;
+				}
 				result.filter_ = filter_;
+				if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+					to_bitField0_ |= 0x00000008;
+				}
+				result.model_ = model_;
 				result.bitField0_ = to_bitField0_;
 				onBuilt();
 				return result;
@@ -1247,8 +1367,14 @@ public final class AggregationProtos
 				if (other.hasType()) {
 					mergeType(other.getType());
 				}
+				if (other.hasRangefilter()) {
+					setRangefilter(other.getRangefilter());
+				}
 				if (other.hasFilter()) {
 					setFilter(other.getFilter());
+				}
+				if (other.hasModel()) {
+					setModel(other.getModel());
 				}
 				this.mergeUnknownFields(other.getUnknownFields());
 				return this;
@@ -1421,43 +1547,125 @@ public final class AggregationProtos
 				return typeBuilder_;
 			}
 
-			// optional bytes filter = 2;
-			private com.google.protobuf.ByteString filter_ = com.google.protobuf.ByteString.EMPTY;
+			// optional bytes rangefilter = 2;
+			private com.google.protobuf.ByteString rangefilter_ = com.google.protobuf.ByteString.EMPTY;
 
 			/**
-			 * <code>optional bytes filter = 2;</code>
+			 * <code>optional bytes rangefilter = 2;</code>
 			 */
-			public boolean hasFilter() {
+			public boolean hasRangefilter() {
 				return ((bitField0_ & 0x00000002) == 0x00000002);
 			}
 
 			/**
-			 * <code>optional bytes filter = 2;</code>
+			 * <code>optional bytes rangefilter = 2;</code>
+			 */
+			public com.google.protobuf.ByteString getRangefilter() {
+				return rangefilter_;
+			}
+
+			/**
+			 * <code>optional bytes rangefilter = 2;</code>
+			 */
+			public Builder setRangefilter(
+					com.google.protobuf.ByteString value ) {
+				if (value == null) {
+					throw new NullPointerException();
+				}
+				bitField0_ |= 0x00000002;
+				rangefilter_ = value;
+				onChanged();
+				return this;
+			}
+
+			/**
+			 * <code>optional bytes rangefilter = 2;</code>
+			 */
+			public Builder clearRangefilter() {
+				bitField0_ = (bitField0_ & ~0x00000002);
+				rangefilter_ = getDefaultInstance().getRangefilter();
+				onChanged();
+				return this;
+			}
+
+			// optional bytes filter = 3;
+			private com.google.protobuf.ByteString filter_ = com.google.protobuf.ByteString.EMPTY;
+
+			/**
+			 * <code>optional bytes filter = 3;</code>
+			 */
+			public boolean hasFilter() {
+				return ((bitField0_ & 0x00000004) == 0x00000004);
+			}
+
+			/**
+			 * <code>optional bytes filter = 3;</code>
 			 */
 			public com.google.protobuf.ByteString getFilter() {
 				return filter_;
 			}
 
 			/**
-			 * <code>optional bytes filter = 2;</code>
+			 * <code>optional bytes filter = 3;</code>
 			 */
 			public Builder setFilter(
 					com.google.protobuf.ByteString value ) {
 				if (value == null) {
 					throw new NullPointerException();
 				}
-				bitField0_ |= 0x00000002;
+				bitField0_ |= 0x00000004;
 				filter_ = value;
 				onChanged();
 				return this;
 			}
 
 			/**
-			 * <code>optional bytes filter = 2;</code>
+			 * <code>optional bytes filter = 3;</code>
 			 */
 			public Builder clearFilter() {
-				bitField0_ = (bitField0_ & ~0x00000002);
+				bitField0_ = (bitField0_ & ~0x00000004);
 				filter_ = getDefaultInstance().getFilter();
+				onChanged();
+				return this;
+			}
+
+			// optional bytes model = 4;
+			private com.google.protobuf.ByteString model_ = com.google.protobuf.ByteString.EMPTY;
+
+			/**
+			 * <code>optional bytes model = 4;</code>
+			 */
+			public boolean hasModel() {
+				return ((bitField0_ & 0x00000008) == 0x00000008);
+			}
+
+			/**
+			 * <code>optional bytes model = 4;</code>
+			 */
+			public com.google.protobuf.ByteString getModel() {
+				return model_;
+			}
+
+			/**
+			 * <code>optional bytes model = 4;</code>
+			 */
+			public Builder setModel(
+					com.google.protobuf.ByteString value ) {
+				if (value == null) {
+					throw new NullPointerException();
+				}
+				bitField0_ |= 0x00000008;
+				model_ = value;
+				onChanged();
+				return this;
+			}
+
+			/**
+			 * <code>optional bytes model = 4;</code>
+			 */
+			public Builder clearModel() {
+				bitField0_ = (bitField0_ & ~0x00000008);
+				model_ = getDefaultInstance().getModel();
 				onChanged();
 				return this;
 			}
@@ -2260,7 +2468,7 @@ public final class AggregationProtos
 	private static com.google.protobuf.Descriptors.FileDescriptor descriptor;
 	static {
 		java.lang.String[] descriptorData = {
-			"\n\030AggregationService.proto\"/\n\017Aggregatio" + "nType\022\014\n\004name\030\001 \002(\t\022\016\n\006params\030\002 \001(\014\"D\n\022A" + "ggregationRequest\022\036\n\004type\030\001 \002(\0132\020.Aggreg" + "ationType\022\016\n\006filter\030\002 \001(\014\"$\n\023Aggregation" + "Response\022\r\n\005value\030\001 \002(\0142L\n\022AggregationSe" + "rvice\0226\n\taggregate\022\023.AggregationRequest\032" + "\024.AggregationResponseBQ\n4mil.nga.giat.ge" + "owave.datastore.hbase.query.generatedB\021A" + "ggregationProtosH\001\210\001\001\240\001\001"
+			"\n\030AggregationService.proto\"/\n\017Aggregatio" + "nType\022\014\n\004name\030\001 \002(\t\022\016\n\006params\030\002 \001(\014\"h\n\022A" + "ggregationRequest\022\036\n\004type\030\001 \002(\0132\020.Aggreg" + "ationType\022\023\n\013rangefilter\030\002 \001(\014\022\016\n\006filter" + "\030\003 \001(\014\022\r\n\005model\030\004 \001(\014\"$\n\023AggregationResp" + "onse\022\r\n\005value\030\001 \002(\0142L\n\022AggregationServic" + "e\0226\n\taggregate\022\023.AggregationRequest\032\024.Ag" + "gregationResponseBQ\n4mil.nga.giat.geowav" + "e.datastore.hbase.query.generatedB\021Aggre" + "gationProtosH\001\210\001\001\240\001\001"
 		};
 		com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner = new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
 			public com.google.protobuf.ExtensionRegistry assignDescriptors(
@@ -2280,7 +2488,9 @@ public final class AggregationProtos
 						internal_static_AggregationRequest_descriptor,
 						new java.lang.String[] {
 							"Type",
+							"Rangefilter",
 							"Filter",
+							"Model",
 						});
 				internal_static_AggregationResponse_descriptor = getDescriptor().getMessageTypes().get(
 						2);

@@ -19,6 +19,7 @@ import org.apache.hadoop.hbase.coprocessor.RegionCoprocessorEnvironment;
 import org.apache.hadoop.hbase.exceptions.DeserializationException;
 import org.apache.hadoop.hbase.filter.Filter;
 import org.apache.hadoop.hbase.filter.FilterList;
+import org.apache.hadoop.hbase.filter.MultiRowRangeFilter;
 import org.apache.hadoop.hbase.protobuf.ResponseConverter;
 import org.apache.hadoop.hbase.regionserver.Region;
 import org.apache.hadoop.hbase.regionserver.RegionScanner;
@@ -66,9 +67,11 @@ public class AggregationEndpoint extends
 			RpcController controller,
 			AggregationProtos.AggregationRequest request,
 			RpcCallback<AggregationProtos.AggregationResponse> done ) {
+		FilterList filterList = null;
+		
 		AggregationProtos.AggregationResponse response = null;
 		ByteString value = ByteString.EMPTY;
-		
+
 		System.out.println("Calling aggregate on coprocessor");
 
 		// Get the aggregation type
@@ -88,15 +91,38 @@ public class AggregationEndpoint extends
 		if (aggregation != null) {
 			System.out.println("Using aggregation type: " + aggregation.getClass().getName());
 
-			// Get the filter
-			byte[] filterBytes = request.getFilter().toByteArray();
-			FilterList filterList = null;
+			if (request.getFilter() != null && request.getModel() != null) {
+				byte[] filterBytes = request.getFilter().toByteArray();
+				byte[] modelBytes = request.getModel().toByteArray();
 
-			try {
-				filterList = FilterList.parseFrom(filterBytes);
+				HBaseDistributableFilter hdFilter = new HBaseDistributableFilter(
+						filterBytes,
+						modelBytes);
+				
+				filterList = new FilterList(hdFilter);
+
+				System.out.println("Created distributable filter...");
 			}
-			catch (DeserializationException de) {
-				de.printStackTrace();
+			
+			if (request.getRangefilter() != null) {
+				byte[] rfilterBytes = request.getRangefilter().toByteArray();
+				
+
+				try {
+					MultiRowRangeFilter rangeFilter = MultiRowRangeFilter.parseFrom(rfilterBytes);
+					
+					if (filterList == null) {
+						filterList = new FilterList(rangeFilter);
+					}
+					else {
+						filterList.addFilter(rangeFilter);
+					}
+
+					System.out.println("Created range filter...");
+				}
+				catch (DeserializationException de) {
+					de.printStackTrace();
+				}
 			}
 
 			System.out.println("Scanning...");
@@ -107,12 +133,12 @@ public class AggregationEndpoint extends
 
 				byte[] bvalue = PersistenceUtils.toBinary(mvalue);
 				value = ByteString.copyFrom(bvalue);
-				
+
 				System.out.println("Done scanning.");
 			}
 			catch (IOException ioe) {
 				ioe.printStackTrace();
-				
+
 				ResponseConverter.setControllerException(
 						controller,
 						ioe);
@@ -120,10 +146,10 @@ public class AggregationEndpoint extends
 		}
 
 		System.out.println("Setting response...");
-		
+
 		response = AggregationProtos.AggregationResponse.newBuilder().setValue(
 				value).build();
-		
+
 		System.out.println("Coprocessor finished.");
 
 		done.run(response);

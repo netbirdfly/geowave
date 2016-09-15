@@ -116,8 +116,6 @@ public abstract class HBaseFilteredIndexQuery extends
 
 		final String tableName = StringUtils.stringFromBinary(index.getId().getBytes());
 
-		final List<Filter> distributableFilters = getDistributableFilter();
-
 		CloseableIterator<DataAdapter<?>> adapters = null;
 		if ((fieldIds != null) && !fieldIds.isEmpty()) {
 			adapters = adapterStore.getAdapters();
@@ -125,7 +123,6 @@ public abstract class HBaseFilteredIndexQuery extends
 
 		Scan multiScanner = getMultiScanner(
 				limit,
-				distributableFilters,
 				adapters);
 
 		final List<Iterator<Result>> resultsIterators = new ArrayList<Iterator<Result>>();
@@ -170,13 +167,8 @@ public abstract class HBaseFilteredIndexQuery extends
 		return new CloseableIterator.Empty();
 	}
 
-	protected abstract List<Filter> getDistributableFilter();
-
-	// experiment to test a single multi-scanner vs multiple single-range
-	// scanners
 	protected Scan getMultiScanner(
 			final Integer limit,
-			final List<Filter> distributableFilters,
 			final CloseableIterator<DataAdapter<?>> adapters ) {
 		// Single scan w/ multiple ranges
 		final Scan scanner = new Scan();
@@ -186,13 +178,6 @@ public abstract class HBaseFilteredIndexQuery extends
 		scanner.setCacheBlocks(true);
 
 		FilterList filterList = new FilterList();
-
-		// Add server-side filters (currently not implemented)
-		if ((distributableFilters != null) && (!distributableFilters.isEmpty())) {
-			for (final Filter filter : distributableFilters) {
-				filterList.addFilter(filter);
-			}
-		}
 
 		if ((adapterIds != null) && !adapterIds.isEmpty()) {
 			for (final ByteArrayId adapterId : adapterIds) {

@@ -11,7 +11,9 @@ message AggregationType {
 
 message AggregationRequest {
   required AggregationType type = 1;
-  optional bytes filter = 2;
+  optional bytes rangefilter = 2;
+  optional bytes filter = 3;
+  optional bytes model = 4;
 }
 
 message AggregationResponse {

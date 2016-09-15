@@ -1,7 +1,6 @@
 package mil.nga.giat.geowave.datastore.hbase.query;
 
 import java.io.IOException;
-import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -26,19 +25,15 @@ import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.core.store.query.ConstraintsQuery;
 import mil.nga.giat.geowave.core.store.query.Query;
 import mil.nga.giat.geowave.core.store.query.aggregate.Aggregation;
-import mil.nga.giat.geowave.core.store.query.aggregate.CountResult;
 import mil.nga.giat.geowave.datastore.hbase.operations.BasicHBaseOperations;
 import mil.nga.giat.geowave.datastore.hbase.operations.config.HBaseOptions;
 import mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos;
-import mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos;
 import mil.nga.giat.geowave.datastore.hbase.util.HBaseUtils;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hbase.HConstants;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.client.coprocessor.Batch;
-import org.apache.hadoop.hbase.filter.Filter;
-import org.apache.hadoop.hbase.filter.FilterList;
 import org.apache.hadoop.hbase.filter.MultiRowRangeFilter;
 import org.apache.hadoop.hbase.filter.MultiRowRangeFilter.RowRange;
 import org.apache.hadoop.hbase.ipc.BlockingRpcCallback;
@@ -141,11 +136,6 @@ public class HBaseConstraintsQuery extends
 	}
 
 	@Override
-	protected List<Filter> getDistributableFilter() {
-		return new ArrayList<Filter>();
-	}
-
-	@Override
 	public CloseableIterator<Object> query(
 			final BasicHBaseOperations operations,
 			final AdapterStore adapterStore,
@@ -217,16 +207,18 @@ public class HBaseConstraintsQuery extends
 
 			final Aggregation aggregation = base.aggregation.getRight();
 
-			FilterList filterList = new FilterList(
-					multiFilter);
-
 			AggregationProtos.AggregationType.Builder aggregationBuilder = AggregationProtos.AggregationType.newBuilder();
 			aggregationBuilder.setName(aggregation.getClass().getName());
+
+			// TODO: set aggregation params...
 
 			final AggregationProtos.AggregationRequest.Builder requestBuilder = AggregationProtos.AggregationRequest.newBuilder();
 			requestBuilder.setType(aggregationBuilder.build());
 
-			requestBuilder.setFilter(ByteString.copyFrom(filterList.toByteArray()));
+			requestBuilder.setFilter(ByteString.copyFrom(PersistenceUtils.toBinary(base.distributableFilters)));
+			requestBuilder.setModel(ByteString.copyFrom(PersistenceUtils.toBinary(index.getIndexModel())));
+
+			requestBuilder.setRangefilter(ByteString.copyFrom(multiFilter.toByteArray()));
 
 			final AggregationProtos.AggregationRequest request = requestBuilder.build();
 

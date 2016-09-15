@@ -85,6 +85,7 @@ public class AggregationEndpoint extends
 			// TODO: Handle aggregation params
 		}
 		catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+			System.err.println(e.getMessage());
 			e.printStackTrace();
 		}
 
@@ -104,8 +105,12 @@ public class AggregationEndpoint extends
 
 					System.out.println("Created distributable filter...");
 				}
+				else {
+					System.out.println("Input distributable filter is undefined.");
+				}
 			}
 			catch (Exception e) {
+				System.err.println(e.getMessage());
 				e.printStackTrace();
 			}
 			
@@ -125,8 +130,12 @@ public class AggregationEndpoint extends
 					System.out.println("Created range filter...");
 				}
 				catch (Exception e) {
+					System.err.println(e.getMessage());
 					e.printStackTrace();
 				}
+			}
+			else {
+				System.out.println("Input range filter is undefined.");
 			}
 
 			System.out.println("Scanning...");
@@ -142,12 +151,14 @@ public class AggregationEndpoint extends
 			}
 			catch (IOException ioe) {
 				ioe.printStackTrace();
+				System.err.println(ioe.getMessage());
 
 				ResponseConverter.setControllerException(
 						controller,
 						ioe);
 			}
 			catch (Exception e) {
+				System.err.println(e.getMessage());
 				e.printStackTrace();
 			}
 		}

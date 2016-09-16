@@ -62,19 +62,6 @@ public class HBaseDistributableFilter extends
 			final String className = StringUtils.stringFromBinary(classNameBinary);
 			System.out.println("Failed to decode filter type: " + className);
 			
-			final DistributableQueryFilter retVal = PersistenceUtils.classFactory(
-					className,
-					DistributableQueryFilter.class);
-			if (retVal != null) {
-				System.out.println("Created filter object; decoding content...");
-				buf.get(persistableBinary);
-				retVal.fromBinary(persistableBinary);
-				System.out.println("Dist filter OK: type = " + retVal.getClass().getName());
-			}
-			else {
-				System.out.println("Failed to create filter object");
-			}
-			
 			return false;
 		}
 

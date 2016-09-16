@@ -92,8 +92,13 @@ public class AggregationEndpoint extends
 			try {
 				if (request.getFilter() != null && !request.getFilter().isEmpty()) {
 					HBaseDistributableFilter hdFilter = new HBaseDistributableFilter();
+					
+					ByteString filterByteString = request.getFilter();
+					System.out.println("Dist filter content = " + filterByteString.toStringUtf8());
 
-					byte[] filterBytes = request.getFilter().toByteArray();
+					byte[] filterBytes = filterByteString.toByteArray();
+					System.out.println("Dist filter size = " + filterBytes.length);
+					
 					byte[] modelBytes = request.getModel().toByteArray();
 
 					if (hdFilter.init(

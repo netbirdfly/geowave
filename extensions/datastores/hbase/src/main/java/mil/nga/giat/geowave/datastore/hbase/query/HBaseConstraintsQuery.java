@@ -222,8 +222,15 @@ public class HBaseConstraintsQuery extends
 			for (DistributableQueryFilter dqFilter : base.distributableFilters) {
 				LOGGER.debug("Filter type: " + dqFilter.getClass().getName());
 			}
-
-			requestBuilder.setFilter(ByteString.copyFrom(PersistenceUtils.toBinary(base.distributableFilters)));
+			
+			byte[] filterBytes = PersistenceUtils.toBinary(base.distributableFilters);
+			LOGGER.debug("Dist filter size = " + filterBytes.length);
+			
+			ByteString filterByteString = ByteString.copyFrom(filterBytes);
+			LOGGER.debug("Dist filter content = " + filterByteString.toStringUtf8());
+			
+			requestBuilder.setFilter(filterByteString);
+			
 			requestBuilder.setModel(ByteString.copyFrom(PersistenceUtils.toBinary(index.getIndexModel())));
 
 			requestBuilder.setRangefilter(ByteString.copyFrom(multiFilter.toByteArray()));
@@ -257,17 +264,18 @@ public class HBaseConstraintsQuery extends
 				ByteString value = entry.getValue();
 				if (value != null && !value.isEmpty()) {
 					byte[] bvalue = value.toByteArray();
+					Mergeable mvalue = PersistenceUtils.fromBinary(
+							bvalue,
+							Mergeable.class);
+					
+					LOGGER.debug("Value from region " + regionCount + " is " + mvalue);
+
 					if (total == null) {
-						total = PersistenceUtils.fromBinary(
-								bvalue,
-								Mergeable.class);
+						total = mvalue;
 					}
 					else {
-						total.merge(PersistenceUtils.fromBinary(
-								bvalue,
-								Mergeable.class));
+						total.merge(mvalue);
 					}
-					LOGGER.debug("Current total at region " + regionCount + " is " + total);
 				}
 				else {
 					LOGGER.debug("Empty response for region " + regionCount);

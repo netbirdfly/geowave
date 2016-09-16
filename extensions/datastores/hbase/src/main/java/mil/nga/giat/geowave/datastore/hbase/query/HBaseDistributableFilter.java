@@ -83,6 +83,7 @@ public class HBaseDistributableFilter extends
 				CommonIndexModel.class);
 
 		if (model == null) {
+			System.out.println("Failed to create model object");
 			return false;
 		}
 

@@ -198,10 +198,12 @@ public class HBaseConstraintsQuery extends
 
 		try {
 			// Use the row count coprocessor
-			operations.verifyCoprocessor(
-					tableName,
-					AggregationEndpoint.class.getName(),
-					options.getCoprocessorJar());
+			if (options.isVerifyCoprocessors()) {
+				operations.verifyCoprocessor(
+						tableName,
+						AggregationEndpoint.class.getName(),
+						options.getCoprocessorJar());
+			}
 
 			MultiRowRangeFilter multiFilter = getMultiFilter();
 
@@ -245,7 +247,7 @@ public class HBaseConstraintsQuery extends
 			int regionCount = 0;
 			for (Map.Entry<byte[], ByteString> entry : results.entrySet()) {
 				regionCount++;
-				
+
 				ByteString value = entry.getValue();
 				if (value != null && !value.isEmpty()) {
 					byte[] bvalue = value.toByteArray();

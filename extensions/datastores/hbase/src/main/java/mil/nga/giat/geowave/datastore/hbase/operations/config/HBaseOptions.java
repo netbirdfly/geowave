@@ -33,6 +33,9 @@ public class HBaseOptions implements
 	@Parameter(names = "--enableCoprocessors")
 	protected boolean enableCoprocessors = false;
 
+	@Parameter(names = "--verifyCoprocessors")
+	protected boolean verifyCoprocessors = true;
+
 	@Parameter(names = {
 		"--" + COPROCESSOR_JAR_KEY
 	}, description = "Path (HDFS URL) to the jar containing coprocessor classes")
@@ -108,6 +111,15 @@ public class HBaseOptions implements
 	public void setEnableCoprocessors(
 			boolean enableCoprocessors ) {
 		this.enableCoprocessors = enableCoprocessors;
+	}
+
+	public boolean isVerifyCoprocessors() {
+		return verifyCoprocessors;
+	}
+
+	public void setVerifyCoprocessors(
+			boolean verifyCoprocessors ) {
+		this.verifyCoprocessors = verifyCoprocessors;
 	}
 
 	public String getCoprocessorJar() {

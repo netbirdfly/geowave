@@ -3,10 +3,9 @@ package mil.nga.giat.geowave.examples.hbase.app;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-import mil.nga.giat.geowave.datastore.hbase.query.RowCountEndpoint;
+import mil.nga.giat.geowave.datastore.hbase.query.AggregationEndpoint;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hbase.coprocessor.AggregateImplementation;
 import org.apache.hadoop.hbase.coprocessor.CoprocessorHost;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -111,8 +110,8 @@ public class HBaseMiniCluster
 					"true");
 			
 			// Set list of coprocessors here (one for test, so far)
-//			conf.set(CoprocessorHost.REGION_COPROCESSOR_CONF_KEY,
-//					RowCountEndpoint.class.getName());
+			conf.set(CoprocessorHost.REGION_COPROCESSOR_CONF_KEY,
+					AggregationEndpoint.class.getName());
 			
 			hbaseLocalCluster = new HbaseLocalCluster.Builder().setHbaseMasterPort(
 					Integer.parseInt(propertyParser.getProperty(ConfigVars.HBASE_MASTER_PORT_KEY))).setHbaseMasterInfoPort(

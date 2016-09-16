@@ -71,7 +71,8 @@ public class AggregationEndpoint extends
 		AggregationProtos.AggregationResponse response = null;
 		ByteString value = ByteString.EMPTY;
 
-		System.out.println("Calling aggregate on coprocessor");
+		long regionId = env.getRegionInfo().getRegionId();
+		System.out.println("Calling aggregate on coprocessor " + regionId);
 
 		// Get the aggregation type
 		String aggregationType = request.getType().getName();
@@ -90,8 +91,6 @@ public class AggregationEndpoint extends
 
 		if (aggregation != null) {
 			try {
-				System.out.println("Using aggregation type: " + aggregation.getClass().getName());
-
 				if (request.getFilter() != null && request.getModel() != null) {
 					byte[] filterBytes = request.getFilter().toByteArray();
 					byte[] modelBytes = request.getModel().toByteArray();
@@ -103,10 +102,10 @@ public class AggregationEndpoint extends
 					filterList = new FilterList(
 							hdFilter);
 
-					System.out.println("Created distributable filter...");
+					System.out.println("Created distributable filter... " + regionId);
 				}
 				else {
-					System.out.println("Input distributable filter is undefined.");
+					System.out.println("Input distributable filter is undefined. " + regionId);
 				}
 			}
 			catch (Exception e) {
@@ -128,7 +127,7 @@ public class AggregationEndpoint extends
 						filterList.addFilter(rangeFilter);
 					}
 
-					System.out.println("Created range filter...");
+					System.out.println("Created range filter... " + regionId);
 				}
 				catch (Exception e) {
 					System.err.println(e.getMessage());
@@ -136,10 +135,10 @@ public class AggregationEndpoint extends
 				}
 			}
 			else {
-				System.out.println("Input range filter is undefined.");
+				System.out.println("Input range filter is undefined. " + regionId);
 			}
 
-			System.out.println("Scanning...");
+			System.out.println("Scanning... " + regionId);
 			try {
 				Mergeable mvalue = getValue(
 						aggregation,
@@ -148,7 +147,7 @@ public class AggregationEndpoint extends
 				byte[] bvalue = PersistenceUtils.toBinary(mvalue);
 				value = ByteString.copyFrom(bvalue);
 
-				System.out.println("Done scanning.");
+				System.out.println("Done scanning. Value = (" + value + ") for region " + regionId);
 			}
 			catch (IOException ioe) {
 				ioe.printStackTrace();
@@ -164,12 +163,12 @@ public class AggregationEndpoint extends
 			}
 		}
 
-		System.out.println("Setting response...");
+		System.out.println("Setting response... " + regionId);
 
 		response = AggregationProtos.AggregationResponse.newBuilder().setValue(
 				value).build();
 
-		System.out.println("Coprocessor finished.");
+		System.out.println("Coprocessor finished. " + regionId);
 
 		done.run(response);
 	}

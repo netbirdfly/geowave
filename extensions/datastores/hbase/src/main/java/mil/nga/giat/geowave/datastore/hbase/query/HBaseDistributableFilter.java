@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
-import mil.nga.giat.geowave.core.index.ByteArrayUtils;
 import mil.nga.giat.geowave.core.index.PersistenceUtils;
 import mil.nga.giat.geowave.core.store.data.CommonIndexedPersistenceEncoding;
 import mil.nga.giat.geowave.core.store.data.PersistentDataset;
@@ -25,6 +24,7 @@ import mil.nga.giat.geowave.datastore.hbase.encoding.HBaseCommonIndexedPersisten
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.CellUtil;
 import org.apache.hadoop.hbase.filter.FilterBase;
+import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.log4j.Logger;
 
 /**
@@ -89,7 +89,7 @@ public class HBaseDistributableFilter extends
 			}
 		}
 		catch (Exception e) {
-			System.err.println(e.getMessage());
+			System.out.println(e.getMessage());
 			e.printStackTrace();
 		}
 
@@ -102,6 +102,8 @@ public class HBaseDistributableFilter extends
 			final FlattenedUnreadData unreadData ) {
 		final GeowaveRowId rowId = new GeowaveRowId(
 				CellUtil.cloneRow(cell));
+		
+		System.out.println("ROW ID: " + Bytes.toString(rowId.getRowId()));
 
 		return new HBaseCommonIndexedPersistenceEncoding(
 				new ByteArrayId(

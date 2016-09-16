@@ -79,12 +79,18 @@ public class HBaseDistributableFilter extends
 			final PersistentDataset<CommonIndexValue> commonData,
 			final FlattenedUnreadData unreadData ) {
 		ReturnCode returnCode = ReturnCode.SKIP;
-
-		if (applyRowFilter(getEncoding(
-				cell,
-				commonData,
-				unreadData))) {
-			returnCode = ReturnCode.INCLUDE;
+		
+		try {
+			if (applyRowFilter(getEncoding(
+					cell,
+					commonData,
+					unreadData))) {
+				returnCode = ReturnCode.INCLUDE;
+			}
+		}
+		catch (Exception e) {
+			System.err.println(e.getMessage());
+			e.printStackTrace();
 		}
 
 		return returnCode;

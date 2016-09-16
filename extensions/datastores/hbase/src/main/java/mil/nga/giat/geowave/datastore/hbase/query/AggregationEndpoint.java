@@ -68,7 +68,7 @@ public class AggregationEndpoint extends
 			AggregationProtos.AggregationRequest request,
 			RpcCallback<AggregationProtos.AggregationResponse> done ) {
 		FilterList filterList = null;
-		
+
 		AggregationProtos.AggregationResponse response = null;
 		ByteString value = ByteString.EMPTY;
 
@@ -100,8 +100,9 @@ public class AggregationEndpoint extends
 					HBaseDistributableFilter hdFilter = new HBaseDistributableFilter(
 							filterBytes,
 							modelBytes);
-					
-					filterList = new FilterList(hdFilter);
+
+					filterList = new FilterList(
+							hdFilter);
 
 					System.out.println("Created distributable filter...");
 				}
@@ -113,15 +114,16 @@ public class AggregationEndpoint extends
 				System.err.println(e.getMessage());
 				e.printStackTrace();
 			}
-			
+
 			if (request.getRangefilter() != null) {
 				byte[] rfilterBytes = request.getRangefilter().toByteArray();
-				
+
 				try {
 					MultiRowRangeFilter rangeFilter = MultiRowRangeFilter.parseFrom(rfilterBytes);
-					
+
 					if (filterList == null) {
-						filterList = new FilterList(rangeFilter);
+						filterList = new FilterList(
+								rangeFilter);
 					}
 					else {
 						filterList.addFilter(rangeFilter);

@@ -242,17 +242,26 @@ public class HBaseConstraintsQuery extends
 						}
 					});
 
+			int regionCount = 0;
 			for (Map.Entry<byte[], ByteString> entry : results.entrySet()) {
-				byte[] bvalue = entry.getValue().toByteArray();
-				if (total == null) {
-					total = PersistenceUtils.fromBinary(
-							bvalue,
-							Mergeable.class);
+				regionCount++;
+				
+				ByteString value = entry.getValue();
+				if (value != null && !value.isEmpty()) {
+					byte[] bvalue = value.toByteArray();
+					if (total == null) {
+						total = PersistenceUtils.fromBinary(
+								bvalue,
+								Mergeable.class);
+					}
+					else {
+						total.merge(PersistenceUtils.fromBinary(
+								bvalue,
+								Mergeable.class));
+					}
 				}
 				else {
-					total.merge(PersistenceUtils.fromBinary(
-							bvalue,
-							Mergeable.class));
+					LOGGER.debug("Empty response for region " + regionCount);
 				}
 			}
 

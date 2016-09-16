@@ -24,12 +24,10 @@ import mil.nga.giat.geowave.datastore.hbase.encoding.HBaseCommonIndexedPersisten
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.CellUtil;
 import org.apache.hadoop.hbase.filter.FilterBase;
-import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.log4j.Logger;
 
 /**
- * This class wraps our Distributable filters in an HBase filter so that a
- * coprocessor can use them.
+ * This class wraps our Distributable filters in an HBase filter so that a coprocessor can use them.
  * 
  * @author kent
  *
@@ -43,19 +41,32 @@ public class HBaseDistributableFilter extends
 	protected CommonIndexModel model;
 	private final List<ByteArrayId> commonIndexFieldIds = new ArrayList<>();
 
-	public HBaseDistributableFilter(
+	public HBaseDistributableFilter() {}
+
+	public boolean init(
 			final byte[] filterBytes,
 			final byte[] modelBytes ) {
 		filter = PersistenceUtils.fromBinary(
 				filterBytes,
 				DistributableQueryFilter.class);
 
+		if (filter == null) {
+			return false;
+		}
+
 		model = PersistenceUtils.fromBinary(
 				modelBytes,
 				CommonIndexModel.class);
+
+		if (model == null) {
+			return false;
+		}
+
 		for (final NumericDimensionField<? extends CommonIndexValue> numericDimension : model.getDimensions()) {
 			commonIndexFieldIds.add(numericDimension.getFieldId());
 		}
+
+		return true;
 	}
 
 	@Override
@@ -79,7 +90,7 @@ public class HBaseDistributableFilter extends
 			final PersistentDataset<CommonIndexValue> commonData,
 			final FlattenedUnreadData unreadData ) {
 		ReturnCode returnCode = ReturnCode.SKIP;
-		
+
 		try {
 			if (applyRowFilter(getEncoding(
 					cell,
@@ -89,7 +100,7 @@ public class HBaseDistributableFilter extends
 			}
 		}
 		catch (Exception e) {
-			
+
 			e.printStackTrace();
 		}
 
@@ -102,7 +113,7 @@ public class HBaseDistributableFilter extends
 			final FlattenedUnreadData unreadData ) {
 		final GeowaveRowId rowId = new GeowaveRowId(
 				CellUtil.cloneRow(cell));
-		
+
 		return new HBaseCommonIndexedPersistenceEncoding(
 				new ByteArrayId(
 						rowId.getAdapterId()),
@@ -121,17 +132,17 @@ public class HBaseDistributableFilter extends
 			System.out.println("FILTER IS NULL");
 			return false;
 		}
-		
+
 		if (model == null) {
 			System.out.println("MODEL IS NULL");
 			return false;
 		}
-		
+
 		if (encoding == null) {
 			System.out.println("ENCODING IS NULL");
 			return false;
 		}
-		
+
 		return filter.accept(
 				model,
 				encoding);

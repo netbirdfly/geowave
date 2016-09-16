@@ -20,6 +20,7 @@ import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DuplicateEntryCount;
 import mil.nga.giat.geowave.core.store.callback.ScanCallback;
 import mil.nga.giat.geowave.core.store.filter.DedupeFilter;
+import mil.nga.giat.geowave.core.store.filter.DistributableQueryFilter;
 import mil.nga.giat.geowave.core.store.filter.QueryFilter;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.core.store.query.ConstraintsQuery;
@@ -216,6 +217,11 @@ public class HBaseConstraintsQuery extends
 
 			final AggregationProtos.AggregationRequest.Builder requestBuilder = AggregationProtos.AggregationRequest.newBuilder();
 			requestBuilder.setType(aggregationBuilder.build());
+			
+			LOGGER.debug("Query has " + base.distributableFilters.size() + " dist filters.");
+			for (DistributableQueryFilter dqFilter : base.distributableFilters) {
+				LOGGER.debug("Filter type: " + dqFilter.getClass().getName());
+			}
 
 			requestBuilder.setFilter(ByteString.copyFrom(PersistenceUtils.toBinary(base.distributableFilters)));
 			requestBuilder.setModel(ByteString.copyFrom(PersistenceUtils.toBinary(index.getIndexModel())));

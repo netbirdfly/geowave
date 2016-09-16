@@ -71,8 +71,7 @@ public class AggregationEndpoint extends
 		AggregationProtos.AggregationResponse response = null;
 		ByteString value = ByteString.EMPTY;
 
-		long regionId = env.getRegionInfo().getRegionId();
-		System.out.println("Calling aggregate on coprocessor " + regionId);
+		System.out.println("Calling aggregate on coprocessor ");
 
 		// Get the aggregation type
 		String aggregationType = request.getType().getName();
@@ -91,21 +90,26 @@ public class AggregationEndpoint extends
 
 		if (aggregation != null) {
 			try {
-				if (request.getFilter() != null && request.getModel() != null) {
+				if (request.getFilter() != null && !request.getFilter().isEmpty()) {
+					HBaseDistributableFilter hdFilter = new HBaseDistributableFilter();
+
 					byte[] filterBytes = request.getFilter().toByteArray();
 					byte[] modelBytes = request.getModel().toByteArray();
 
-					HBaseDistributableFilter hdFilter = new HBaseDistributableFilter(
+					if (hdFilter.init(
 							filterBytes,
-							modelBytes);
+							modelBytes)) {
+						filterList = new FilterList(
+								hdFilter);
 
-					filterList = new FilterList(
-							hdFilter);
-
-					System.out.println("Created distributable filter... " + regionId);
+						System.out.println("Created distributable filter... ");
+					}
+					else {
+						System.out.println("Error creating distributable filter. ");
+					}
 				}
 				else {
-					System.out.println("Input distributable filter is undefined. " + regionId);
+					System.out.println("Input distributable filter is undefined. ");
 				}
 			}
 			catch (Exception e) {
@@ -127,7 +131,7 @@ public class AggregationEndpoint extends
 						filterList.addFilter(rangeFilter);
 					}
 
-					System.out.println("Created range filter... " + regionId);
+					System.out.println("Created range filter... ");
 				}
 				catch (Exception e) {
 					System.err.println(e.getMessage());
@@ -135,10 +139,10 @@ public class AggregationEndpoint extends
 				}
 			}
 			else {
-				System.out.println("Input range filter is undefined. " + regionId);
+				System.out.println("Input range filter is undefined. ");
 			}
 
-			System.out.println("Scanning... " + regionId);
+			System.out.println("Scanning... ");
 			try {
 				Mergeable mvalue = getValue(
 						aggregation,
@@ -147,7 +151,7 @@ public class AggregationEndpoint extends
 				byte[] bvalue = PersistenceUtils.toBinary(mvalue);
 				value = ByteString.copyFrom(bvalue);
 
-				System.out.println("Done scanning. Value = (" + value + ") for region " + regionId);
+				System.out.println("Done scanning. Value = (" + value + ") for region ");
 			}
 			catch (IOException ioe) {
 				ioe.printStackTrace();
@@ -163,12 +167,12 @@ public class AggregationEndpoint extends
 			}
 		}
 
-		System.out.println("Setting response... " + regionId);
+		System.out.println("Setting response... ");
 
 		response = AggregationProtos.AggregationResponse.newBuilder().setValue(
 				value).build();
 
-		System.out.println("Coprocessor finished. " + regionId);
+		System.out.println("Coprocessor finished. ");
 
 		done.run(response);
 	}

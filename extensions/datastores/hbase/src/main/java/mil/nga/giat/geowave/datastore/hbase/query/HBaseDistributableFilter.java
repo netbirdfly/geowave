@@ -89,7 +89,7 @@ public class HBaseDistributableFilter extends
 			}
 		}
 		catch (Exception e) {
-			System.out.println(e.getMessage());
+			
 			e.printStackTrace();
 		}
 
@@ -117,6 +117,21 @@ public class HBaseDistributableFilter extends
 
 	protected boolean applyRowFilter(
 			final CommonIndexedPersistenceEncoding encoding ) {
+		if (filter == null) {
+			System.out.println("FILTER IS NULL");
+			return false;
+		}
+		
+		if (model == null) {
+			System.out.println("MODEL IS NULL");
+			return false;
+		}
+		
+		if (encoding == null) {
+			System.out.println("ENCODING IS NULL");
+			return false;
+		}
+		
 		return filter.accept(
 				model,
 				encoding);

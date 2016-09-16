@@ -103,8 +103,6 @@ public class HBaseDistributableFilter extends
 		final GeowaveRowId rowId = new GeowaveRowId(
 				CellUtil.cloneRow(cell));
 		
-		System.out.println("ROW ID: " + Bytes.toString(rowId.getRowId()));
-
 		return new HBaseCommonIndexedPersistenceEncoding(
 				new ByteArrayId(
 						rowId.getAdapterId()),

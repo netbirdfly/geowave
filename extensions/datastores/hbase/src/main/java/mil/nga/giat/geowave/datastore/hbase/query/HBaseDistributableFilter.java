@@ -1,11 +1,13 @@
 package mil.nga.giat.geowave.datastore.hbase.query;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.PersistenceUtils;
+import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.data.CommonIndexedPersistenceEncoding;
 import mil.nga.giat.geowave.core.store.data.PersistentDataset;
 import mil.nga.giat.geowave.core.store.data.PersistentValue;
@@ -51,6 +53,28 @@ public class HBaseDistributableFilter extends
 				DistributableQueryFilter.class);
 
 		if (filter == null) {
+			final ByteBuffer buf = ByteBuffer.wrap(filterBytes);
+			final int classNameLength = buf.getInt();
+			final byte[] classNameBinary = new byte[classNameLength];
+			final byte[] persistableBinary = new byte[filterBytes.length - classNameLength - 4];
+			buf.get(classNameBinary);
+
+			final String className = StringUtils.stringFromBinary(classNameBinary);
+			System.out.println("Failed to decode filter type: " + className);
+			
+			final DistributableQueryFilter retVal = PersistenceUtils.classFactory(
+					className,
+					DistributableQueryFilter.class);
+			if (retVal != null) {
+				System.out.println("Created filter object; decoding content...");
+				buf.get(persistableBinary);
+				retVal.fromBinary(persistableBinary);
+				System.out.println("Dist filter OK: type = " + retVal.getClass().getName());
+			}
+			else {
+				System.out.println("Failed to create filter object");
+			}
+			
 			return false;
 		}
 

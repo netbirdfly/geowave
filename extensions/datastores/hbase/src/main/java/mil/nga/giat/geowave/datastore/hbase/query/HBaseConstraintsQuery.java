@@ -267,6 +267,7 @@ public class HBaseConstraintsQuery extends
 								bvalue,
 								Mergeable.class));
 					}
+					LOGGER.debug("Current total at region " + regionCount + " is " + total);
 				}
 				else {
 					LOGGER.debug("Empty response for region " + regionCount);

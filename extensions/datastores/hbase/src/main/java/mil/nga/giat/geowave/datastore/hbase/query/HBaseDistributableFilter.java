@@ -1,13 +1,12 @@
 package mil.nga.giat.geowave.datastore.hbase.query;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
+import mil.nga.giat.geowave.core.index.Persistable;
 import mil.nga.giat.geowave.core.index.PersistenceUtils;
-import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.data.CommonIndexedPersistenceEncoding;
 import mil.nga.giat.geowave.core.store.data.PersistentDataset;
 import mil.nga.giat.geowave.core.store.data.PersistentValue;
@@ -39,30 +38,33 @@ public class HBaseDistributableFilter extends
 {
 	private final static Logger LOGGER = Logger.getLogger(HBaseDistributableFilter.class);
 
-	private DistributableQueryFilter filter;
+	private List<DistributableQueryFilter> filterList;
 	protected CommonIndexModel model;
 	private final List<ByteArrayId> commonIndexFieldIds = new ArrayList<>();
 
-	public HBaseDistributableFilter() {}
+	public HBaseDistributableFilter() {
+		filterList = new ArrayList<DistributableQueryFilter>();
+	}
 
 	public boolean init(
 			final byte[] filterBytes,
 			final byte[] modelBytes ) {
-		filter = PersistenceUtils.fromBinary(
-				filterBytes,
-				DistributableQueryFilter.class);
+		List<Persistable> decodedFilterList = PersistenceUtils.fromBinary(filterBytes);
 
-		if (filter == null) {
-			final ByteBuffer buf = ByteBuffer.wrap(filterBytes);
-			final int classNameLength = buf.getInt();
-			final byte[] classNameBinary = new byte[classNameLength];
-			final byte[] persistableBinary = new byte[filterBytes.length - classNameLength - 4];
-			buf.get(classNameBinary);
-
-			final String className = StringUtils.stringFromBinary(classNameBinary);
-			System.out.println("Failed to decode filter type: " + className);
-			
+		if (decodedFilterList == null) {
+			System.out.println("Failed to decode filter list");
 			return false;
+		}
+
+		filterList.clear();
+
+		for (Persistable decodedFilter : decodedFilterList) {
+			if (decodedFilter instanceof DistributableQueryFilter) {
+				filterList.add((DistributableQueryFilter) decodedFilter);
+			}
+			else {
+				System.out.println("Unrecognized type for decoded filter!" + decodedFilter.getClass().getName());
+			}
 		}
 
 		model = PersistenceUtils.fromBinary(
@@ -70,7 +72,7 @@ public class HBaseDistributableFilter extends
 				CommonIndexModel.class);
 
 		if (model == null) {
-			System.out.println("Failed to create model object");
+			System.out.println("Failed to decode index model");
 			return false;
 		}
 
@@ -140,7 +142,7 @@ public class HBaseDistributableFilter extends
 
 	protected boolean applyRowFilter(
 			final CommonIndexedPersistenceEncoding encoding ) {
-		if (filter == null) {
+		if (filterList == null) {
 			System.out.println("FILTER IS NULL");
 			return false;
 		}
@@ -155,9 +157,15 @@ public class HBaseDistributableFilter extends
 			return false;
 		}
 
-		return filter.accept(
-				model,
-				encoding);
+		for (DistributableQueryFilter filter : filterList) {
+			if (!filter.accept(
+					model,
+					encoding)) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	protected FlattenedUnreadData aggregateFieldData(

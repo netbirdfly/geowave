@@ -200,14 +200,12 @@ public class AggregationEndpoint extends
 		RegionScanner scanner = region.getScanner(scan);
 		region.startRegionOperation();
 
+		// TODO: This only works for 'count' aggregation.
+		// Anything else will need native -> common conversion
 		List<Cell> results = new ArrayList<Cell>();
-		boolean hasMore = false;
-
-		do {
-			hasMore = scanner.nextRaw(results);
+		while (scanner.nextRaw(results)) {			
 			aggregation.aggregate(results);
 		}
-		while (hasMore);
 
 		scanner.close();
 		region.closeRegionOperation();

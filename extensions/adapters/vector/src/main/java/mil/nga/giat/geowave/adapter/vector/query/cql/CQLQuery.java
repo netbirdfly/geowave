@@ -199,10 +199,9 @@ public class CQLQuery implements
 				// constraints);
 				// }
 				// else {
-				baseQuery = new SpatialQuery(
+				baseQuery = new mil.nga.giat.geowave.core.geotime.store.query.IndexOnlySpatialQuery(
 						constraints,
-						geometry,
-						geoCompareOp);
+						geometry);
 				// }
 			}
 			else if ((timeConstraintSet != null) && !timeConstraintSet.isEmpty()) {

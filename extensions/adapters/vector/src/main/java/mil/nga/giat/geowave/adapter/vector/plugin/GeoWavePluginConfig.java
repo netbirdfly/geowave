@@ -124,7 +124,7 @@ public class GeoWavePluginConfig
 	private final Integer transactionBufferSize;
 	private final IndexQueryStrategySPI indexQueryStrategy;
 	private final AdapterIndexMappingStore adapterIndexMappingStore;
-	private final Boolean looseQuery;
+	private final Boolean looseQuery = true;
 
 	private static Map<String, List<Param>> paramMap = new HashMap<String, List<Param>>();
 
@@ -193,13 +193,13 @@ public class GeoWavePluginConfig
 			}
 		}
 		featureNameSpaceURI = namespaceURI;
-		param = params.get(LOOSE_QUERY_KEY);
+		/*param = params.get(LOOSE_QUERY_KEY);
 		if (param != null) {
 			looseQuery = param.equals(Boolean.valueOf(true));
 		}
 		else {
 			looseQuery = false;
-		}
+		}*/
 		param = params.get(TRANSACTION_BUFFER_SIZE);
 		Integer bufferSizeFromParam = 10000;
 		if (param != null) {
@@ -255,7 +255,7 @@ public class GeoWavePluginConfig
 	}
 
 	public boolean isLooseQuery() {
-		return looseQuery == null ? false : looseQuery;
+		return looseQuery == null ? true : looseQuery;
 	}
 
 	public String getName() {

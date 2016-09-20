@@ -13,6 +13,7 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -38,6 +39,7 @@ import com.vividsolutions.jts.geom.Geometry;
 
 import mil.nga.giat.geowave.adapter.vector.FeatureDataAdapter;
 import mil.nga.giat.geowave.adapter.vector.GeotoolsFeatureDataAdapter;
+import mil.nga.giat.geowave.adapter.vector.WholeFeatureDataAdapter;
 import mil.nga.giat.geowave.adapter.vector.export.VectorLocalExportCommand;
 import mil.nga.giat.geowave.adapter.vector.export.VectorLocalExportOptions;
 import mil.nga.giat.geowave.adapter.vector.stats.FeatureBoundingBoxStatistics;
@@ -45,6 +47,7 @@ import mil.nga.giat.geowave.adapter.vector.stats.FeatureNumericRangeStatistics;
 import mil.nga.giat.geowave.adapter.vector.utils.TimeDescriptors;
 import mil.nga.giat.geowave.core.cli.parser.ManualOperationParams;
 import mil.nga.giat.geowave.core.geotime.GeometryUtils;
+import mil.nga.giat.geowave.core.geotime.store.query.IndexOnlySpatialQuery;
 import mil.nga.giat.geowave.core.geotime.store.query.SpatialQuery;
 import mil.nga.giat.geowave.core.geotime.store.statistics.BoundingBoxDataStatistics;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
@@ -120,7 +123,7 @@ public class GeoWaveBasicIT
 
 	@GeoWaveTestStore({
 		GeoWaveStoreType.ACCUMULO,
-		GeoWaveStoreType.HBASE
+//		GeoWaveStoreType.HBASE
 	})
 	protected DataStorePluginOptions dataStore;
 
@@ -674,7 +677,7 @@ public class GeoWaveBasicIT
 	public void testFeatureSerialization()
 			throws IOException {
 
-		final Map<Class, Object> args = new HashMap<>();
+		final Map<Class, Object> args = new LinkedHashMap();
 		args.put(
 				Geometry.class,
 				GeometryUtils.GEOMETRY_FACTORY.createPoint(
@@ -786,7 +789,7 @@ public class GeoWaveBasicIT
 		final SimpleFeatureType serTestType = builder.buildFeatureType();
 		final SimpleFeatureBuilder serBuilder = new SimpleFeatureBuilder(
 				serTestType);
-		final FeatureDataAdapter serAdapter = new FeatureDataAdapter(
+		final WholeFeatureDataAdapter serAdapter = new WholeFeatureDataAdapter(
 				serTestType);
 
 		for (final Map.Entry<Class, Object> arg : args.entrySet()) {
@@ -803,7 +806,7 @@ public class GeoWaveBasicIT
 				TestUtils.DEFAULT_SPATIAL_INDEX)) {
 			writer.write(sf);
 		}
-		final DistributableQuery q = new SpatialQuery(
+		final DistributableQuery q = new IndexOnlySpatialQuery(
 				((Geometry) args.get(Geometry.class)).buffer(0.5d));
 		try (final CloseableIterator<?> iter = geowaveStore.query(
 				new QueryOptions(/* TODO do I need to pass 'index'? */),

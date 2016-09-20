@@ -25,7 +25,7 @@ public class TimeField implements
 		NumericDimensionField<Time>
 {
 	// DOUBLE null terminate to be extra sure this is a reserved field ID
-	private final static ByteArrayId DEFAULT_FIELD_ID = new ByteArrayId(
+	public final static ByteArrayId DEFAULT_FIELD_ID = new ByteArrayId(
 			ByteArrayUtils.combineArrays(
 					StringUtils.stringToBinary("time"),
 					new byte[] {

@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import mil.nga.giat.geowave.adapter.vector.FeatureDataAdapter;
+import mil.nga.giat.geowave.adapter.vector.WholeFeatureDataAdapter;
 import mil.nga.giat.geowave.adapter.vector.utils.SimpleFeatureUserDataConfigurationSet;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.ingest.GeoWaveData;
@@ -59,16 +60,16 @@ public class SimpleFeatureGeoWaveWrapper implements
 							retypedSchema);
 				}
 			}
-			if ((visibility == null) || visibility.isEmpty()) {
-				dataAdapter = new FeatureDataAdapter(
+//			if ((visibility == null) || visibility.isEmpty()) {
+				dataAdapter = new WholeFeatureDataAdapter(
 						retypedSchema);
-			}
-			else {
-				dataAdapter = new FeatureDataAdapter(
-						retypedSchema,
-						new GlobalVisibilityHandler<SimpleFeature, Object>(
-								visibility));
-			}
+//			}
+//			else {
+//				dataAdapter = new FeatureDataAdapter(
+//						retypedSchema,
+//						new GlobalVisibilityHandler<SimpleFeature, Object>(
+//								visibility));
+//			}
 		}
 
 		@Override

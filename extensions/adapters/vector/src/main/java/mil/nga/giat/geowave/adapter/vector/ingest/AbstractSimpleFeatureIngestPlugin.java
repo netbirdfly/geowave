@@ -106,9 +106,8 @@ abstract public class AbstractSimpleFeatureIngestPlugin<I> implements
 			return new AvroFeatureDataAdapter(
 					type);
 		}
-		return new FeatureDataAdapter(
-				type,
-				fieldVisiblityHandler);
+		return new WholeFeatureDataAdapter(
+				type);
 	}
 
 	abstract protected SimpleFeatureType[] getTypes();

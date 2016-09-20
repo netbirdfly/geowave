@@ -3,14 +3,25 @@ package mil.nga.giat.geowave.adapter.vector;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
 import org.geotools.data.DataUtilities;
 import org.geotools.feature.SchemaException;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
+import org.geotools.feature.simple.SimpleFeatureImpl;
+import org.geotools.filter.identity.FeatureIdImpl;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.feature.type.GeometryType;
 
 import mil.nga.giat.geowave.adapter.vector.field.SimpleFeatureSerializationProvider;
 import mil.nga.giat.geowave.adapter.vector.index.SimpleFeaturePrimaryIndexConfiguration;
@@ -19,7 +30,12 @@ import mil.nga.giat.geowave.adapter.vector.stats.StatsManager;
 import mil.nga.giat.geowave.adapter.vector.utils.SimpleFeatureUserDataConfigurationSet;
 import mil.nga.giat.geowave.adapter.vector.utils.TimeDescriptors;
 import mil.nga.giat.geowave.adapter.vector.utils.TimeDescriptors.TimeDescriptorConfiguration;
+import mil.nga.giat.geowave.core.geotime.store.dimension.GeometryAdapter;
+import mil.nga.giat.geowave.core.geotime.store.dimension.GeometryWrapper;
 import mil.nga.giat.geowave.core.geotime.store.dimension.Time;
+import mil.nga.giat.geowave.core.geotime.store.dimension.Time.Timestamp;
+import mil.nga.giat.geowave.core.geotime.store.dimension.TimeAdapter;
+import mil.nga.giat.geowave.core.geotime.store.dimension.TimeField;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.EntryVisibilityHandler;
@@ -37,6 +53,8 @@ import mil.nga.giat.geowave.core.store.data.PersistentValue;
 import mil.nga.giat.geowave.core.store.data.field.FieldReader;
 import mil.nga.giat.geowave.core.store.data.field.FieldUtils;
 import mil.nga.giat.geowave.core.store.data.field.FieldWriter;
+import mil.nga.giat.geowave.core.store.dimension.NumericDimensionField;
+import mil.nga.giat.geowave.core.store.flatten.BitmaskUtils;
 import mil.nga.giat.geowave.core.store.index.CommonIndexModel;
 import mil.nga.giat.geowave.core.store.index.CommonIndexValue;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
@@ -100,7 +118,7 @@ public class WholeFeatureDataAdapter extends
 	public FieldReader<Object> getReader(
 			final ByteArrayId fieldId ) {
 		return (FieldReader) new SimpleFeatureSerializationProvider.WholeFeatureReader(
-				featureType);
+				fieldId.getBytes());
 	}
 
 	@Override
@@ -215,7 +233,6 @@ public class WholeFeatureDataAdapter extends
 			final ByteArrayId statisticsId ) {
 		return statsManager.getVisibilityHandler(statisticsId);
 	}
-
 	@Override
 	public SimpleFeature decode(
 			final IndexedAdapterPersistenceEncoding data,
@@ -223,44 +240,80 @@ public class WholeFeatureDataAdapter extends
 		final PersistentValue<Object> obj = data.getAdapterExtendedData().getValues().get(
 				0);
 		final byte[][] bytes = (byte[][]) obj.getValue();
-		int i = 0;
-		final SimpleFeatureBuilder bldr = getBuilder();
+		byte[] fieldId = bytes[bytes.length-1];
+		List<Integer> positions = BitmaskUtils.getFieldPositions(fieldId);
+		Object[] attr = new Object[featureType.getAttributeCount()];
 		for (final byte[] f : bytes) {
-			if (f != null) {
-				final FieldReader reader = FieldUtils.getDefaultReaderForClass(featureType.getType(
-						i).getBinding());
+			for (int i =0; i < attr.length; i++){
+				int ind = positions.indexOf(i);
+				if (ind >=0){
+				if (bytes[ind] != null){
 
-				bldr.set(
-						i,
-						reader.readField(f));
+					final FieldReader reader = FieldUtils.getDefaultReaderForClass(featureType.getType(
+							i).getBinding());
+				attr[i] =
+						reader.readField(bytes[ind]);
+				}
+				}
+				else if (featureType.getType(i) instanceof GeometryType){
+					attr[i] = ((GeometryWrapper)data.getCommonData().getValue(GeometryAdapter.DEFAULT_GEOMETRY_FIELD_ID)).getGeometry();
+				}
+				else {
+					attr[i] = new Date((long)((Time)data.getCommonData().getValue(TimeField.DEFAULT_FIELD_ID)).toNumericData().getCentroid());
+				}
 			}
-			i++;
 		}
-		return bldr.buildFeature(data.getDataId().getString());
+		return new SimpleFeatureImpl(attr, featureType, new FeatureIdImpl(data.getDataId().getString()), false);
 	}
-
-	private synchronized SimpleFeatureBuilder getBuilder() {
-		if (b == null) {
-			b = new SimpleFeatureBuilder(
-					featureType);
+	Map<CommonIndexModel, ByteArrayId> fieldIdCache = new HashMap<>();
+	private ByteArrayId getFieldId(CommonIndexModel indexModel){
+		ByteArrayId fieldId = fieldIdCache.get(indexModel);
+		if (fieldId == null){
+		SortedSet<Integer> positions = new TreeSet<Integer>();
+		final Set<ByteArrayId> nativeFieldsInIndex = new HashSet<ByteArrayId>();
+		for (final NumericDimensionField<? extends CommonIndexValue> dimension : indexModel.getDimensions()) {
+			final IndexFieldHandler<?, ? extends CommonIndexValue, Object> fieldHandler = getFieldHandler(dimension);
+			if (fieldHandler != null){
+				nativeFieldsInIndex.addAll(Arrays.asList(fieldHandler.getNativeFieldIds()));
+			}
 		}
-		return b;
-	}
+		for (int i =0; i < featureType.getAttributeCount(); i++){
+			if (!nativeFieldsInIndex.contains(new ByteArrayId(featureType.getAttributeDescriptors().get(i).getLocalName()))){
+				positions.add(i);
+			}
+		}
 
+		fieldId = new ByteArrayId(
+				BitmaskUtils.generateCompositeBitmask(positions));
+		fieldIdCache.put(indexModel, fieldId);
+		}
+		return fieldId;
+		
+	}
 	@Override
 	public AdapterPersistenceEncoding encode(
 			final SimpleFeature entry,
 			final CommonIndexModel indexModel ) {
 		final PersistentDataset<Object> extendedData = new PersistentDataset<Object>();
-		extendedData.addValue(new PersistentValue<Object>(
-				new ByteArrayId(
-						""),
-				entry.getAttributes().toArray(
-						new Object[] {})));
+		List<Object> attributes = new ArrayList<>();
+		final Set<ByteArrayId> nativeFieldsInIndex = new HashSet<ByteArrayId>();
+		for (final NumericDimensionField<? extends CommonIndexValue> dimension : indexModel.getDimensions()) {
+			final IndexFieldHandler<?, ? extends CommonIndexValue, Object> fieldHandler = getFieldHandler(dimension);
+			if (fieldHandler != null){
+				nativeFieldsInIndex.addAll(Arrays.asList(fieldHandler.getNativeFieldIds()));
+			}
+		}
+		for (int i =0; i < featureType.getAttributeCount(); i++){
+			if (!nativeFieldsInIndex.contains(new ByteArrayId(featureType.getAttributeDescriptors().get(i).getLocalName()))){
+				attributes.add(entry.getAttribute(i));
+			}
+		}
+		extendedData.addValue(new PersistentValue<Object>(getFieldId(indexModel),
+				attributes.toArray(new Object[]{})));
 		final AdapterPersistenceEncoding encoding = super.encode(
 				entry,
 				indexModel);
-		return new WholeFeatureAdapterEncoding(
+		return new AdapterPersistenceEncoding(
 				getAdapterId(),
 				getDataId(entry),
 				encoding.getCommonData(),
@@ -382,14 +435,41 @@ public class WholeFeatureDataAdapter extends
 	public int getPositionOfOrderedField(
 			final CommonIndexModel model,
 			final ByteArrayId fieldId ) {
+		final List<ByteArrayId> dimensionFieldIds = getDimensionFieldIds(model);
+		// first check CommonIndexModel dimensions
+		if (dimensionFieldIds.contains(fieldId)) {
+			return dimensionFieldIds.indexOf(fieldId);
+		}
 		return model.getDimensions().length + 1;
 	}
 
 	@Override
 	public ByteArrayId getFieldIdForPosition(
-			final CommonIndexModel model,
+			final CommonIndexModel indexModel,
 			final int position ) {
-		return new ByteArrayId(
-				"");
+		if (position >= indexModel.getDimensions().length) {
+			return getFieldId(indexModel);
+		}
+
+		final List<ByteArrayId> dimensionFieldIds = getDimensionFieldIds(indexModel);
+		// otherwise check CommonIndexModel dimensions
+		return dimensionFieldIds.get(position);
 	}
+	private List<ByteArrayId> getDimensionFieldIds(
+			final CommonIndexModel model ) {
+		final List<ByteArrayId> retVal = modelToDimensionsMap.get(model.getId());
+		if (retVal != null) {
+			return retVal;
+		}
+		final List<ByteArrayId> dimensionFieldIds = new ArrayList<>();
+		for (final NumericDimensionField<? extends CommonIndexValue> dimension : model.getDimensions()) {
+			dimensionFieldIds.add(dimension.getFieldId());
+		}
+		modelToDimensionsMap.put(
+				model.getId(),
+				dimensionFieldIds);
+		return dimensionFieldIds;
+	}
+
+	private transient final Map<String, List<ByteArrayId>> modelToDimensionsMap = new HashMap<>();
 }

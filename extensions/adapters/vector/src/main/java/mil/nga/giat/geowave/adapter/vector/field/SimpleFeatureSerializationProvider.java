@@ -4,11 +4,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.List;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.data.field.FieldReader;
 import mil.nga.giat.geowave.core.store.data.field.FieldUtils;
 import mil.nga.giat.geowave.core.store.data.field.FieldWriter;
+import mil.nga.giat.geowave.core.store.flatten.BitmaskUtils;
 
 import org.opengis.feature.simple.SimpleFeatureType;
 
@@ -18,13 +20,13 @@ public class SimpleFeatureSerializationProvider
 	public static class WholeFeatureReader implements
 			FieldReader<byte[][]>
 	{
-		SimpleFeatureType type;
+		byte[] fieldId;
+		List<Integer> pos;
 
-		public WholeFeatureReader(
-				SimpleFeatureType type ) {
+		public WholeFeatureReader(byte[] fieldId ) {
 			super();
-			this.type = type;
-
+			this.fieldId = fieldId;
+			pos = BitmaskUtils.getFieldPositions(fieldId);
 		}
 
 		@Override
@@ -34,8 +36,8 @@ public class SimpleFeatureSerializationProvider
 				return null;
 			}
 			final ByteBuffer input = ByteBuffer.wrap(fieldData);
-			int attrCnt = type.getAttributeCount();
-			byte[][] retVal = new byte[attrCnt][];
+			int attrCnt = pos.size();
+			byte[][] retVal = new byte[attrCnt + 1][];
 			for (int i = 0; i < attrCnt; i++) {
 				int byteLength;
 				byteLength = input.getInt();
@@ -47,6 +49,7 @@ public class SimpleFeatureSerializationProvider
 				input.get(fieldValue);
 				retVal[i] = fieldValue;
 			}
+			retVal[attrCnt] = fieldId;
 			return retVal;
 		}
 

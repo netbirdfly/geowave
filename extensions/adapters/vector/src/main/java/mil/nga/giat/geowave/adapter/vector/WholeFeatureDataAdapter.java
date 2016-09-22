@@ -265,9 +265,10 @@ public class WholeFeatureDataAdapter extends
 		}
 		return new SimpleFeatureImpl(attr, featureType, new FeatureIdImpl(data.getDataId().getString()), false);
 	}
-	Map<CommonIndexModel, ByteArrayId> fieldIdCache = new HashMap<>();
+	Map<String, ByteArrayId> fieldIdCache = new HashMap<>();
 	private ByteArrayId getFieldId(CommonIndexModel indexModel){
-		ByteArrayId fieldId = fieldIdCache.get(indexModel);
+		String id = indexModel.getId();
+		ByteArrayId fieldId = fieldIdCache.get(id);
 		if (fieldId == null){
 		SortedSet<Integer> positions = new TreeSet<Integer>();
 		final Set<ByteArrayId> nativeFieldsInIndex = new HashSet<ByteArrayId>();
@@ -285,7 +286,7 @@ public class WholeFeatureDataAdapter extends
 
 		fieldId = new ByteArrayId(
 				BitmaskUtils.generateCompositeBitmask(positions));
-		fieldIdCache.put(indexModel, fieldId);
+		fieldIdCache.put(id, fieldId);
 		}
 		return fieldId;
 		

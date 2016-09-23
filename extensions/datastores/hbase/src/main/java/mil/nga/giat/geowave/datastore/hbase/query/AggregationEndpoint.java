@@ -5,7 +5,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import mil.nga.giat.geowave.core.index.Mergeable;
+import mil.nga.giat.geowave.core.index.Persistable;
 import mil.nga.giat.geowave.core.index.PersistenceUtils;
+import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
+import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.core.store.query.aggregate.Aggregation;
 import mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos;
 
@@ -35,6 +38,7 @@ public class AggregationEndpoint extends
 {
 
 	private RegionCoprocessorEnvironment env;
+	private HBaseDistributableFilter hdFilter;
 
 	@Override
 	public void start(
@@ -67,21 +71,27 @@ public class AggregationEndpoint extends
 			AggregationProtos.AggregationRequest request,
 			RpcCallback<AggregationProtos.AggregationResponse> done ) {
 		FilterList filterList = null;
+		DataAdapter dataAdapter = null;
 
 		AggregationProtos.AggregationResponse response = null;
 		ByteString value = ByteString.EMPTY;
 
-		System.out.println("Calling aggregate on coprocessor ");
-
 		// Get the aggregation type
-		String aggregationType = request.getType().getName();
+		String aggregationType = request.getAggregation().getName();
 		Aggregation aggregation = null;
 
 		try {
 			aggregation = (Aggregation) Class.forName(
 					aggregationType).newInstance();
 
-			// TODO: Handle aggregation params
+			// Handle aggregation params
+			if (request.getAggregation().hasParams()) {
+				byte[] parameterBytes = request.getAggregation().getParams().toByteArray();
+				final Persistable aggregationParams = PersistenceUtils.fromBinary(
+						parameterBytes,
+						Persistable.class);
+				aggregation.setParameters(aggregationParams);
+			}
 		}
 		catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
 			System.err.println(e.getMessage());
@@ -90,15 +100,10 @@ public class AggregationEndpoint extends
 
 		if (aggregation != null) {
 			try {
-				if (request.getFilter() != null && !request.getFilter().isEmpty()) {
-					HBaseDistributableFilter hdFilter = new HBaseDistributableFilter();
-					
-					ByteString filterByteString = request.getFilter();
-					System.out.println("Dist filter content = " + filterByteString.toStringUtf8());
+				if (request.hasFilter() && request.hasModel()) {
+					hdFilter = new HBaseDistributableFilter();
 
-					byte[] filterBytes = filterByteString.toByteArray();
-					System.out.println("Dist filter size = " + filterBytes.length);
-					
+					byte[] filterBytes = request.getFilter().toByteArray();
 					byte[] modelBytes = request.getModel().toByteArray();
 
 					if (hdFilter.init(
@@ -106,15 +111,13 @@ public class AggregationEndpoint extends
 							modelBytes)) {
 						filterList = new FilterList(
 								hdFilter);
-
-						System.out.println("Created distributable filter... ");
 					}
 					else {
-						System.out.println("Error creating distributable filter. ");
+						System.err.println("Error creating distributable filter. ");
 					}
 				}
 				else {
-					System.out.println("Input distributable filter is undefined. ");
+					System.err.println("Input distributable filter is undefined. ");
 				}
 			}
 			catch (Exception e) {
@@ -122,7 +125,7 @@ public class AggregationEndpoint extends
 				e.printStackTrace();
 			}
 
-			if (request.getRangefilter() != null) {
+			if (request.hasRangefilter()) {
 				byte[] rfilterBytes = request.getRangefilter().toByteArray();
 
 				try {
@@ -135,8 +138,6 @@ public class AggregationEndpoint extends
 					else {
 						filterList.addFilter(rangeFilter);
 					}
-
-					System.out.println("Created range filter... ");
 				}
 				catch (Exception e) {
 					System.err.println(e.getMessage());
@@ -144,19 +145,24 @@ public class AggregationEndpoint extends
 				}
 			}
 			else {
-				System.out.println("Input range filter is undefined. ");
+				System.err.println("Input range filter is undefined. ");
 			}
 
-			System.out.println("Scanning... ");
+			if (request.hasAdapter()) {
+				byte[] adapterBytes = request.getAdapter().toByteArray();
+				dataAdapter = PersistenceUtils.fromBinary(
+						adapterBytes,
+						DataAdapter.class);
+			}
+
 			try {
 				Mergeable mvalue = getValue(
 						aggregation,
-						filterList);
+						filterList,
+						dataAdapter);
 
 				byte[] bvalue = PersistenceUtils.toBinary(mvalue);
 				value = ByteString.copyFrom(bvalue);
-
-				System.out.println("Done scanning. Value = (" + value + ") for region ");
 			}
 			catch (IOException ioe) {
 				ioe.printStackTrace();
@@ -172,19 +178,16 @@ public class AggregationEndpoint extends
 			}
 		}
 
-		System.out.println("Setting response... ");
-
 		response = AggregationProtos.AggregationResponse.newBuilder().setValue(
 				value).build();
-
-		System.out.println("Coprocessor finished. ");
 
 		done.run(response);
 	}
 
 	private Mergeable getValue(
 			Aggregation aggregation,
-			Filter filter )
+			Filter filter,
+			DataAdapter dataAdapter )
 			throws IOException {
 		Scan scan = new Scan();
 		scan.setMaxVersions(1);
@@ -200,11 +203,18 @@ public class AggregationEndpoint extends
 		RegionScanner scanner = region.getScanner(scan);
 		region.startRegionOperation();
 
-		// TODO: This only works for 'count' aggregation.
-		// Anything else will need native -> common conversion
 		List<Cell> results = new ArrayList<Cell>();
-		while (scanner.nextRaw(results)) {			
-			aggregation.aggregate(results);
+		while (scanner.nextRaw(results)) {
+			if (dataAdapter != null && hdFilter != null) {
+				final Object row = hdFilter.decodeRow(dataAdapter);
+
+				if (row != null) {
+					aggregation.aggregate(row);
+				}
+			}
+			else {
+				aggregation.aggregate(results);
+			}
 		}
 
 		scanner.close();

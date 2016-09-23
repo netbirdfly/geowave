@@ -85,7 +85,8 @@ public final class AggregationProtos
 				throws com.google.protobuf.InvalidProtocolBufferException {
 			initFields();
 			int mutable_bitField0_ = 0;
-			com.google.protobuf.UnknownFieldSet.Builder unknownFields = com.google.protobuf.UnknownFieldSet.newBuilder();
+			com.google.protobuf.UnknownFieldSet.Builder unknownFields = com.google.protobuf.UnknownFieldSet
+					.newBuilder();
 			try {
 				boolean done = false;
 				while (!done) {
@@ -135,9 +136,10 @@ public final class AggregationProtos
 		}
 
 		protected com.google.protobuf.GeneratedMessage.FieldAccessorTable internalGetFieldAccessorTable() {
-			return mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.internal_static_AggregationType_fieldAccessorTable.ensureFieldAccessorsInitialized(
-					mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationType.class,
-					mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationType.Builder.class);
+			return mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.internal_static_AggregationType_fieldAccessorTable
+					.ensureFieldAccessorsInitialized(
+							mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationType.class,
+							mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationType.Builder.class);
 		}
 
 		public static com.google.protobuf.Parser<AggregationType> PARSER = new com.google.protobuf.AbstractParser<AggregationType>() {
@@ -448,9 +450,10 @@ public final class AggregationProtos
 			}
 
 			protected com.google.protobuf.GeneratedMessage.FieldAccessorTable internalGetFieldAccessorTable() {
-				return mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.internal_static_AggregationType_fieldAccessorTable.ensureFieldAccessorsInitialized(
-						mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationType.class,
-						mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationType.Builder.class);
+				return mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.internal_static_AggregationType_fieldAccessorTable
+						.ensureFieldAccessorsInitialized(
+								mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationType.class,
+								mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationType.Builder.class);
 			}
 
 			// Construct using
@@ -493,7 +496,8 @@ public final class AggregationProtos
 			}
 
 			public mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationType getDefaultInstanceForType() {
-				return mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationType.getDefaultInstance();
+				return mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationType
+						.getDefaultInstance();
 			}
 
 			public mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationType build() {
@@ -535,7 +539,8 @@ public final class AggregationProtos
 
 			public Builder mergeFrom(
 					mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationType other ) {
-				if (other == mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationType.getDefaultInstance()) return this;
+				if (other == mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationType
+						.getDefaultInstance()) return this;
 				if (other.hasName()) {
 					bitField0_ |= 0x00000001;
 					name_ = other.name_;
@@ -567,7 +572,8 @@ public final class AggregationProtos
 							extensionRegistry);
 				}
 				catch (com.google.protobuf.InvalidProtocolBufferException e) {
-					parsedMessage = (mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationType) e.getUnfinishedMessage();
+					parsedMessage = (mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationType) e
+							.getUnfinishedMessage();
 					throw e;
 				}
 				finally {
@@ -611,7 +617,8 @@ public final class AggregationProtos
 			public com.google.protobuf.ByteString getNameBytes() {
 				java.lang.Object ref = name_;
 				if (ref instanceof String) {
-					com.google.protobuf.ByteString b = com.google.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
+					com.google.protobuf.ByteString b = com.google.protobuf.ByteString
+							.copyFromUtf8((java.lang.String) ref);
 					name_ = b;
 					return b;
 				}
@@ -715,21 +722,21 @@ public final class AggregationProtos
 			com.google.protobuf.MessageOrBuilder
 	{
 
-		// required .AggregationType type = 1;
+		// required .AggregationType aggregation = 1;
 		/**
-		 * <code>required .AggregationType type = 1;</code>
+		 * <code>required .AggregationType aggregation = 1;</code>
 		 */
-		boolean hasType();
+		boolean hasAggregation();
 
 		/**
-		 * <code>required .AggregationType type = 1;</code>
+		 * <code>required .AggregationType aggregation = 1;</code>
 		 */
-		mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationType getType();
+		mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationType getAggregation();
 
 		/**
-		 * <code>required .AggregationType type = 1;</code>
+		 * <code>required .AggregationType aggregation = 1;</code>
 		 */
-		mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationTypeOrBuilder getTypeOrBuilder();
+		mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationTypeOrBuilder getAggregationOrBuilder();
 
 		// optional bytes rangefilter = 2;
 		/**
@@ -763,6 +770,17 @@ public final class AggregationProtos
 		 * <code>optional bytes model = 4;</code>
 		 */
 		com.google.protobuf.ByteString getModel();
+
+		// optional bytes adapter = 5;
+		/**
+		 * <code>optional bytes adapter = 5;</code>
+		 */
+		boolean hasAdapter();
+
+		/**
+		 * <code>optional bytes adapter = 5;</code>
+		 */
+		com.google.protobuf.ByteString getAdapter();
 	}
 
 	/**
@@ -808,7 +826,8 @@ public final class AggregationProtos
 				throws com.google.protobuf.InvalidProtocolBufferException {
 			initFields();
 			int mutable_bitField0_ = 0;
-			com.google.protobuf.UnknownFieldSet.Builder unknownFields = com.google.protobuf.UnknownFieldSet.newBuilder();
+			com.google.protobuf.UnknownFieldSet.Builder unknownFields = com.google.protobuf.UnknownFieldSet
+					.newBuilder();
 			try {
 				boolean done = false;
 				while (!done) {
@@ -830,14 +849,15 @@ public final class AggregationProtos
 						case 10: {
 							mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationType.Builder subBuilder = null;
 							if (((bitField0_ & 0x00000001) == 0x00000001)) {
-								subBuilder = type_.toBuilder();
+								subBuilder = aggregation_.toBuilder();
 							}
-							type_ = input.readMessage(
-									mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationType.PARSER,
-									extensionRegistry);
+							aggregation_ = input
+									.readMessage(
+											mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationType.PARSER,
+											extensionRegistry);
 							if (subBuilder != null) {
-								subBuilder.mergeFrom(type_);
-								type_ = subBuilder.buildPartial();
+								subBuilder.mergeFrom(aggregation_);
+								aggregation_ = subBuilder.buildPartial();
 							}
 							bitField0_ |= 0x00000001;
 							break;
@@ -855,6 +875,11 @@ public final class AggregationProtos
 						case 34: {
 							bitField0_ |= 0x00000008;
 							model_ = input.readBytes();
+							break;
+						}
+						case 42: {
+							bitField0_ |= 0x00000010;
+							adapter_ = input.readBytes();
 							break;
 						}
 					}
@@ -878,9 +903,10 @@ public final class AggregationProtos
 		}
 
 		protected com.google.protobuf.GeneratedMessage.FieldAccessorTable internalGetFieldAccessorTable() {
-			return mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.internal_static_AggregationRequest_fieldAccessorTable.ensureFieldAccessorsInitialized(
-					mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationRequest.class,
-					mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationRequest.Builder.class);
+			return mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.internal_static_AggregationRequest_fieldAccessorTable
+					.ensureFieldAccessorsInitialized(
+							mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationRequest.class,
+							mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationRequest.Builder.class);
 		}
 
 		public static com.google.protobuf.Parser<AggregationRequest> PARSER = new com.google.protobuf.AbstractParser<AggregationRequest>() {
@@ -900,29 +926,29 @@ public final class AggregationProtos
 		}
 
 		private int bitField0_;
-		// required .AggregationType type = 1;
-		public static final int TYPE_FIELD_NUMBER = 1;
-		private mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationType type_;
+		// required .AggregationType aggregation = 1;
+		public static final int AGGREGATION_FIELD_NUMBER = 1;
+		private mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationType aggregation_;
 
 		/**
-		 * <code>required .AggregationType type = 1;</code>
+		 * <code>required .AggregationType aggregation = 1;</code>
 		 */
-		public boolean hasType() {
+		public boolean hasAggregation() {
 			return ((bitField0_ & 0x00000001) == 0x00000001);
 		}
 
 		/**
-		 * <code>required .AggregationType type = 1;</code>
+		 * <code>required .AggregationType aggregation = 1;</code>
 		 */
-		public mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationType getType() {
-			return type_;
+		public mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationType getAggregation() {
+			return aggregation_;
 		}
 
 		/**
-		 * <code>required .AggregationType type = 1;</code>
+		 * <code>required .AggregationType aggregation = 1;</code>
 		 */
-		public mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationTypeOrBuilder getTypeOrBuilder() {
-			return type_;
+		public mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationTypeOrBuilder getAggregationOrBuilder() {
+			return aggregation_;
 		}
 
 		// optional bytes rangefilter = 2;
@@ -979,11 +1005,31 @@ public final class AggregationProtos
 			return model_;
 		}
 
+		// optional bytes adapter = 5;
+		public static final int ADAPTER_FIELD_NUMBER = 5;
+		private com.google.protobuf.ByteString adapter_;
+
+		/**
+		 * <code>optional bytes adapter = 5;</code>
+		 */
+		public boolean hasAdapter() {
+			return ((bitField0_ & 0x00000010) == 0x00000010);
+		}
+
+		/**
+		 * <code>optional bytes adapter = 5;</code>
+		 */
+		public com.google.protobuf.ByteString getAdapter() {
+			return adapter_;
+		}
+
 		private void initFields() {
-			type_ = mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationType.getDefaultInstance();
+			aggregation_ = mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationType
+					.getDefaultInstance();
 			rangefilter_ = com.google.protobuf.ByteString.EMPTY;
 			filter_ = com.google.protobuf.ByteString.EMPTY;
 			model_ = com.google.protobuf.ByteString.EMPTY;
+			adapter_ = com.google.protobuf.ByteString.EMPTY;
 		}
 
 		private byte memoizedIsInitialized = -1;
@@ -992,11 +1038,11 @@ public final class AggregationProtos
 			byte isInitialized = memoizedIsInitialized;
 			if (isInitialized != -1) return isInitialized == 1;
 
-			if (!hasType()) {
+			if (!hasAggregation()) {
 				memoizedIsInitialized = 0;
 				return false;
 			}
-			if (!getType().isInitialized()) {
+			if (!getAggregation().isInitialized()) {
 				memoizedIsInitialized = 0;
 				return false;
 			}
@@ -1011,7 +1057,7 @@ public final class AggregationProtos
 			if (((bitField0_ & 0x00000001) == 0x00000001)) {
 				output.writeMessage(
 						1,
-						type_);
+						aggregation_);
 			}
 			if (((bitField0_ & 0x00000002) == 0x00000002)) {
 				output.writeBytes(
@@ -1027,6 +1073,11 @@ public final class AggregationProtos
 				output.writeBytes(
 						4,
 						model_);
+			}
+			if (((bitField0_ & 0x00000010) == 0x00000010)) {
+				output.writeBytes(
+						5,
+						adapter_);
 			}
 			getUnknownFields().writeTo(
 					output);
@@ -1042,7 +1093,7 @@ public final class AggregationProtos
 			if (((bitField0_ & 0x00000001) == 0x00000001)) {
 				size += com.google.protobuf.CodedOutputStream.computeMessageSize(
 						1,
-						type_);
+						aggregation_);
 			}
 			if (((bitField0_ & 0x00000002) == 0x00000002)) {
 				size += com.google.protobuf.CodedOutputStream.computeBytesSize(
@@ -1058,6 +1109,11 @@ public final class AggregationProtos
 				size += com.google.protobuf.CodedOutputStream.computeBytesSize(
 						4,
 						model_);
+			}
+			if (((bitField0_ & 0x00000010) == 0x00000010)) {
+				size += com.google.protobuf.CodedOutputStream.computeBytesSize(
+						5,
+						adapter_);
 			}
 			size += getUnknownFields().getSerializedSize();
 			memoizedSerializedSize = size;
@@ -1084,10 +1140,10 @@ public final class AggregationProtos
 			mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationRequest other = (mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationRequest) obj;
 
 			boolean result = true;
-			result = result && (hasType() == other.hasType());
-			if (hasType()) {
-				result = result && getType().equals(
-						other.getType());
+			result = result && (hasAggregation() == other.hasAggregation());
+			if (hasAggregation()) {
+				result = result && getAggregation().equals(
+						other.getAggregation());
 			}
 			result = result && (hasRangefilter() == other.hasRangefilter());
 			if (hasRangefilter()) {
@@ -1104,6 +1160,11 @@ public final class AggregationProtos
 				result = result && getModel().equals(
 						other.getModel());
 			}
+			result = result && (hasAdapter() == other.hasAdapter());
+			if (hasAdapter()) {
+				result = result && getAdapter().equals(
+						other.getAdapter());
+			}
 			result = result && getUnknownFields().equals(
 					other.getUnknownFields());
 			return result;
@@ -1118,9 +1179,9 @@ public final class AggregationProtos
 			}
 			int hash = 41;
 			hash = (19 * hash) + getDescriptorForType().hashCode();
-			if (hasType()) {
-				hash = (37 * hash) + TYPE_FIELD_NUMBER;
-				hash = (53 * hash) + getType().hashCode();
+			if (hasAggregation()) {
+				hash = (37 * hash) + AGGREGATION_FIELD_NUMBER;
+				hash = (53 * hash) + getAggregation().hashCode();
 			}
 			if (hasRangefilter()) {
 				hash = (37 * hash) + RANGEFILTER_FIELD_NUMBER;
@@ -1133,6 +1194,10 @@ public final class AggregationProtos
 			if (hasModel()) {
 				hash = (37 * hash) + MODEL_FIELD_NUMBER;
 				hash = (53 * hash) + getModel().hashCode();
+			}
+			if (hasAdapter()) {
+				hash = (37 * hash) + ADAPTER_FIELD_NUMBER;
+				hash = (53 * hash) + getAdapter().hashCode();
 			}
 			hash = (29 * hash) + getUnknownFields().hashCode();
 			memoizedHashCode = hash;
@@ -1252,9 +1317,10 @@ public final class AggregationProtos
 			}
 
 			protected com.google.protobuf.GeneratedMessage.FieldAccessorTable internalGetFieldAccessorTable() {
-				return mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.internal_static_AggregationRequest_fieldAccessorTable.ensureFieldAccessorsInitialized(
-						mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationRequest.class,
-						mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationRequest.Builder.class);
+				return mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.internal_static_AggregationRequest_fieldAccessorTable
+						.ensureFieldAccessorsInitialized(
+								mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationRequest.class,
+								mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationRequest.Builder.class);
 			}
 
 			// Construct using
@@ -1272,7 +1338,7 @@ public final class AggregationProtos
 
 			private void maybeForceBuilderInitialization() {
 				if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
-					getTypeFieldBuilder();
+					getAggregationFieldBuilder();
 				}
 			}
 
@@ -1282,11 +1348,12 @@ public final class AggregationProtos
 
 			public Builder clear() {
 				super.clear();
-				if (typeBuilder_ == null) {
-					type_ = mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationType.getDefaultInstance();
+				if (aggregationBuilder_ == null) {
+					aggregation_ = mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationType
+							.getDefaultInstance();
 				}
 				else {
-					typeBuilder_.clear();
+					aggregationBuilder_.clear();
 				}
 				bitField0_ = (bitField0_ & ~0x00000001);
 				rangefilter_ = com.google.protobuf.ByteString.EMPTY;
@@ -1295,6 +1362,8 @@ public final class AggregationProtos
 				bitField0_ = (bitField0_ & ~0x00000004);
 				model_ = com.google.protobuf.ByteString.EMPTY;
 				bitField0_ = (bitField0_ & ~0x00000008);
+				adapter_ = com.google.protobuf.ByteString.EMPTY;
+				bitField0_ = (bitField0_ & ~0x00000010);
 				return this;
 			}
 
@@ -1308,7 +1377,8 @@ public final class AggregationProtos
 			}
 
 			public mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationRequest getDefaultInstanceForType() {
-				return mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationRequest.getDefaultInstance();
+				return mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationRequest
+						.getDefaultInstance();
 			}
 
 			public mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationRequest build() {
@@ -1327,11 +1397,11 @@ public final class AggregationProtos
 				if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
 					to_bitField0_ |= 0x00000001;
 				}
-				if (typeBuilder_ == null) {
-					result.type_ = type_;
+				if (aggregationBuilder_ == null) {
+					result.aggregation_ = aggregation_;
 				}
 				else {
-					result.type_ = typeBuilder_.build();
+					result.aggregation_ = aggregationBuilder_.build();
 				}
 				if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
 					to_bitField0_ |= 0x00000002;
@@ -1345,6 +1415,10 @@ public final class AggregationProtos
 					to_bitField0_ |= 0x00000008;
 				}
 				result.model_ = model_;
+				if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+					to_bitField0_ |= 0x00000010;
+				}
+				result.adapter_ = adapter_;
 				result.bitField0_ = to_bitField0_;
 				onBuilt();
 				return result;
@@ -1363,9 +1437,10 @@ public final class AggregationProtos
 
 			public Builder mergeFrom(
 					mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationRequest other ) {
-				if (other == mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationRequest.getDefaultInstance()) return this;
-				if (other.hasType()) {
-					mergeType(other.getType());
+				if (other == mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationRequest
+						.getDefaultInstance()) return this;
+				if (other.hasAggregation()) {
+					mergeAggregation(other.getAggregation());
 				}
 				if (other.hasRangefilter()) {
 					setRangefilter(other.getRangefilter());
@@ -1376,16 +1451,19 @@ public final class AggregationProtos
 				if (other.hasModel()) {
 					setModel(other.getModel());
 				}
+				if (other.hasAdapter()) {
+					setAdapter(other.getAdapter());
+				}
 				this.mergeUnknownFields(other.getUnknownFields());
 				return this;
 			}
 
 			public final boolean isInitialized() {
-				if (!hasType()) {
+				if (!hasAggregation()) {
 
 					return false;
 				}
-				if (!getType().isInitialized()) {
+				if (!getAggregation().isInitialized()) {
 
 					return false;
 				}
@@ -1403,7 +1481,8 @@ public final class AggregationProtos
 							extensionRegistry);
 				}
 				catch (com.google.protobuf.InvalidProtocolBufferException e) {
-					parsedMessage = (mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationRequest) e.getUnfinishedMessage();
+					parsedMessage = (mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationRequest) e
+							.getUnfinishedMessage();
 					throw e;
 				}
 				finally {
@@ -1416,135 +1495,142 @@ public final class AggregationProtos
 
 			private int bitField0_;
 
-			// required .AggregationType type = 1;
-			private mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationType type_ = mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationType.getDefaultInstance();
-			private com.google.protobuf.SingleFieldBuilder<mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationType, mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationType.Builder, mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationTypeOrBuilder> typeBuilder_;
+			// required .AggregationType aggregation = 1;
+			private mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationType aggregation_ = mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationType
+					.getDefaultInstance();
+			private com.google.protobuf.SingleFieldBuilder<mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationType, mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationType.Builder, mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationTypeOrBuilder> aggregationBuilder_;
 
 			/**
-			 * <code>required .AggregationType type = 1;</code>
+			 * <code>required .AggregationType aggregation = 1;</code>
 			 */
-			public boolean hasType() {
+			public boolean hasAggregation() {
 				return ((bitField0_ & 0x00000001) == 0x00000001);
 			}
 
 			/**
-			 * <code>required .AggregationType type = 1;</code>
+			 * <code>required .AggregationType aggregation = 1;</code>
 			 */
-			public mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationType getType() {
-				if (typeBuilder_ == null) {
-					return type_;
+			public mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationType getAggregation() {
+				if (aggregationBuilder_ == null) {
+					return aggregation_;
 				}
 				else {
-					return typeBuilder_.getMessage();
+					return aggregationBuilder_.getMessage();
 				}
 			}
 
 			/**
-			 * <code>required .AggregationType type = 1;</code>
+			 * <code>required .AggregationType aggregation = 1;</code>
 			 */
-			public Builder setType(
+			public Builder setAggregation(
 					mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationType value ) {
-				if (typeBuilder_ == null) {
+				if (aggregationBuilder_ == null) {
 					if (value == null) {
 						throw new NullPointerException();
 					}
-					type_ = value;
+					aggregation_ = value;
 					onChanged();
 				}
 				else {
-					typeBuilder_.setMessage(value);
+					aggregationBuilder_.setMessage(value);
 				}
 				bitField0_ |= 0x00000001;
 				return this;
 			}
 
 			/**
-			 * <code>required .AggregationType type = 1;</code>
+			 * <code>required .AggregationType aggregation = 1;</code>
 			 */
-			public Builder setType(
+			public Builder setAggregation(
 					mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationType.Builder builderForValue ) {
-				if (typeBuilder_ == null) {
-					type_ = builderForValue.build();
+				if (aggregationBuilder_ == null) {
+					aggregation_ = builderForValue.build();
 					onChanged();
 				}
 				else {
-					typeBuilder_.setMessage(builderForValue.build());
+					aggregationBuilder_.setMessage(builderForValue.build());
 				}
 				bitField0_ |= 0x00000001;
 				return this;
 			}
 
 			/**
-			 * <code>required .AggregationType type = 1;</code>
+			 * <code>required .AggregationType aggregation = 1;</code>
 			 */
-			public Builder mergeType(
+			public Builder mergeAggregation(
 					mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationType value ) {
-				if (typeBuilder_ == null) {
-					if (((bitField0_ & 0x00000001) == 0x00000001) && type_ != mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationType.getDefaultInstance()) {
-						type_ = mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationType.newBuilder(
-								type_).mergeFrom(
-								value).buildPartial();
+				if (aggregationBuilder_ == null) {
+					if (((bitField0_ & 0x00000001) == 0x00000001)
+							&& aggregation_ != mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationType
+									.getDefaultInstance()) {
+						aggregation_ = mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationType
+								.newBuilder(
+										aggregation_)
+								.mergeFrom(
+										value)
+								.buildPartial();
 					}
 					else {
-						type_ = value;
+						aggregation_ = value;
 					}
 					onChanged();
 				}
 				else {
-					typeBuilder_.mergeFrom(value);
+					aggregationBuilder_.mergeFrom(value);
 				}
 				bitField0_ |= 0x00000001;
 				return this;
 			}
 
 			/**
-			 * <code>required .AggregationType type = 1;</code>
+			 * <code>required .AggregationType aggregation = 1;</code>
 			 */
-			public Builder clearType() {
-				if (typeBuilder_ == null) {
-					type_ = mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationType.getDefaultInstance();
+			public Builder clearAggregation() {
+				if (aggregationBuilder_ == null) {
+					aggregation_ = mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationType
+							.getDefaultInstance();
 					onChanged();
 				}
 				else {
-					typeBuilder_.clear();
+					aggregationBuilder_.clear();
 				}
 				bitField0_ = (bitField0_ & ~0x00000001);
 				return this;
 			}
 
 			/**
-			 * <code>required .AggregationType type = 1;</code>
+			 * <code>required .AggregationType aggregation = 1;</code>
 			 */
-			public mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationType.Builder getTypeBuilder() {
+			public mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationType.Builder getAggregationBuilder() {
 				bitField0_ |= 0x00000001;
 				onChanged();
-				return getTypeFieldBuilder().getBuilder();
+				return getAggregationFieldBuilder().getBuilder();
 			}
 
 			/**
-			 * <code>required .AggregationType type = 1;</code>
+			 * <code>required .AggregationType aggregation = 1;</code>
 			 */
-			public mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationTypeOrBuilder getTypeOrBuilder() {
-				if (typeBuilder_ != null) {
-					return typeBuilder_.getMessageOrBuilder();
+			public mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationTypeOrBuilder getAggregationOrBuilder() {
+				if (aggregationBuilder_ != null) {
+					return aggregationBuilder_.getMessageOrBuilder();
 				}
 				else {
-					return type_;
+					return aggregation_;
 				}
 			}
 
 			/**
-			 * <code>required .AggregationType type = 1;</code>
+			 * <code>required .AggregationType aggregation = 1;</code>
 			 */
-			private com.google.protobuf.SingleFieldBuilder<mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationType, mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationType.Builder, mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationTypeOrBuilder> getTypeFieldBuilder() {
-				if (typeBuilder_ == null) {
-					typeBuilder_ = new com.google.protobuf.SingleFieldBuilder<mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationType, mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationType.Builder, mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationTypeOrBuilder>(
-							type_,
+			private com.google.protobuf.SingleFieldBuilder<mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationType, mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationType.Builder, mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationTypeOrBuilder> getAggregationFieldBuilder() {
+				if (aggregationBuilder_ == null) {
+					aggregationBuilder_ = new com.google.protobuf.SingleFieldBuilder<mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationType, mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationType.Builder, mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationTypeOrBuilder>(
+							aggregation_,
 							getParentForChildren(),
 							isClean());
-					type_ = null;
+					aggregation_ = null;
 				}
-				return typeBuilder_;
+				return aggregationBuilder_;
 			}
 
 			// optional bytes rangefilter = 2;
@@ -1670,6 +1756,47 @@ public final class AggregationProtos
 				return this;
 			}
 
+			// optional bytes adapter = 5;
+			private com.google.protobuf.ByteString adapter_ = com.google.protobuf.ByteString.EMPTY;
+
+			/**
+			 * <code>optional bytes adapter = 5;</code>
+			 */
+			public boolean hasAdapter() {
+				return ((bitField0_ & 0x00000010) == 0x00000010);
+			}
+
+			/**
+			 * <code>optional bytes adapter = 5;</code>
+			 */
+			public com.google.protobuf.ByteString getAdapter() {
+				return adapter_;
+			}
+
+			/**
+			 * <code>optional bytes adapter = 5;</code>
+			 */
+			public Builder setAdapter(
+					com.google.protobuf.ByteString value ) {
+				if (value == null) {
+					throw new NullPointerException();
+				}
+				bitField0_ |= 0x00000010;
+				adapter_ = value;
+				onChanged();
+				return this;
+			}
+
+			/**
+			 * <code>optional bytes adapter = 5;</code>
+			 */
+			public Builder clearAdapter() {
+				bitField0_ = (bitField0_ & ~0x00000010);
+				adapter_ = getDefaultInstance().getAdapter();
+				onChanged();
+				return this;
+			}
+
 			// @@protoc_insertion_point(builder_scope:AggregationRequest)
 		}
 
@@ -1741,7 +1868,8 @@ public final class AggregationProtos
 				throws com.google.protobuf.InvalidProtocolBufferException {
 			initFields();
 			int mutable_bitField0_ = 0;
-			com.google.protobuf.UnknownFieldSet.Builder unknownFields = com.google.protobuf.UnknownFieldSet.newBuilder();
+			com.google.protobuf.UnknownFieldSet.Builder unknownFields = com.google.protobuf.UnknownFieldSet
+					.newBuilder();
 			try {
 				boolean done = false;
 				while (!done) {
@@ -1786,9 +1914,10 @@ public final class AggregationProtos
 		}
 
 		protected com.google.protobuf.GeneratedMessage.FieldAccessorTable internalGetFieldAccessorTable() {
-			return mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.internal_static_AggregationResponse_fieldAccessorTable.ensureFieldAccessorsInitialized(
-					mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationResponse.class,
-					mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationResponse.Builder.class);
+			return mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.internal_static_AggregationResponse_fieldAccessorTable
+					.ensureFieldAccessorsInitialized(
+							mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationResponse.class,
+							mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationResponse.Builder.class);
 		}
 
 		public static com.google.protobuf.Parser<AggregationResponse> PARSER = new com.google.protobuf.AbstractParser<AggregationResponse>() {
@@ -2035,9 +2164,10 @@ public final class AggregationProtos
 			}
 
 			protected com.google.protobuf.GeneratedMessage.FieldAccessorTable internalGetFieldAccessorTable() {
-				return mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.internal_static_AggregationResponse_fieldAccessorTable.ensureFieldAccessorsInitialized(
-						mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationResponse.class,
-						mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationResponse.Builder.class);
+				return mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.internal_static_AggregationResponse_fieldAccessorTable
+						.ensureFieldAccessorsInitialized(
+								mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationResponse.class,
+								mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationResponse.Builder.class);
 			}
 
 			// Construct using
@@ -2078,7 +2208,8 @@ public final class AggregationProtos
 			}
 
 			public mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationResponse getDefaultInstanceForType() {
-				return mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationResponse.getDefaultInstance();
+				return mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationResponse
+						.getDefaultInstance();
 			}
 
 			public mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationResponse build() {
@@ -2116,7 +2247,8 @@ public final class AggregationProtos
 
 			public Builder mergeFrom(
 					mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationResponse other ) {
-				if (other == mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationResponse.getDefaultInstance()) return this;
+				if (other == mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationResponse
+						.getDefaultInstance()) return this;
 				if (other.hasValue()) {
 					setValue(other.getValue());
 				}
@@ -2143,7 +2275,8 @@ public final class AggregationProtos
 							extensionRegistry);
 				}
 				catch (com.google.protobuf.InvalidProtocolBufferException e) {
-					parsedMessage = (mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationResponse) e.getUnfinishedMessage();
+					parsedMessage = (mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationResponse) e
+							.getUnfinishedMessage();
 					throw e;
 				}
 				finally {
@@ -2264,9 +2397,10 @@ public final class AggregationProtos
 					}
 					switch (method.getIndex()) {
 						case 0:
-							return impl.aggregate(
-									controller,
-									(mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationRequest) request);
+							return impl
+									.aggregate(
+											controller,
+											(mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationRequest) request);
 						default:
 							throw new java.lang.AssertionError(
 									"Can't get here.");
@@ -2281,7 +2415,8 @@ public final class AggregationProtos
 					}
 					switch (method.getIndex()) {
 						case 0:
-							return mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationRequest.getDefaultInstance();
+							return mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationRequest
+									.getDefaultInstance();
 						default:
 							throw new java.lang.AssertionError(
 									"Can't get here.");
@@ -2296,7 +2431,8 @@ public final class AggregationProtos
 					}
 					switch (method.getIndex()) {
 						case 0:
-							return mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationResponse.getDefaultInstance();
+							return mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationResponse
+									.getDefaultInstance();
 						default:
 							throw new java.lang.AssertionError(
 									"Can't get here.");
@@ -2315,8 +2451,11 @@ public final class AggregationProtos
 				com.google.protobuf.RpcCallback<mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationResponse> done );
 
 		public static final com.google.protobuf.Descriptors.ServiceDescriptor getDescriptor() {
-			return mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.getDescriptor().getServices().get(
-					0);
+			return mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos
+					.getDescriptor()
+					.getServices()
+					.get(
+							0);
 		}
 
 		public final com.google.protobuf.Descriptors.ServiceDescriptor getDescriptorForType() {
@@ -2334,10 +2473,12 @@ public final class AggregationProtos
 			}
 			switch (method.getIndex()) {
 				case 0:
-					this.aggregate(
-							controller,
-							(mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationRequest) request,
-							com.google.protobuf.RpcUtil.<mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationResponse> specializeCallback(done));
+					this
+							.aggregate(
+									controller,
+									(mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationRequest) request,
+									com.google.protobuf.RpcUtil
+											.<mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationResponse> specializeCallback(done));
 					return;
 				default:
 					throw new java.lang.AssertionError(
@@ -2353,7 +2494,8 @@ public final class AggregationProtos
 			}
 			switch (method.getIndex()) {
 				case 0:
-					return mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationRequest.getDefaultInstance();
+					return mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationRequest
+							.getDefaultInstance();
 				default:
 					throw new java.lang.AssertionError(
 							"Can't get here.");
@@ -2368,7 +2510,8 @@ public final class AggregationProtos
 			}
 			switch (method.getIndex()) {
 				case 0:
-					return mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationResponse.getDefaultInstance();
+					return mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationResponse
+							.getDefaultInstance();
 				default:
 					throw new java.lang.AssertionError(
 							"Can't get here.");
@@ -2400,16 +2543,20 @@ public final class AggregationProtos
 					com.google.protobuf.RpcController controller,
 					mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationRequest request,
 					com.google.protobuf.RpcCallback<mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationResponse> done ) {
-				channel.callMethod(
-						getDescriptor().getMethods().get(
-								0),
-						controller,
-						request,
-						mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationResponse.getDefaultInstance(),
-						com.google.protobuf.RpcUtil.generalizeCallback(
-								done,
-								mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationResponse.class,
-								mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationResponse.getDefaultInstance()));
+				channel
+						.callMethod(
+								getDescriptor().getMethods().get(
+										0),
+								controller,
+								request,
+								mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationResponse
+										.getDefaultInstance(),
+								com.google.protobuf.RpcUtil
+										.generalizeCallback(
+												done,
+												mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationResponse.class,
+												mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationResponse
+														.getDefaultInstance()));
 			}
 		}
 
@@ -2441,12 +2588,14 @@ public final class AggregationProtos
 					com.google.protobuf.RpcController controller,
 					mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationRequest request )
 					throws com.google.protobuf.ServiceException {
-				return (mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationResponse) channel.callBlockingMethod(
-						getDescriptor().getMethods().get(
-								0),
-						controller,
-						request,
-						mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationResponse.getDefaultInstance());
+				return (mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationResponse) channel
+						.callBlockingMethod(
+								getDescriptor().getMethods().get(
+										0),
+								controller,
+								request,
+								mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos.AggregationResponse
+										.getDefaultInstance());
 			}
 
 		}
@@ -2468,7 +2617,16 @@ public final class AggregationProtos
 	private static com.google.protobuf.Descriptors.FileDescriptor descriptor;
 	static {
 		java.lang.String[] descriptorData = {
-			"\n\030AggregationService.proto\"/\n\017Aggregatio" + "nType\022\014\n\004name\030\001 \002(\t\022\016\n\006params\030\002 \001(\014\"h\n\022A" + "ggregationRequest\022\036\n\004type\030\001 \002(\0132\020.Aggreg" + "ationType\022\023\n\013rangefilter\030\002 \001(\014\022\016\n\006filter" + "\030\003 \001(\014\022\r\n\005model\030\004 \001(\014\"$\n\023AggregationResp" + "onse\022\r\n\005value\030\001 \002(\0142L\n\022AggregationServic" + "e\0226\n\taggregate\022\023.AggregationRequest\032\024.Ag" + "gregationResponseBQ\n4mil.nga.giat.geowav" + "e.datastore.hbase.query.generatedB\021Aggre" + "gationProtosH\001\210\001\001\240\001\001"
+			"\n\030AggregationService.proto\"/\n\017Aggregatio"
+					+ "nType\022\014\n\004name\030\001 \002(\t\022\016\n\006params\030\002 \001(\014\"\200\001\n\022"
+					+ "AggregationRequest\022%\n\013aggregation\030\001 \002(\0132"
+					+ "\020.AggregationType\022\023\n\013rangefilter\030\002 \001(\014\022\016"
+					+ "\n\006filter\030\003 \001(\014\022\r\n\005model\030\004 \001(\014\022\017\n\007adapter"
+					+ "\030\005 \001(\014\"$\n\023AggregationResponse\022\r\n\005value\030\001"
+					+ " \002(\0142L\n\022AggregationService\0226\n\taggregate\022"
+					+ "\023.AggregationRequest\032\024.AggregationRespon" + "seBQ\n4mil.nga.giat.geowave.datastore.hba"
+					+ "se.query.generatedB\021AggregationProtosH\001\210",
+			"\001\001\240\001\001"
 		};
 		com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner = new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
 			public com.google.protobuf.ExtensionRegistry assignDescriptors(
@@ -2487,10 +2645,11 @@ public final class AggregationProtos
 				internal_static_AggregationRequest_fieldAccessorTable = new com.google.protobuf.GeneratedMessage.FieldAccessorTable(
 						internal_static_AggregationRequest_descriptor,
 						new java.lang.String[] {
-							"Type",
+							"Aggregation",
 							"Rangefilter",
 							"Filter",
 							"Model",
+							"Adapter",
 						});
 				internal_static_AggregationResponse_descriptor = getDescriptor().getMessageTypes().get(
 						2);

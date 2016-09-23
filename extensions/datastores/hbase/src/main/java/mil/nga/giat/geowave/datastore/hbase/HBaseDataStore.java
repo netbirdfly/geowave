@@ -501,7 +501,8 @@ public class HBaseDataStore extends
 				// index table does not exist yet
 				if (operations.tableExists(altIdxTableName)) {
 					operations.deleteTable(altIdxTableName);
-					LOGGER.warn("Deleting current alternate index table [" + altIdxTableName + "] as main table does not yet exist.");
+					LOGGER.warn("Deleting current alternate index table [" + altIdxTableName
+							+ "] as main table does not yet exist.");
 				}
 			}
 

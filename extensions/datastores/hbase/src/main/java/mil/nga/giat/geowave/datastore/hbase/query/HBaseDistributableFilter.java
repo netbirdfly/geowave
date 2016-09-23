@@ -7,6 +7,9 @@ import java.util.List;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.Persistable;
 import mil.nga.giat.geowave.core.index.PersistenceUtils;
+import mil.nga.giat.geowave.core.store.adapter.AbstractAdapterPersistenceEncoding;
+import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
+import mil.nga.giat.geowave.core.store.adapter.IndexedAdapterPersistenceEncoding;
 import mil.nga.giat.geowave.core.store.data.CommonIndexedPersistenceEncoding;
 import mil.nga.giat.geowave.core.store.data.PersistentDataset;
 import mil.nga.giat.geowave.core.store.data.PersistentValue;
@@ -19,6 +22,7 @@ import mil.nga.giat.geowave.core.store.flatten.FlattenedFieldInfo;
 import mil.nga.giat.geowave.core.store.flatten.FlattenedUnreadData;
 import mil.nga.giat.geowave.core.store.index.CommonIndexModel;
 import mil.nga.giat.geowave.core.store.index.CommonIndexValue;
+import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.core.store.util.DataStoreUtils;
 import mil.nga.giat.geowave.datastore.hbase.encoding.HBaseCommonIndexedPersistenceEncoding;
 
@@ -41,6 +45,13 @@ public class HBaseDistributableFilter extends
 	private List<DistributableQueryFilter> filterList;
 	protected CommonIndexModel model;
 	private final List<ByteArrayId> commonIndexFieldIds = new ArrayList<>();
+	private PersistentDataset<Object> adapterExtendedValues;
+
+	// CACHED decoded data:
+	private PersistentDataset<CommonIndexValue> commonData;
+	private FlattenedUnreadData unreadData;
+	private CommonIndexedPersistenceEncoding persistenceEncoding;
+	private IndexedAdapterPersistenceEncoding adapterEncoding;
 
 	public HBaseDistributableFilter() {
 		filterList = new ArrayList<DistributableQueryFilter>();
@@ -87,9 +98,9 @@ public class HBaseDistributableFilter extends
 	public ReturnCode filterKeyValue(
 			Cell cell )
 			throws IOException {
-		final PersistentDataset<CommonIndexValue> commonData = new PersistentDataset<CommonIndexValue>();
+		commonData = new PersistentDataset<CommonIndexValue>();
 
-		final FlattenedUnreadData unreadData = aggregateFieldData(
+		unreadData = aggregateFieldData(
 				cell,
 				commonData);
 
@@ -104,24 +115,26 @@ public class HBaseDistributableFilter extends
 			final PersistentDataset<CommonIndexValue> commonData,
 			final FlattenedUnreadData unreadData ) {
 		ReturnCode returnCode = ReturnCode.SKIP;
+		persistenceEncoding = null;
 
 		try {
-			if (applyRowFilter(getEncoding(
+			persistenceEncoding = getPersistenceEncoding(
 					cell,
 					commonData,
-					unreadData))) {
+					unreadData);
+
+			if (applyRowFilter(persistenceEncoding)) {
 				returnCode = ReturnCode.INCLUDE;
 			}
 		}
 		catch (Exception e) {
-
 			e.printStackTrace();
 		}
 
 		return returnCode;
 	}
 
-	protected static CommonIndexedPersistenceEncoding getEncoding(
+	protected static CommonIndexedPersistenceEncoding getPersistenceEncoding(
 			final Cell cell,
 			final PersistentDataset<CommonIndexValue> commonData,
 			final FlattenedUnreadData unreadData ) {
@@ -140,20 +153,57 @@ public class HBaseDistributableFilter extends
 				unreadData);
 	}
 
+	public IndexedAdapterPersistenceEncoding getAdapterEncoding(
+			DataAdapter dataAdapter ) {
+		final PersistentDataset<Object> adapterExtendedValues = new PersistentDataset<Object>();
+		if (persistenceEncoding instanceof AbstractAdapterPersistenceEncoding) {
+			((AbstractAdapterPersistenceEncoding) persistenceEncoding).convertUnknownValues(
+					dataAdapter,
+					model);
+			final PersistentDataset<Object> existingExtValues = ((AbstractAdapterPersistenceEncoding) persistenceEncoding).getAdapterExtendedData();
+			if (existingExtValues != null) {
+				for (final PersistentValue<Object> val : existingExtValues.getValues()) {
+					adapterExtendedValues.addValue(val);
+				}
+			}
+		}
+
+		adapterEncoding = new IndexedAdapterPersistenceEncoding(
+				persistenceEncoding.getAdapterId(),
+				persistenceEncoding.getDataId(),
+				persistenceEncoding.getIndexInsertionId(),
+				persistenceEncoding.getDuplicateCount(),
+				persistenceEncoding.getCommonData(),
+				new PersistentDataset<byte[]>(),
+				adapterExtendedValues);
+
+		return adapterEncoding;
+	}
+
+	// Called by the aggregation endpoint, after filtering the current row
+	public Object decodeRow(
+			DataAdapter dataAdapter ) {
+		return dataAdapter.decode(
+				getAdapterEncoding(dataAdapter),
+				new PrimaryIndex(
+						null,
+						model));
+	}
+
 	protected boolean applyRowFilter(
 			final CommonIndexedPersistenceEncoding encoding ) {
 		if (filterList == null) {
-			System.out.println("FILTER IS NULL");
+			System.err.println("FILTER IS NULL");
 			return false;
 		}
 
 		if (model == null) {
-			System.out.println("MODEL IS NULL");
+			System.err.println("MODEL IS NULL");
 			return false;
 		}
 
 		if (encoding == null) {
-			System.out.println("ENCODING IS NULL");
+			System.err.println("ENCODING IS NULL");
 			return false;
 		}
 

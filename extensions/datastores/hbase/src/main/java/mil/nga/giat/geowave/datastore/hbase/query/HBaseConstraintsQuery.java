@@ -213,36 +213,48 @@ public class HBaseConstraintsQuery extends
 			AggregationProtos.AggregationType.Builder aggregationBuilder = AggregationProtos.AggregationType.newBuilder();
 			aggregationBuilder.setName(aggregation.getClass().getName());
 
-			// TODO: set aggregation params...
+			byte[] paramBytes = PersistenceUtils.toBinary(aggregation.getParameters());
+			aggregationBuilder.setParams(ByteString.copyFrom(paramBytes));
 
 			final AggregationProtos.AggregationRequest.Builder requestBuilder = AggregationProtos.AggregationRequest.newBuilder();
-			requestBuilder.setType(aggregationBuilder.build());
-			
+			requestBuilder.setAggregation(aggregationBuilder.build());
+
 			LOGGER.debug("Query has " + base.distributableFilters.size() + " dist filters.");
 			for (DistributableQueryFilter dqFilter : base.distributableFilters) {
 				LOGGER.debug("Filter type: " + dqFilter.getClass().getName());
 			}
-			
+
 			byte[] filterBytes = PersistenceUtils.toBinary(base.distributableFilters);
-			LOGGER.debug("Dist filter size = " + filterBytes.length);
-			
 			ByteString filterByteString = ByteString.copyFrom(filterBytes);
-			LOGGER.debug("Dist filter content = " + filterByteString.toStringUtf8());
-			
+
 			requestBuilder.setFilter(filterByteString);
-			
+
 			requestBuilder.setModel(ByteString.copyFrom(PersistenceUtils.toBinary(index.getIndexModel())));
 
 			requestBuilder.setRangefilter(ByteString.copyFrom(multiFilter.toByteArray()));
 
+			ByteArrayId adapterId = base.aggregation.getLeft().getAdapterId();
+			DataAdapter dataAdapter = adapterStore.getAdapter(adapterId);
+			requestBuilder.setAdapter(ByteString.copyFrom(PersistenceUtils.toBinary(dataAdapter)));
+
 			final AggregationProtos.AggregationRequest request = requestBuilder.build();
 
 			Table table = operations.getTable(tableName);
-
+			
+			byte[] startRow = null;
+			byte[] endRow = null;
+			
+			List<ByteArrayRange> ranges = getRanges();
+			if (ranges != null && !ranges.isEmpty()) {
+				ByteArrayRange aggRange = getRanges().get(0);
+				startRow = aggRange.getStart().getBytes();
+				endRow = aggRange.getEnd().getBytes();
+			}
+			
 			Map<byte[], ByteString> results = table.coprocessorService(
 					AggregationProtos.AggregationService.class,
-					null,
-					null,
+					startRow,
+					endRow,
 					new Batch.Call<AggregationProtos.AggregationService, ByteString>() {
 						public ByteString call(
 								AggregationProtos.AggregationService counter )
@@ -267,7 +279,7 @@ public class HBaseConstraintsQuery extends
 					Mergeable mvalue = PersistenceUtils.fromBinary(
 							bvalue,
 							Mergeable.class);
-					
+
 					LOGGER.debug("Value from region " + regionCount + " is " + mvalue);
 
 					if (total == null) {

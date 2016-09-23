@@ -10,10 +10,11 @@ message AggregationType {
 }
 
 message AggregationRequest {
-  required AggregationType type = 1;
+  required AggregationType aggregation = 1;
   optional bytes rangefilter = 2;
   optional bytes filter = 3;
   optional bytes model = 4;
+  optional bytes adapter = 5;
 }
 
 message AggregationResponse {

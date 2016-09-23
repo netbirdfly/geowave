@@ -213,8 +213,10 @@ public class HBaseConstraintsQuery extends
 			AggregationProtos.AggregationType.Builder aggregationBuilder = AggregationProtos.AggregationType.newBuilder();
 			aggregationBuilder.setName(aggregation.getClass().getName());
 
-			byte[] paramBytes = PersistenceUtils.toBinary(aggregation.getParameters());
-			aggregationBuilder.setParams(ByteString.copyFrom(paramBytes));
+			if (aggregation.getParameters() != null) {
+				byte[] paramBytes = PersistenceUtils.toBinary(aggregation.getParameters());
+				aggregationBuilder.setParams(ByteString.copyFrom(paramBytes));
+			}
 
 			final AggregationProtos.AggregationRequest.Builder requestBuilder = AggregationProtos.AggregationRequest.newBuilder();
 			requestBuilder.setAggregation(aggregationBuilder.build());
@@ -240,17 +242,18 @@ public class HBaseConstraintsQuery extends
 			final AggregationProtos.AggregationRequest request = requestBuilder.build();
 
 			Table table = operations.getTable(tableName);
-			
+
 			byte[] startRow = null;
 			byte[] endRow = null;
-			
+
 			List<ByteArrayRange> ranges = getRanges();
 			if (ranges != null && !ranges.isEmpty()) {
-				ByteArrayRange aggRange = getRanges().get(0);
+				ByteArrayRange aggRange = getRanges().get(
+						0);
 				startRow = aggRange.getStart().getBytes();
 				endRow = aggRange.getEnd().getBytes();
 			}
-			
+
 			Map<byte[], ByteString> results = table.coprocessorService(
 					AggregationProtos.AggregationService.class,
 					startRow,

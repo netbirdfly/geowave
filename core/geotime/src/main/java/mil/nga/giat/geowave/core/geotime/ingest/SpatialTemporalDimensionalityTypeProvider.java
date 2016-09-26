@@ -136,7 +136,7 @@ public class SpatialTemporalDimensionalityTypeProvider implements
 		@Parameter(names = {
 			"--period"
 		}, required = false, description = "The periodicity of the temporal dimension.  Because time is continuous, it is binned at this interval.", converter = UnitConverter.class)
-		protected Unit periodicity = Unit.YEAR;
+		protected Unit periodicity = Unit.WEEK;
 
 		@Parameter(names = {
 			"--bias"

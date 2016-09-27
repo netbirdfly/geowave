@@ -125,15 +125,21 @@ public class HBaseConstraintsQuery extends
 		return base.getRanges();
 	}
 
+	// Use the superclass' client filters - don't need to bundle up dist filters
+//	@Override
+//	protected List<QueryFilter> getAllFiltersList() {
+//		final List<QueryFilter> filters = super.getAllFiltersList();
+//		for (final QueryFilter distributable : base.distributableFilters) {
+//			if (!filters.contains(distributable)) {
+//				filters.add(distributable);
+//			}
+//		}
+//		return filters;
+//	}
+
 	@Override
-	protected List<QueryFilter> getAllFiltersList() {
-		final List<QueryFilter> filters = super.getAllFiltersList();
-		for (final QueryFilter distributable : base.distributableFilters) {
-			if (!filters.contains(distributable)) {
-				filters.add(distributable);
-			}
-		}
-		return filters;
+	protected List<DistributableQueryFilter> getDistributableFilters() {
+		return base.distributableFilters;
 	}
 
 	@Override
@@ -220,11 +226,6 @@ public class HBaseConstraintsQuery extends
 
 			final AggregationProtos.AggregationRequest.Builder requestBuilder = AggregationProtos.AggregationRequest.newBuilder();
 			requestBuilder.setAggregation(aggregationBuilder.build());
-
-			LOGGER.debug("Query has " + base.distributableFilters.size() + " dist filters.");
-			for (DistributableQueryFilter dqFilter : base.distributableFilters) {
-				LOGGER.debug("Filter type: " + dqFilter.getClass().getName());
-			}
 
 			byte[] filterBytes = PersistenceUtils.toBinary(base.distributableFilters);
 			ByteString filterByteString = ByteString.copyFrom(filterBytes);

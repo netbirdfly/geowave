@@ -1,6 +1,7 @@
 package mil.nga.giat.geowave.datastore.hbase.query;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,6 +29,7 @@ import mil.nga.giat.geowave.datastore.hbase.encoding.HBaseCommonIndexedPersisten
 
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.CellUtil;
+import org.apache.hadoop.hbase.exceptions.DeserializationException;
 import org.apache.hadoop.hbase.filter.FilterBase;
 import org.apache.log4j.Logger;
 
@@ -55,6 +57,40 @@ public class HBaseDistributableFilter extends
 
 	public HBaseDistributableFilter() {
 		filterList = new ArrayList<DistributableQueryFilter>();
+	}
+
+	public static HBaseDistributableFilter parseFrom(
+			final byte[] pbBytes )
+			throws DeserializationException {
+		final ByteBuffer buf = ByteBuffer.wrap(pbBytes);
+
+		final int modelLength = buf.getInt();
+		final byte[] modelBytes = new byte[modelLength];
+		buf.get(modelBytes);
+
+		final byte[] filterBytes = new byte[pbBytes.length - modelLength - 4];
+		buf.get(filterBytes);
+
+		HBaseDistributableFilter newInstance = new HBaseDistributableFilter();
+		newInstance.init(
+				filterBytes,
+				modelBytes);
+
+		return newInstance;
+	}
+
+	public byte[] toByteArray()
+			throws IOException {
+		final byte[] modelBinary = PersistenceUtils.toBinary(model);
+		final byte[] filterListBinary = PersistenceUtils.toBinary(filterList);
+
+		final ByteBuffer buf = ByteBuffer.allocate(filterListBinary.length + modelBinary.length + 4);
+
+		buf.putInt(modelBinary.length);
+		buf.put(modelBinary);
+		buf.put(filterListBinary);
+
+		return buf.array();
 	}
 
 	public boolean init(
@@ -87,6 +123,26 @@ public class HBaseDistributableFilter extends
 			return false;
 		}
 
+		commonIndexFieldIds.clear();
+		for (final NumericDimensionField<? extends CommonIndexValue> numericDimension : model.getDimensions()) {
+			commonIndexFieldIds.add(numericDimension.getFieldId());
+		}
+
+		return true;
+	}
+
+	public boolean init(
+			List<DistributableQueryFilter> filterList,
+			CommonIndexModel model ) {
+		this.filterList.clear();
+		this.filterList.addAll(filterList);
+
+		this.model = model;
+		for (final NumericDimensionField<? extends CommonIndexValue> numericDimension : model.getDimensions()) {
+			commonIndexFieldIds.add(numericDimension.getFieldId());
+		}
+
+		commonIndexFieldIds.clear();
 		for (final NumericDimensionField<? extends CommonIndexValue> numericDimension : model.getDimensions()) {
 			commonIndexFieldIds.add(numericDimension.getFieldId());
 		}

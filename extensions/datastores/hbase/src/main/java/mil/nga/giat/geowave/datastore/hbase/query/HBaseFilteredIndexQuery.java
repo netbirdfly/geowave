@@ -17,6 +17,7 @@ import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.callback.ScanCallback;
 import mil.nga.giat.geowave.core.store.dimension.NumericDimensionField;
+import mil.nga.giat.geowave.core.store.filter.DistributableQueryFilter;
 import mil.nga.giat.geowave.core.store.filter.QueryFilter;
 import mil.nga.giat.geowave.core.store.index.CommonIndexValue;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
@@ -110,9 +111,7 @@ public abstract class HBaseFilteredIndexQuery extends
 			}
 		}
 		catch (final IOException ex) {
-			LOGGER
-					.warn("Unabe to check if " + StringUtils.stringFromBinary(index.getId().getBytes())
-							+ " table exists");
+			LOGGER.warn("Unabe to check if " + StringUtils.stringFromBinary(index.getId().getBytes()) + " table exists");
 			return new CloseableIterator.Empty();
 		}
 
@@ -239,6 +238,17 @@ public abstract class HBaseFilteredIndexQuery extends
 			e.printStackTrace();
 		}
 
+		// Add distributable filters if possible
+		List<DistributableQueryFilter> distFilters = getDistributableFilters();
+		if (distFilters != null) {
+			HBaseDistributableFilter hbdFilter = new HBaseDistributableFilter();
+			hbdFilter.init(
+					distFilters,
+					index.getIndexModel());
+			
+			filterList.addFilter(hbdFilter);
+		}
+
 		// Set the filter list for the scan and return the scan list (with the
 		// single multi-range scan)
 		scanner.setFilter(filterList);
@@ -247,6 +257,11 @@ public abstract class HBaseFilteredIndexQuery extends
 		scanner.setMaxVersions(1);
 
 		return scanner;
+	}
+
+	// Override this (see HBaseConstraintsQuery)
+	protected List<DistributableQueryFilter> getDistributableFilters() {
+		return null;
 	}
 
 	private void handleSubsetOfFieldIds(
@@ -298,9 +313,8 @@ public abstract class HBaseFilteredIndexQuery extends
 				adapterStore,
 				index,
 				resultsIterator,
-				filters.isEmpty() ? null : filters.size() == 1 ? filters.get(0)
-						: new mil.nga.giat.geowave.core.store.filter.FilterList<QueryFilter>(
-								filters),
+				filters.isEmpty() ? null : filters.size() == 1 ? filters.get(0) : new mil.nga.giat.geowave.core.store.filter.FilterList<QueryFilter>(
+						filters),
 				scanCallback);
 	}
 

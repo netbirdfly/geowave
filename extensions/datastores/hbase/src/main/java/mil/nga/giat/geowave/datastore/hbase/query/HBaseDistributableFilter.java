@@ -34,7 +34,8 @@ import org.apache.hadoop.hbase.filter.FilterBase;
 import org.apache.log4j.Logger;
 
 /**
- * This class wraps our Distributable filters in an HBase filter so that a coprocessor can use them.
+ * This class wraps our Distributable filters in an HBase filter so that a
+ * coprocessor can use them.
  * 
  * @author kent
  *

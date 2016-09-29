@@ -27,7 +27,6 @@ import mil.nga.giat.geowave.core.store.query.ConstraintsQuery;
 import mil.nga.giat.geowave.core.store.query.Query;
 import mil.nga.giat.geowave.core.store.query.aggregate.Aggregation;
 import mil.nga.giat.geowave.datastore.hbase.operations.BasicHBaseOperations;
-import mil.nga.giat.geowave.datastore.hbase.operations.config.HBaseOptions;
 import mil.nga.giat.geowave.datastore.hbase.query.generated.AggregationProtos;
 import mil.nga.giat.geowave.datastore.hbase.util.HBaseUtils;
 
@@ -48,7 +47,6 @@ public class HBaseConstraintsQuery extends
 		HBaseFilteredIndexQuery
 {
 	protected final ConstraintsQuery base;
-	protected HBaseOptions options = null;
 
 	private final static Logger LOGGER = Logger.getLogger(HBaseConstraintsQuery.class);
 
@@ -111,11 +109,6 @@ public class HBaseConstraintsQuery extends
 		}
 	}
 
-	public void setOptions(
-			HBaseOptions options ) {
-		this.options = options;
-	}
-
 	protected boolean isAggregation() {
 		return base.isAggregation();
 	}
@@ -126,16 +119,23 @@ public class HBaseConstraintsQuery extends
 	}
 
 	// Use the superclass' client filters - don't need to bundle up dist filters
-//	@Override
-//	protected List<QueryFilter> getAllFiltersList() {
-//		final List<QueryFilter> filters = super.getAllFiltersList();
-//		for (final QueryFilter distributable : base.distributableFilters) {
-//			if (!filters.contains(distributable)) {
-//				filters.add(distributable);
-//			}
-//		}
-//		return filters;
-//	}
+	@Override
+	protected List<QueryFilter> getAllFiltersList() {
+		final List<QueryFilter> filters = super.getAllFiltersList();
+
+		// Since we have custom filters enabled, this list should only return the client filters
+		if (options.isEnableCustomFilters()) {
+			return filters;
+		}
+
+		// Without custom filters, we need all the filters on the client side
+		for (final QueryFilter distributable : base.distributableFilters) {
+			if (!filters.contains(distributable)) {
+				filters.add(distributable);
+			}
+		}
+		return filters;
+	}
 
 	@Override
 	protected List<DistributableQueryFilter> getDistributableFilters() {

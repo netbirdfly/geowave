@@ -174,9 +174,11 @@ public abstract class HBaseFilteredIndexQuery extends
 		// Single scan w/ multiple ranges
 		final Scan scanner = new Scan();
 
-		// Performance recommendations
-		scanner.setCaching(10000);
-		scanner.setCacheBlocks(true);
+		// Performance tuning per store options
+		if (options.getScanCacheSize() != HConstants.DEFAULT_HBASE_CLIENT_SCANNER_CACHING) {
+			scanner.setCaching(options.getScanCacheSize());
+		}
+		scanner.setCacheBlocks(options.isEnableBlockCache());
 
 		FilterList filterList = new FilterList();
 
@@ -238,15 +240,17 @@ public abstract class HBaseFilteredIndexQuery extends
 			e.printStackTrace();
 		}
 
-		// Add distributable filters if possible
-		List<DistributableQueryFilter> distFilters = getDistributableFilters();
-		if (distFilters != null) {
-			HBaseDistributableFilter hbdFilter = new HBaseDistributableFilter();
-			hbdFilter.init(
-					distFilters,
-					index.getIndexModel());
-			
-			filterList.addFilter(hbdFilter);
+		// Add distributable filters if requested
+		if (options.isEnableCustomFilters()) {
+			List<DistributableQueryFilter> distFilters = getDistributableFilters();
+			if (distFilters != null) {
+				HBaseDistributableFilter hbdFilter = new HBaseDistributableFilter();
+				hbdFilter.init(
+						distFilters,
+						index.getIndexModel());
+
+				filterList.addFilter(hbdFilter);
+			}
 		}
 
 		// Set the filter list for the scan and return the scan list (with the

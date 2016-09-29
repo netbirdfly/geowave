@@ -86,9 +86,8 @@ public class InputFormatHBaseRangeQuery extends
 				index,
 				resultsIterator,
 				isOutputWritable,
-				filters.isEmpty() ? null : filters.size() == 1 ? filters.get(0)
-						: new mil.nga.giat.geowave.core.store.filter.FilterList<QueryFilter>(
-								filters));
+				filters.isEmpty() ? null : filters.size() == 1 ? filters.get(0) : new mil.nga.giat.geowave.core.store.filter.FilterList<QueryFilter>(
+						filters));
 	}
 
 }

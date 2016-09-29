@@ -1,5 +1,7 @@
 package mil.nga.giat.geowave.datastore.hbase.operations.config;
 
+import org.apache.hadoop.hbase.HConstants;
+
 import mil.nga.giat.geowave.core.store.DataStoreOptions;
 
 import com.beust.jcommander.Parameter;
@@ -29,12 +31,18 @@ public class HBaseOptions implements
 
 	@Parameter(names = "--enableBlockCache", hidden = true, arity = 1)
 	protected boolean enableBlockCache = true;
+	
+	@Parameter(names = "--scanCacheSize")
+	protected int scanCacheSize = HConstants.DEFAULT_HBASE_CLIENT_SCANNER_CACHING;
+
+	@Parameter(names = "--enableCustomFilters")
+	protected boolean enableCustomFilters = false;
 
 	@Parameter(names = "--enableCoprocessors")
 	protected boolean enableCoprocessors = false;
 
 	@Parameter(names = "--verifyCoprocessors")
-	protected boolean verifyCoprocessors = true;
+	protected boolean verifyCoprocessors = false;
 
 	@Parameter(names = {
 		"--" + COPROCESSOR_JAR_KEY
@@ -102,6 +110,23 @@ public class HBaseOptions implements
 	public void setEnableBlockCache(
 			boolean enableBlockCache ) {
 		this.enableBlockCache = enableBlockCache;
+	}
+
+	public int getScanCacheSize() {
+		return scanCacheSize;
+	}
+
+	public void setScanCacheSize(int scanCacheSize) {
+		this.scanCacheSize = scanCacheSize;
+	}
+	
+	public boolean isEnableCustomFilters() {
+		return enableCustomFilters;
+	}
+
+	public void setEnableCustomFilters(
+			boolean enableCustomFilters ) {
+		this.enableCustomFilters = enableCustomFilters;
 	}
 
 	public boolean isEnableCoprocessors() {

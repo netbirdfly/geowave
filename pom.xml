@@ -74,6 +74,7 @@
 		<findbugs.effort>Max</findbugs.effort>
 		<findbugs.threshold>Medium</findbugs.threshold>
 		<findbugs.failOnError>true</findbugs.failOnError>
+		<findbugs.excludeFile>findbugs-exclude.xml</findbugs.excludeFile>
 	</properties>
 	<dependencyManagement>
 		<dependencies>
@@ -821,6 +822,7 @@
 					<failOnError>${findbugs.failOnError}</failOnError>
 					<xmlOutputDirectory>${project.basedir}/target/site</xmlOutputDirectory>
 					<omitVisitors>${findbugs.omitVisitors}</omitVisitors>
+          			<excludeFilterFile>${findbugs.excludeFile}</excludeFilterFile>
 				</configuration>
 			</plugin>
 		</plugins>

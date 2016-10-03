@@ -18,6 +18,8 @@ import mil.nga.giat.geowave.core.index.ByteArrayRange;
 import mil.nga.giat.geowave.core.index.ByteArrayUtils;
 import mil.nga.giat.geowave.core.index.IndexMetaData;
 import mil.nga.giat.geowave.core.index.Mergeable;
+import mil.nga.giat.geowave.core.index.MultiDimensionalCoordinateRangesArray;
+import mil.nga.giat.geowave.core.index.MultiDimensionalCoordinateRangesArray.ArrayOfArrays;
 import mil.nga.giat.geowave.core.index.PersistenceUtils;
 import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
@@ -115,8 +117,8 @@ public class AccumuloConstraintsQuery extends
 	@Override
 	protected void addScanIteratorSettings(
 			final ScannerBase scanner ) {
-
 		addFieldSubsettingToIterator(scanner);
+		addIndexFilterToIterator(scanner);
 		IteratorSetting iteratorSettings = null;
 		if (isAggregation()) {
 			if (useWholeRowIterator()) {
@@ -200,6 +202,27 @@ public class AccumuloConstraintsQuery extends
 		}
 		if (iteratorSettings != null) {
 			scanner.addScanIterator(iteratorSettings);
+		}
+	}
+
+	protected void addIndexFilterToIterator(
+			final ScannerBase scanner ) {
+		final List<MultiDimensionalCoordinateRangesArray> coords = base.getCoordinateRanges();
+		if (!coords.isEmpty()) {
+			final IteratorSetting iteratorSetting = new IteratorSetting(
+					NumericIndexStrategyFilterIterator.IDX_FILTER_ITERATOR_PRIORITY,
+					NumericIndexStrategyFilterIterator.IDX_FILTER_ITERATOR_NAME,
+					NumericIndexStrategyFilterIterator.class);
+
+			iteratorSetting.addOption(
+					NumericIndexStrategyFilterIterator.INDEX_STRATEGY_KEY,
+					ByteArrayUtils.byteArrayToString(PersistenceUtils.toBinary(index.getIndexStrategy())));
+
+			iteratorSetting.addOption(
+					NumericIndexStrategyFilterIterator.COORDINATE_RANGE_KEY,
+					ByteArrayUtils.byteArrayToString(new ArrayOfArrays(
+							coords.toArray(new MultiDimensionalCoordinateRangesArray[] {})).toBinary()));
+			scanner.addScanIterator(iteratorSetting);
 		}
 	}
 

@@ -50,12 +50,13 @@ public class AggregationIterator extends
 	public static final String INDEX_STRATEGY_OPTION_NAME = "INDEX_STRATEGY";
 	public static final String CONSTRAINTS_OPTION_NAME = "CONSTRAINTS";
 	public static final String MAX_DECOMPOSITION_OPTION_NAME = "MAX_DECOMP";
-	public static final int AGGREGATION_QUERY_ITERATOR_PRIORITY = 10;
+	public static final int AGGREGATION_QUERY_ITERATOR_PRIORITY = 25;
 	protected QueryFilterIterator queryFilterIterator;
 	private Aggregation aggregationFunction;
 	private DataAdapter adapter;
 	private boolean aggregationReturned = false;
 	private Text startRowOfAggregation = null;
+	private Text currentRow = new Text();
 	private SortedKeyValueIterator<Key, Value> parent = new SortedKeyValueIterator<Key, Value>() {
 
 		@Override
@@ -117,7 +118,7 @@ public class AggregationIterator extends
 			final Value value ) {
 		if ((queryFilterIterator != null) && queryFilterIterator.isSet()) {
 			final PersistentDataset<CommonIndexValue> commonData = new PersistentDataset<CommonIndexValue>();
-			final Text currentRow = key.getRow();
+			key.getRow(currentRow);
 			FlattenedUnreadData unreadData = queryFilterIterator.aggregateFieldData(
 					key,
 					value,

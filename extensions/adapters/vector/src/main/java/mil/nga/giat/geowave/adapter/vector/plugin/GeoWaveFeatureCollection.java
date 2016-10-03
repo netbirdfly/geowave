@@ -3,7 +3,6 @@ package mil.nga.giat.geowave.adapter.vector.plugin;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import mil.nga.giat.geowave.adapter.vector.render.DistributableRenderer;

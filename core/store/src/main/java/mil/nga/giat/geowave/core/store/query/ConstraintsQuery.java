@@ -8,6 +8,8 @@ import org.apache.commons.lang3.tuple.Pair;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.ByteArrayRange;
 import mil.nga.giat.geowave.core.index.IndexMetaData;
+import mil.nga.giat.geowave.core.index.MultiDimensionalCoordinateRangesArray;
+import mil.nga.giat.geowave.core.index.NumericIndexStrategy;
 import mil.nga.giat.geowave.core.index.sfc.data.MultiDimensionalNumericData;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DuplicateEntryCount;
@@ -21,6 +23,7 @@ import mil.nga.giat.geowave.core.store.util.DataStoreUtils;
 public class ConstraintsQuery
 {
 	public static final int MAX_RANGE_DECOMPOSITION = 2000;
+	public static final int AGGREGATION_RANGE_DECOMPOSITION = 10;
 
 	public final Pair<DataAdapter<?>, Aggregation<?, ?, ?>> aggregation;
 	public final List<MultiDimensionalNumericData> constraints;
@@ -68,12 +71,29 @@ public class ConstraintsQuery
 		return ((aggregation != null) && (aggregation.getLeft() != null) && (aggregation.getRight() != null));
 	}
 
+	public List<MultiDimensionalCoordinateRangesArray> getCoordinateRanges() {
+		if ((constraints == null) || constraints.isEmpty()) {
+			return new ArrayList<MultiDimensionalCoordinateRangesArray>();
+		}
+		else {
+			final NumericIndexStrategy indexStrategy = index.getIndexStrategy();
+			final List<MultiDimensionalCoordinateRangesArray> ranges = new ArrayList<MultiDimensionalCoordinateRangesArray>();
+			for (final MultiDimensionalNumericData nd : constraints) {
+				ranges.add(new MultiDimensionalCoordinateRangesArray(
+						indexStrategy.getCoordinateRangesPerDimension(
+								nd,
+								indexMetaData)));
+			}
+			return ranges;
+		}
+	}
+
 	public List<ByteArrayRange> getRanges() {
 		if (isAggregation()) {
 			final List<ByteArrayRange> ranges = DataStoreUtils.constraintsToByteArrayRanges(
 					constraints,
 					index.getIndexStrategy(),
-					MAX_RANGE_DECOMPOSITION,
+					AGGREGATION_RANGE_DECOMPOSITION,
 					indexMetaData);
 			if ((ranges == null) || (ranges.size() < 2)) {
 				return ranges;

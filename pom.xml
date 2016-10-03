@@ -712,7 +712,7 @@
 					<dependency>
 						<groupId>mil.nga.giat</groupId>
 						<artifactId>geowave-dev-resources</artifactId>
-						<version>1.0</version>
+						<version>1.1</version>
 					</dependency>
 				</dependencies>
 			</plugin>

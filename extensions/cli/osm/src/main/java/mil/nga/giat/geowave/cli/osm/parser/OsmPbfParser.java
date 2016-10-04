@@ -53,90 +53,94 @@ public class OsmPbfParser
 				"fs.hdfs.impl",
 				org.apache.hadoop.hdfs.DistributedFileSystem.class.getName());
 
-		FileSystem fs = FileSystem.get(conf);
-		Path basePath = new Path(
-				arg.getHdfsBasePath());
+		try (FileSystem fs = FileSystem.get(conf)) {
+			Path basePath = new Path(
+					arg.getHdfsBasePath());
 
-		if (!fs.exists(basePath)) {
-			if (!fs.mkdirs(basePath)) {
-				throw new IOException(
-						"Unable to create staging directory: " + arg.getNameNode() + arg.getHdfsBasePath());
+			if (!fs.exists(basePath)) {
+				if (!fs.mkdirs(basePath)) {
+					throw new IOException(
+							"Unable to create staging directory: " + arg.getNameNode() + arg.getHdfsBasePath());
+				}
 			}
-		}
-		Path nodesPath = new Path(
-				arg.getNodesBasePath());
-		Path waysPath = new Path(
-				arg.getWaysBasePath());
-		Path relationsPath = new Path(
-				arg.getRelationsBasePath());
+			Path nodesPath = new Path(
+					arg.getNodesBasePath());
+			Path waysPath = new Path(
+					arg.getWaysBasePath());
+			Path relationsPath = new Path(
+					arg.getRelationsBasePath());
 
-		final DataFileWriter nodeWriter = new DataFileWriter(
-				new GenericDatumWriter());
-		final DataFileWriter wayWriter = new DataFileWriter(
-				new GenericDatumWriter());
-		final DataFileWriter relationWriter = new DataFileWriter(
-				new GenericDatumWriter());
-		nodeWriter.setCodec(CodecFactory.snappyCodec());
-		wayWriter.setCodec(CodecFactory.snappyCodec());
-		relationWriter.setCodec(CodecFactory.snappyCodec());
-		FSDataOutputStream nodeOut = null;
-		FSDataOutputStream wayOut = null;
-		FSDataOutputStream relationOut = null;
+			final DataFileWriter nodeWriter = new DataFileWriter(
+					new GenericDatumWriter());
+			final DataFileWriter wayWriter = new DataFileWriter(
+					new GenericDatumWriter());
+			final DataFileWriter relationWriter = new DataFileWriter(
+					new GenericDatumWriter());
+			nodeWriter.setCodec(CodecFactory.snappyCodec());
+			wayWriter.setCodec(CodecFactory.snappyCodec());
+			relationWriter.setCodec(CodecFactory.snappyCodec());
+			FSDataOutputStream nodeOut = null;
+			FSDataOutputStream wayOut = null;
+			FSDataOutputStream relationOut = null;
 
-		final OsmAvroBinaryParser parser = new OsmAvroBinaryParser();
-		try {
+			final OsmAvroBinaryParser parser = new OsmAvroBinaryParser();
+			try {
 
-			nodeOut = fs.create(nodesPath);
-			wayOut = fs.create(waysPath);
-			relationOut = fs.create(relationsPath);
+				nodeOut = fs.create(nodesPath);
+				wayOut = fs.create(waysPath);
+				relationOut = fs.create(relationsPath);
 
-			nodeWriter.create(
-					Node.getClassSchema(),
-					nodeOut);
-			wayWriter.create(
-					Way.getClassSchema(),
-					wayOut);
-			relationWriter.create(
-					Relation.getClassSchema(),
-					relationOut);
+				nodeWriter.create(
+						Node.getClassSchema(),
+						nodeOut);
+				wayWriter.create(
+						Way.getClassSchema(),
+						wayOut);
+				relationWriter.create(
+						Relation.getClassSchema(),
+						relationOut);
 
-			parser.setupWriter(
-					nodeWriter,
-					wayWriter,
-					relationWriter);
+				parser.setupWriter(
+						nodeWriter,
+						wayWriter,
+						relationWriter);
 
-			Files.walkFileTree(
-					Paths.get(args.getIngestDirectory()),
-					new SimpleFileVisitor<java.nio.file.Path>() {
-						@Override
-						// I couldn't figure out how to get rid of the findbugs
-						// issue.
-						@SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
-						public FileVisitResult visitFile(
-								java.nio.file.Path file,
-								BasicFileAttributes attrs )
-								throws IOException {
-							if (file.getFileName().toString().endsWith(
-									arg.getExtension())) {
-								loadFileToHdfs(
-										file,
-										parser);
+				Files.walkFileTree(
+						Paths.get(args.getIngestDirectory()),
+						new SimpleFileVisitor<java.nio.file.Path>() {
+							@Override
+							// I couldn't figure out how to get rid of the findbugs
+							// issue.
+							@SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
+							public FileVisitResult visitFile(
+									java.nio.file.Path file,
+									BasicFileAttributes attrs )
+									throws IOException {
+								if (file.getFileName().toString().endsWith(
+										arg.getExtension())) {
+									loadFileToHdfs(
+											file,
+											parser);
+								}
+								return FileVisitResult.CONTINUE;
 							}
-							return FileVisitResult.CONTINUE;
-						}
-					});
-		}
-		catch (IOException ex) {
-			//
-		}
-		finally {
-			IOUtils.closeQuietly(nodeWriter);
-			IOUtils.closeQuietly(wayWriter);
-			IOUtils.closeQuietly(relationWriter);
-			IOUtils.closeQuietly(nodeOut);
-			IOUtils.closeQuietly(wayOut);
-			IOUtils.closeQuietly(relationOut);
+						});
+			}
+			catch (IOException ex) {
+				LOGGER.error(
+						"Unable to process file",
+						ex);
+			}
+			finally {
+				IOUtils.closeQuietly(nodeWriter);
+				IOUtils.closeQuietly(wayWriter);
+				IOUtils.closeQuietly(relationWriter);
+				IOUtils.closeQuietly(nodeOut);
+				IOUtils.closeQuietly(wayOut);
+				IOUtils.closeQuietly(relationOut);
 
+			}
+			
 		}
 
 		return conf;

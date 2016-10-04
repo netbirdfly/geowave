@@ -172,25 +172,20 @@ public class SimpleFeatureGeoWaveWrapper implements
 		final Iterator<SimpleFeatureCollection> it = featureCollections.iterator();
 		while (it.hasNext()) {
 			final SimpleFeatureCollection collection = it.next();
-			final InternalIterator featureIt = new InternalIterator(
+			try (final InternalIterator featureIt = new InternalIterator(
 					collection,
 					visibility,
-					filter);
-
-			it.remove();
-			if (!featureIt.hasNext()) {
-				try {
-					featureIt.close();
-				}
-				catch (final IOException e) {
-					LOGGER.warn(
-							"Cannot close feature iterator",
-							e);
+					filter)) {
+				it.remove();
+				if (featureIt.hasNext()) {
+					currentIterator = featureIt;
+					return true;
 				}
 			}
-			else {
-				currentIterator = featureIt;
-				return true;
+			catch (IOException e) {
+				LOGGER.warn(
+						"Cannot close feature iterator",
+						e);
 			}
 		}
 		return false;

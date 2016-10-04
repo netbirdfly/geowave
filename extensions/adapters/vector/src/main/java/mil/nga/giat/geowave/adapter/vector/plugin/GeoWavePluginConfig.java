@@ -51,7 +51,7 @@ public class GeoWavePluginConfig
 	public static final String GEOWAVE_NAMESPACE_KEY = StoreFactoryOptions.GEOWAVE_NAMESPACE_OPTION;
 	// name matches the workspace parameter provided to the factory
 	protected static final String FEATURE_NAMESPACE_KEY = "namespace";
-	protected static final String LOOSE_QUERY_KEY = "namespace";
+	protected static final String LOOSE_QUERY_KEY = "Loose BBox";
 	protected static final String LOCK_MGT_KEY = "Lock Management";
 	protected static final String AUTH_MGT_KEY = "Authorization Management Provider";
 	protected static final String AUTH_URL_KEY = "Authorization Data URL";
@@ -80,7 +80,7 @@ public class GeoWavePluginConfig
 			Boolean.class,
 			"When constraints are a subset of the indexed dimension types, the data store will be queried faster with a small false positive rate.  Defaults to off and is only recommended to enable if false positives are acceptable.",
 			false,
-			false);
+			true);
 
 	private static final Param LOCK_MGT = new Param(
 			LOCK_MGT_KEY,
@@ -198,7 +198,7 @@ public class GeoWavePluginConfig
 			looseQuery = param.equals(Boolean.valueOf(true));
 		}
 		else {
-			looseQuery = false;
+			looseQuery = true;
 		}
 		param = params.get(TRANSACTION_BUFFER_SIZE);
 		Integer bufferSizeFromParam = 10000;

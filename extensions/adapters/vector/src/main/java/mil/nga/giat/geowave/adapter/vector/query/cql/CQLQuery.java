@@ -28,6 +28,7 @@ import mil.nga.giat.geowave.core.geotime.store.dimension.LatitudeField;
 import mil.nga.giat.geowave.core.geotime.store.dimension.LongitudeField;
 import mil.nga.giat.geowave.core.geotime.store.dimension.TimeField;
 import mil.nga.giat.geowave.core.geotime.store.filter.SpatialQueryFilter.CompareOperation;
+import mil.nga.giat.geowave.core.geotime.store.query.IndexOnlySpatialQuery;
 import mil.nga.giat.geowave.core.geotime.store.query.SpatialQuery;
 import mil.nga.giat.geowave.core.geotime.store.query.SpatialTemporalQuery;
 import mil.nga.giat.geowave.core.geotime.store.query.TemporalConstraints;
@@ -199,10 +200,9 @@ public class CQLQuery implements
 				// constraints);
 				// }
 				// else {
-				baseQuery = new SpatialQuery(
+				baseQuery = new IndexOnlySpatialQuery(
 						constraints,
-						geometry,
-						geoCompareOp);
+						geometry);
 				// }
 			}
 			else if ((timeConstraintSet != null) && !timeConstraintSet.isEmpty()) {

@@ -111,7 +111,9 @@ public abstract class HBaseFilteredIndexQuery extends
 			}
 		}
 		catch (final IOException ex) {
-			LOGGER.warn("Unabe to check if " + StringUtils.stringFromBinary(index.getId().getBytes()) + " table exists");
+			LOGGER
+					.warn("Unabe to check if " + StringUtils.stringFromBinary(index.getId().getBytes())
+							+ " table exists");
 			return new CloseableIterator.Empty();
 		}
 
@@ -317,8 +319,9 @@ public abstract class HBaseFilteredIndexQuery extends
 				adapterStore,
 				index,
 				resultsIterator,
-				filters.isEmpty() ? null : filters.size() == 1 ? filters.get(0) : new mil.nga.giat.geowave.core.store.filter.FilterList<QueryFilter>(
-						filters),
+				filters.isEmpty() ? null : filters.size() == 1 ? filters.get(0)
+						: new mil.nga.giat.geowave.core.store.filter.FilterList<QueryFilter>(
+								filters),
 				scanCallback);
 	}
 

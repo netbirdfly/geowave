@@ -8,11 +8,11 @@ public class CountResult implements
 		Mergeable
 {
 	protected long count = Long.MIN_VALUE;
-	
-	public CountResult() {
-	}
-	
-	public CountResult(long value) {
+
+	public CountResult() {}
+
+	public CountResult(
+			long value ) {
 		this.count = value;
 	}
 
@@ -23,8 +23,9 @@ public class CountResult implements
 	public long getCount() {
 		return count;
 	}
-	
-	public void setCount(long count) {
+
+	public void setCount(
+			long count ) {
 		this.count = count;
 	}
 

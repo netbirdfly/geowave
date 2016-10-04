@@ -72,7 +72,8 @@ public final class RowCountProtos
 				throws com.google.protobuf.InvalidProtocolBufferException {
 			initFields();
 			int mutable_bitField0_ = 0;
-			com.google.protobuf.UnknownFieldSet.Builder unknownFields = com.google.protobuf.UnknownFieldSet.newBuilder();
+			com.google.protobuf.UnknownFieldSet.Builder unknownFields = com.google.protobuf.UnknownFieldSet
+					.newBuilder();
 			try {
 				boolean done = false;
 				while (!done) {
@@ -117,9 +118,10 @@ public final class RowCountProtos
 		}
 
 		protected com.google.protobuf.GeneratedMessage.FieldAccessorTable internalGetFieldAccessorTable() {
-			return mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.internal_static_CountRequest_fieldAccessorTable.ensureFieldAccessorsInitialized(
-					mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountRequest.class,
-					mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountRequest.Builder.class);
+			return mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.internal_static_CountRequest_fieldAccessorTable
+					.ensureFieldAccessorsInitialized(
+							mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountRequest.class,
+							mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountRequest.Builder.class);
 		}
 
 		public static com.google.protobuf.Parser<CountRequest> PARSER = new com.google.protobuf.AbstractParser<CountRequest>() {
@@ -362,9 +364,10 @@ public final class RowCountProtos
 			}
 
 			protected com.google.protobuf.GeneratedMessage.FieldAccessorTable internalGetFieldAccessorTable() {
-				return mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.internal_static_CountRequest_fieldAccessorTable.ensureFieldAccessorsInitialized(
-						mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountRequest.class,
-						mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountRequest.Builder.class);
+				return mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.internal_static_CountRequest_fieldAccessorTable
+						.ensureFieldAccessorsInitialized(
+								mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountRequest.class,
+								mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountRequest.Builder.class);
 			}
 
 			// Construct using
@@ -405,7 +408,8 @@ public final class RowCountProtos
 			}
 
 			public mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountRequest getDefaultInstanceForType() {
-				return mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountRequest.getDefaultInstance();
+				return mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountRequest
+						.getDefaultInstance();
 			}
 
 			public mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountRequest build() {
@@ -443,7 +447,8 @@ public final class RowCountProtos
 
 			public Builder mergeFrom(
 					mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountRequest other ) {
-				if (other == mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountRequest.getDefaultInstance()) return this;
+				if (other == mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountRequest
+						.getDefaultInstance()) return this;
 				if (other.hasFilter()) {
 					setFilter(other.getFilter());
 				}
@@ -466,7 +471,8 @@ public final class RowCountProtos
 							extensionRegistry);
 				}
 				catch (com.google.protobuf.InvalidProtocolBufferException e) {
-					parsedMessage = (mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountRequest) e.getUnfinishedMessage();
+					parsedMessage = (mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountRequest) e
+							.getUnfinishedMessage();
 					throw e;
 				}
 				finally {
@@ -591,7 +597,8 @@ public final class RowCountProtos
 				throws com.google.protobuf.InvalidProtocolBufferException {
 			initFields();
 			int mutable_bitField0_ = 0;
-			com.google.protobuf.UnknownFieldSet.Builder unknownFields = com.google.protobuf.UnknownFieldSet.newBuilder();
+			com.google.protobuf.UnknownFieldSet.Builder unknownFields = com.google.protobuf.UnknownFieldSet
+					.newBuilder();
 			try {
 				boolean done = false;
 				while (!done) {
@@ -636,9 +643,10 @@ public final class RowCountProtos
 		}
 
 		protected com.google.protobuf.GeneratedMessage.FieldAccessorTable internalGetFieldAccessorTable() {
-			return mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.internal_static_CountResponse_fieldAccessorTable.ensureFieldAccessorsInitialized(
-					mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountResponse.class,
-					mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountResponse.Builder.class);
+			return mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.internal_static_CountResponse_fieldAccessorTable
+					.ensureFieldAccessorsInitialized(
+							mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountResponse.class,
+							mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountResponse.Builder.class);
 		}
 
 		public static com.google.protobuf.Parser<CountResponse> PARSER = new com.google.protobuf.AbstractParser<CountResponse>() {
@@ -884,9 +892,10 @@ public final class RowCountProtos
 			}
 
 			protected com.google.protobuf.GeneratedMessage.FieldAccessorTable internalGetFieldAccessorTable() {
-				return mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.internal_static_CountResponse_fieldAccessorTable.ensureFieldAccessorsInitialized(
-						mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountResponse.class,
-						mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountResponse.Builder.class);
+				return mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.internal_static_CountResponse_fieldAccessorTable
+						.ensureFieldAccessorsInitialized(
+								mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountResponse.class,
+								mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountResponse.Builder.class);
 			}
 
 			// Construct using
@@ -927,7 +936,8 @@ public final class RowCountProtos
 			}
 
 			public mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountResponse getDefaultInstanceForType() {
-				return mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountResponse.getDefaultInstance();
+				return mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountResponse
+						.getDefaultInstance();
 			}
 
 			public mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountResponse build() {
@@ -965,7 +975,8 @@ public final class RowCountProtos
 
 			public Builder mergeFrom(
 					mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountResponse other ) {
-				if (other == mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountResponse.getDefaultInstance()) return this;
+				if (other == mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountResponse
+						.getDefaultInstance()) return this;
 				if (other.hasCount()) {
 					setCount(other.getCount());
 				}
@@ -992,7 +1003,8 @@ public final class RowCountProtos
 							extensionRegistry);
 				}
 				catch (com.google.protobuf.InvalidProtocolBufferException e) {
-					parsedMessage = (mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountResponse) e.getUnfinishedMessage();
+					parsedMessage = (mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountResponse) e
+							.getUnfinishedMessage();
 					throw e;
 				}
 				finally {
@@ -1110,9 +1122,10 @@ public final class RowCountProtos
 					}
 					switch (method.getIndex()) {
 						case 0:
-							return impl.getRowCount(
-									controller,
-									(mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountRequest) request);
+							return impl
+									.getRowCount(
+											controller,
+											(mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountRequest) request);
 						default:
 							throw new java.lang.AssertionError(
 									"Can't get here.");
@@ -1127,7 +1140,8 @@ public final class RowCountProtos
 					}
 					switch (method.getIndex()) {
 						case 0:
-							return mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountRequest.getDefaultInstance();
+							return mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountRequest
+									.getDefaultInstance();
 						default:
 							throw new java.lang.AssertionError(
 									"Can't get here.");
@@ -1142,7 +1156,8 @@ public final class RowCountProtos
 					}
 					switch (method.getIndex()) {
 						case 0:
-							return mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountResponse.getDefaultInstance();
+							return mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountResponse
+									.getDefaultInstance();
 						default:
 							throw new java.lang.AssertionError(
 									"Can't get here.");
@@ -1161,8 +1176,11 @@ public final class RowCountProtos
 				com.google.protobuf.RpcCallback<mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountResponse> done );
 
 		public static final com.google.protobuf.Descriptors.ServiceDescriptor getDescriptor() {
-			return mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.getDescriptor().getServices().get(
-					0);
+			return mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos
+					.getDescriptor()
+					.getServices()
+					.get(
+							0);
 		}
 
 		public final com.google.protobuf.Descriptors.ServiceDescriptor getDescriptorForType() {
@@ -1180,10 +1198,12 @@ public final class RowCountProtos
 			}
 			switch (method.getIndex()) {
 				case 0:
-					this.getRowCount(
-							controller,
-							(mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountRequest) request,
-							com.google.protobuf.RpcUtil.<mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountResponse> specializeCallback(done));
+					this
+							.getRowCount(
+									controller,
+									(mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountRequest) request,
+									com.google.protobuf.RpcUtil
+											.<mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountResponse> specializeCallback(done));
 					return;
 				default:
 					throw new java.lang.AssertionError(
@@ -1199,7 +1219,8 @@ public final class RowCountProtos
 			}
 			switch (method.getIndex()) {
 				case 0:
-					return mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountRequest.getDefaultInstance();
+					return mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountRequest
+							.getDefaultInstance();
 				default:
 					throw new java.lang.AssertionError(
 							"Can't get here.");
@@ -1214,7 +1235,8 @@ public final class RowCountProtos
 			}
 			switch (method.getIndex()) {
 				case 0:
-					return mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountResponse.getDefaultInstance();
+					return mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountResponse
+							.getDefaultInstance();
 				default:
 					throw new java.lang.AssertionError(
 							"Can't get here.");
@@ -1246,16 +1268,20 @@ public final class RowCountProtos
 					com.google.protobuf.RpcController controller,
 					mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountRequest request,
 					com.google.protobuf.RpcCallback<mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountResponse> done ) {
-				channel.callMethod(
-						getDescriptor().getMethods().get(
-								0),
-						controller,
-						request,
-						mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountResponse.getDefaultInstance(),
-						com.google.protobuf.RpcUtil.generalizeCallback(
-								done,
-								mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountResponse.class,
-								mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountResponse.getDefaultInstance()));
+				channel
+						.callMethod(
+								getDescriptor().getMethods().get(
+										0),
+								controller,
+								request,
+								mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountResponse
+										.getDefaultInstance(),
+								com.google.protobuf.RpcUtil
+										.generalizeCallback(
+												done,
+												mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountResponse.class,
+												mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountResponse
+														.getDefaultInstance()));
 			}
 		}
 
@@ -1287,12 +1313,14 @@ public final class RowCountProtos
 					com.google.protobuf.RpcController controller,
 					mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountRequest request )
 					throws com.google.protobuf.ServiceException {
-				return (mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountResponse) channel.callBlockingMethod(
-						getDescriptor().getMethods().get(
-								0),
-						controller,
-						request,
-						mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountResponse.getDefaultInstance());
+				return (mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountResponse) channel
+						.callBlockingMethod(
+								getDescriptor().getMethods().get(
+										0),
+								controller,
+								request,
+								mil.nga.giat.geowave.datastore.hbase.query.generated.RowCountProtos.CountResponse
+										.getDefaultInstance());
 			}
 
 		}
@@ -1312,7 +1340,12 @@ public final class RowCountProtos
 	private static com.google.protobuf.Descriptors.FileDescriptor descriptor;
 	static {
 		java.lang.String[] descriptorData = {
-			"\n\025RowCountService.proto\"\036\n\014CountRequest\022" + "\016\n\006filter\030\001 \001(\014\"!\n\rCountResponse\022\020\n\005coun" + "t\030\002 \002(\003:\00102?\n\017RowCountService\022,\n\013getRowC" + "ount\022\r.CountRequest\032\016.CountResponseBN\n4m" + "il.nga.giat.geowave.datastore.hbase.quer" + "y.generatedB\016RowCountProtosH\001\210\001\001\240\001\001"
+			"\n\025RowCountService.proto\"\036\n\014CountRequest\022"
+					+ "\016\n\006filter\030\001 \001(\014\"!\n\rCountResponse\022\020\n\005coun"
+					+ "t\030\002 \002(\003:\00102?\n\017RowCountService\022,\n\013getRowC"
+					+ "ount\022\r.CountRequest\032\016.CountResponseBN\n4m"
+					+ "il.nga.giat.geowave.datastore.hbase.quer"
+					+ "y.generatedB\016RowCountProtosH\001\210\001\001\240\001\001"
 		};
 		com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner = new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
 			public com.google.protobuf.ExtensionRegistry assignDescriptors(

@@ -6,13 +6,17 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import mil.nga.giat.geowave.core.store.GeoWaveStoreFinder;
 import mil.nga.giat.geowave.core.store.StoreFactoryFamilySpi;
+import mil.nga.giat.geowave.core.store.config.ConfigOption;
 
 import org.apache.log4j.Logger;
 import org.geotools.data.DataStore;
@@ -51,42 +55,77 @@ public class GeoWaveGTDataStoreFactory implements
 	private final List<DataStoreCacheEntry> dataStoreCache = new ArrayList<DataStoreCacheEntry>();
 	private final StoreFactoryFamilySpi geowaveStoreFactoryFamily;
 	private static Boolean isAvailable = null;
+	
+	private static Map<String, Set<StoreFactoryFamilySpi>> argumentSupersetStores;
+	private static Object lock = new Object();
 
 	/**
 	 * Public "no argument" constructor called by Factory Service Provider (SPI)
 	 * entry listed in META-INF/services/org.geotools.data.DataStoreFactorySPI
 	 */
 	public GeoWaveGTDataStoreFactory() {
+		
 		final Collection<StoreFactoryFamilySpi> dataStoreFactories = GeoWaveStoreFinder
 				.getRegisteredStoreFactoryFamilies()
 				.values();
+
+		synchronized (lock) {
+			if (argumentSupersetStores == null) {
+				// initialize arguments map
+				argumentSupersetStores = new HashMap<String, Set<StoreFactoryFamilySpi>>();
+				for (StoreFactoryFamilySpi factory : dataStoreFactories) {
+					for (StoreFactoryFamilySpi otherFactory : dataStoreFactories) {
+						if (factory != otherFactory) {
+							// if otherFactory arguments are superset of
+							// factory arguments
+							ConfigOption[] requiredOptions = GeoWaveStoreFinder.getRequiredOptions(factory);
+							ConfigOption[] otherRequiredOptions = GeoWaveStoreFinder.getRequiredOptions(otherFactory);
+							boolean superSet = false;
+							if (otherRequiredOptions.length > requiredOptions.length) {
+								superSet = true;
+								for (ConfigOption requiredOption : requiredOptions) {
+									boolean foundInOtherOptions = false;
+									for (ConfigOption otherOption : otherRequiredOptions) {
+										if (otherOption.getName().equals(
+												requiredOption.getName())) {
+											foundInOtherOptions = true;
+											break;
+										}
+									}
+									if (!foundInOtherOptions) {
+										superSet = false;
+										break;
+									}
+								}
+							}
+
+							if (superSet) {
+								// add otherfactory to factory's map entry
+								Set<StoreFactoryFamilySpi> supersetStores = argumentSupersetStores.get(factory
+										.getName());
+								if (supersetStores == null) {
+									supersetStores = new HashSet<StoreFactoryFamilySpi>();
+									argumentSupersetStores.put(
+											factory.getName(),
+											supersetStores);
+								}
+								supersetStores.add(otherFactory);
+							}
+						}
+					}
+				}
+			}
+		}
+
 		if (dataStoreFactories.isEmpty()) {
 			LOGGER.error("No GeoWave DataStore found!  Geotools datastore for GeoWave is unavailable");
 			geowaveStoreFactoryFamily = null;
 		}
 		else {
 			final Iterator<StoreFactoryFamilySpi> it = dataStoreFactories.iterator();
-			StoreFactoryFamilySpi memoryFactoryFamily = null;
-			final List<StoreFactoryFamilySpi> allOtherFactoryFamilies = new ArrayList<>();
-			while (it.hasNext()) {
-				StoreFactoryFamilySpi currFactoryFamily = it.next();
-				if (currFactoryFamily.getName().equals(
-						"memory") || currFactoryFamily.getName().equals(
-						"hbase")) {
-					memoryFactoryFamily = currFactoryFamily;
-				}
-				else {
-					allOtherFactoryFamilies.add(currFactoryFamily);
-				}
-			}
-			if (!allOtherFactoryFamilies.isEmpty()) {
-				geowaveStoreFactoryFamily = allOtherFactoryFamilies.get(0);
-				if (allOtherFactoryFamilies.size() > 1) {
-					GeoTools.addFactoryIteratorProvider(new GeoWaveGTDataStoreFactoryIteratorProvider());
-				}
-			}
-			else {
-				geowaveStoreFactoryFamily = memoryFactoryFamily;
+			geowaveStoreFactoryFamily = it.next();
+			if (it.hasNext()) {
+				GeoTools.addFactoryIteratorProvider(new GeoWaveGTDataStoreFactoryIteratorProvider());
 			}
 		}
 	}
@@ -185,9 +224,25 @@ public class GeoWaveGTDataStoreFactory implements
 			new GeoWavePluginConfig(
 					geowaveStoreFactoryFamily,
 					params);
+
+			if (argumentSupersetStores.containsKey(geowaveStoreFactoryFamily.getName())) {
+				for (StoreFactoryFamilySpi supersetStore : argumentSupersetStores.get(geowaveStoreFactoryFamily
+						.getName())) {
+					// if we have can construct a superset store with these
+					// args, don't process with this factory
+					try {
+						new GeoWavePluginConfig(
+								supersetStore,
+								params);
+						return false;
+					}
+					catch (final Exception e) {}
+				}
+			}
+
 			return true;
 		}
-		catch (final GeoWavePluginException e) {
+		catch (final Exception e) {
 			// supplied map does not contain all necessary parameters to
 			// construct GeoWaveGTDataStore
 			return false;

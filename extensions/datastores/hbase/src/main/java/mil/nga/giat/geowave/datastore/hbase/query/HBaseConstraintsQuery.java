@@ -123,7 +123,8 @@ public class HBaseConstraintsQuery extends
 	protected List<QueryFilter> getAllFiltersList() {
 		final List<QueryFilter> filters = super.getAllFiltersList();
 
-		// Since we have custom filters enabled, this list should only return the client filters
+		// Since we have custom filters enabled, this list should only return
+		// the client filters
 		if (options.isEnableCustomFilters()) {
 			return filters;
 		}
@@ -216,7 +217,8 @@ public class HBaseConstraintsQuery extends
 
 			final Aggregation aggregation = base.aggregation.getRight();
 
-			AggregationProtos.AggregationType.Builder aggregationBuilder = AggregationProtos.AggregationType.newBuilder();
+			AggregationProtos.AggregationType.Builder aggregationBuilder = AggregationProtos.AggregationType
+					.newBuilder();
 			aggregationBuilder.setName(aggregation.getClass().getName());
 
 			if (aggregation.getParameters() != null) {
@@ -224,7 +226,8 @@ public class HBaseConstraintsQuery extends
 				aggregationBuilder.setParams(ByteString.copyFrom(paramBytes));
 			}
 
-			final AggregationProtos.AggregationRequest.Builder requestBuilder = AggregationProtos.AggregationRequest.newBuilder();
+			final AggregationProtos.AggregationRequest.Builder requestBuilder = AggregationProtos.AggregationRequest
+					.newBuilder();
 			requestBuilder.setAggregation(aggregationBuilder.build());
 
 			byte[] filterBytes = PersistenceUtils.toBinary(base.distributableFilters);

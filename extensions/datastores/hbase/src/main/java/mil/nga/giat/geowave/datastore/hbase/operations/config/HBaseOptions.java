@@ -31,7 +31,7 @@ public class HBaseOptions implements
 
 	@Parameter(names = "--enableBlockCache", hidden = true, arity = 1)
 	protected boolean enableBlockCache = true;
-	
+
 	@Parameter(names = "--scanCacheSize")
 	protected int scanCacheSize = HConstants.DEFAULT_HBASE_CLIENT_SCANNER_CACHING;
 
@@ -116,10 +116,11 @@ public class HBaseOptions implements
 		return scanCacheSize;
 	}
 
-	public void setScanCacheSize(int scanCacheSize) {
+	public void setScanCacheSize(
+			int scanCacheSize ) {
 		this.scanCacheSize = scanCacheSize;
 	}
-	
+
 	public boolean isEnableCustomFilters() {
 		return enableCustomFilters;
 	}

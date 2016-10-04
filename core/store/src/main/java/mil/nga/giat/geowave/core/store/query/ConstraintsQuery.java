@@ -101,7 +101,7 @@ public class ConstraintsQuery
 			return getAllRanges();
 		}
 	}
-	
+
 	public List<ByteArrayRange> getAllRanges() {
 		return DataStoreUtils.constraintsToByteArrayRanges(
 				constraints,

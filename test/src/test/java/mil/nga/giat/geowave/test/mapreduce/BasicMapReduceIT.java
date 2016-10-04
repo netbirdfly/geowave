@@ -370,7 +370,10 @@ public class BasicMapReduceIT
 			// after the first job there should be a sequence file with the
 			// filtered results which should match the expected results
 			// resources
-			final Configuration conf = super.getConf();
+
+			final Job job = Job.getInstance(super.getConf());
+
+			final Configuration conf = job.getConfiguration();
 			MapReduceTestUtils.filterConfiguration(conf);
 			final ByteBuffer buf = ByteBuffer.allocate((8 * expectedResults.hashedCentroids.size()) + 4);
 			buf.putInt(expectedResults.hashedCentroids.size());
@@ -380,10 +383,17 @@ public class BasicMapReduceIT
 			conf.set(
 					MapReduceTestUtils.EXPECTED_RESULTS_KEY,
 					ByteArrayUtils.byteArrayToString(buf.array()));
-			final Job job = Job.getInstance(conf);
+
+			GeoWaveInputFormat.setDataStoreName(
+					conf,
+					dataStoreOptions.getType());
+			GeoWaveInputFormat.setStoreConfigOptions(
+					conf,
+					dataStoreOptions.getFactoryOptionsAsMap());
 			job.setJarByClass(this.getClass());
 
 			job.setJobName("GeoWave Test (" + dataStoreOptions.getGeowaveNamespace() + ")");
+
 			job.setInputFormatClass(SequenceFileInputFormat.class);
 			job.setMapperClass(VerifyExpectedResultsMapper.class);
 			job.setMapOutputKeyClass(NullWritable.class);
@@ -391,9 +401,6 @@ public class BasicMapReduceIT
 			job.setOutputFormatClass(NullOutputFormat.class);
 			job.setNumReduceTasks(0);
 			job.setSpeculativeExecution(false);
-			GeoWaveInputFormat.setStoreConfigOptions(
-					job.getConfiguration(),
-					dataStoreOptions.getFactoryOptionsAsMap());
 			FileInputFormat.setInputPaths(
 					job,
 					getHdfsOutputPath());

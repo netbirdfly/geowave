@@ -217,7 +217,8 @@ public class HBaseDistributableFilter extends
 			((AbstractAdapterPersistenceEncoding) persistenceEncoding).convertUnknownValues(
 					dataAdapter,
 					model);
-			final PersistentDataset<Object> existingExtValues = ((AbstractAdapterPersistenceEncoding) persistenceEncoding).getAdapterExtendedData();
+			final PersistentDataset<Object> existingExtValues = ((AbstractAdapterPersistenceEncoding) persistenceEncoding)
+					.getAdapterExtendedData();
 			if (existingExtValues != null) {
 				for (final PersistentValue<Object> val : existingExtValues.getValues()) {
 					adapterExtendedValues.addValue(val);

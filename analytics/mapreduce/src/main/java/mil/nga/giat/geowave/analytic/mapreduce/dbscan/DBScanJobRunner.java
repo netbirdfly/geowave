@@ -101,8 +101,11 @@ public class DBScanJobRunner extends
 					bestCodecClass = codecClass;
 					rank = r;
 				}
-				catch (final Throwable ex) {
+				catch (Exception ex) {
 					// occurs when codec is not installed.
+					LOGGER.warn(
+							"not configurable in this context",
+							ex);
 				}
 			}
 		}

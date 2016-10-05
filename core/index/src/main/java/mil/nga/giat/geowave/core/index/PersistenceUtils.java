@@ -107,7 +107,7 @@ public class PersistenceUtils
 		try {
 			factoryType = Class.forName(className);
 		}
-		catch (final Throwable e) {
+		catch (ClassNotFoundException e) {
 			LOGGER.warn(
 					"error creating class: could not find class " + className,
 					e);
@@ -122,7 +122,7 @@ public class PersistenceUtils
 				noArgConstructor.setAccessible(true);
 				factoryClassInst = noArgConstructor.newInstance();
 			}
-			catch (final Throwable e) {
+			catch (Exception e) {
 				LOGGER.warn(
 						"error creating class: could not create class " + className,
 						e);

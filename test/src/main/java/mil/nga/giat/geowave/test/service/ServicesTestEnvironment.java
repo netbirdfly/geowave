@@ -177,7 +177,7 @@ public class ServicesTestEnvironment implements
 							"Could not start the Jetty server: " + e.getMessage(),
 							e);
 
-					if (jettyServer != null) {
+					if (jettyServer.isRunning()) {
 						try {
 							jettyServer.stop();
 						}

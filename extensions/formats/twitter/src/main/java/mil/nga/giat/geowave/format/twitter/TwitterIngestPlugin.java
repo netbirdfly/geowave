@@ -174,6 +174,7 @@ public class TwitterIngestPlugin extends
 
 			StringReader sr = new StringReader(
 					"");
+			JsonReader jsonReader = null;
 
 			try {
 				while ((line = br.readLine()) != null) {
@@ -194,7 +195,7 @@ public class TwitterIngestPlugin extends
 					try {
 						sr = new StringReader(
 								line);
-						JsonReader jsonReader = Json.createReader(sr);
+						jsonReader = Json.createReader(sr);
 						JsonObject tweet = jsonReader.readObject();
 
 						try {
@@ -295,6 +296,7 @@ public class TwitterIngestPlugin extends
 					}
 					finally {
 						if (sr != null) sr.close();
+						jsonReader.close();
 					}
 				}
 

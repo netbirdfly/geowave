@@ -15,12 +15,14 @@ import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.base.DataStoreEntryInfo.FieldInfo;
 import mil.nga.giat.geowave.core.store.index.FieldIndexStrategy;
 
+import org.apache.log4j.Logger;
 import org.apache.lucene.analysis.ngram.NGramTokenizer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 
 public class TextIndexStrategy implements
 		FieldIndexStrategy<TextQueryConstraint, String>
 {
+	private final static Logger LOGGER = Logger.getLogger(TextIndexStrategy.class);
 
 	protected static final String START_END_MARKER = "\01";
 	protected static final byte[] START_END_MARKER_BYTE = StringUtils.stringToBinary(START_END_MARKER);
@@ -111,25 +113,32 @@ public class TextIndexStrategy implements
 			final int start,
 			final int end ) {
 
-		final NGramTokenizer nGramTokenizer = new NGramTokenizer(
-				start,
-				end);
 		final List<ByteArrayId> tokens = new ArrayList<ByteArrayId>();
-		try {
-			nGramTokenizer.setReader(new StringReader(
-					value));
-			final CharTermAttribute charTermAttribute = nGramTokenizer.addAttribute(CharTermAttribute.class);
-			nGramTokenizer.reset();
+		try (final NGramTokenizer nGramTokenizer = new NGramTokenizer(
+				start,
+				end)) {
+			try {
+				nGramTokenizer.setReader(new StringReader(
+						value));
+				final CharTermAttribute charTermAttribute = nGramTokenizer.addAttribute(CharTermAttribute.class);
+				nGramTokenizer.reset();
 
-			while (nGramTokenizer.incrementToken()) {
-				tokens.add(new ByteArrayId(
-						charTermAttribute.toString()));
+				while (nGramTokenizer.incrementToken()) {
+					tokens.add(new ByteArrayId(
+							charTermAttribute.toString()));
+				}
+				nGramTokenizer.end();
+				nGramTokenizer.close();
 			}
-			nGramTokenizer.end();
-			nGramTokenizer.close();
+			catch (final IOException e) {
+				e.printStackTrace();
+			}
+			
 		}
-		catch (final IOException e) {
-			e.printStackTrace();
+		catch (IOException e1) {
+			LOGGER.warn(
+					"Cannot close NGramTokenizer",
+					e1);
 		}
 
 		return tokens;

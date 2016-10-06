@@ -402,14 +402,14 @@ public class SceneFeatureIterator implements
 			final Filter cqlFilter )
 			throws FileNotFoundException,
 			IOException {
-		try (final FileInputStream is = new FileInputStream(
-				csvFile)) {
-			parser = new CSVParser(
+		// try (final FileInputStream is = new FileInputStream(csvFile)) {
+		final FileInputStream is = new FileInputStream(csvFile);	
+		parser = new CSVParser(
 					new InputStreamReader(
 							is,
 							StringUtils.UTF8_CHAR_SET),
 					CSVFormat.DEFAULT.withHeader().withSkipHeaderRecord());
-		}
+		// }
 
 		final Iterator<CSVRecord> csvIterator = parser.iterator();
 		long startLineDecrementor = startLine;

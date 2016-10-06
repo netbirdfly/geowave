@@ -2,10 +2,11 @@ package mil.nga.giat.geowave.datastore.hbase.query;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
@@ -15,6 +16,7 @@ import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.CloseableIteratorWrapper;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
+import mil.nga.giat.geowave.core.store.adapter.RowMergingDataAdapter;
 import mil.nga.giat.geowave.core.store.callback.ScanCallback;
 import mil.nga.giat.geowave.core.store.dimension.NumericDimensionField;
 import mil.nga.giat.geowave.core.store.filter.DistributableQueryFilter;
@@ -26,7 +28,9 @@ import mil.nga.giat.geowave.datastore.hbase.operations.BasicHBaseOperations;
 import mil.nga.giat.geowave.datastore.hbase.util.HBaseEntryIteratorWrapper;
 import mil.nga.giat.geowave.datastore.hbase.util.HBaseUtils;
 import mil.nga.giat.geowave.datastore.hbase.util.HBaseUtils.MultiScannerClosableWrapper;
+import mil.nga.giat.geowave.datastore.hbase.util.MergingEntryIterator;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hbase.HConstants;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
@@ -48,16 +52,17 @@ public abstract class HBaseFilteredIndexQuery extends
 
 	protected final ScanCallback<?> scanCallback;
 	protected List<QueryFilter> clientFilters;
-	protected Collection<String> fieldIds = null;
 
 	public HBaseFilteredIndexQuery(
 			final List<ByteArrayId> adapterIds,
 			final PrimaryIndex index,
 			final ScanCallback<?> scanCallback,
+			final Pair<List<String>, DataAdapter<?>> fieldIds,
 			final String... authorizations ) {
 		super(
 				adapterIds,
 				index,
+				fieldIds,
 				authorizations);
 		this.scanCallback = scanCallback;
 		LOGGER.setLevel(Level.DEBUG);
@@ -67,11 +72,6 @@ public abstract class HBaseFilteredIndexQuery extends
 	public void setClientFilters(
 			final List<QueryFilter> clientFilters ) {
 		this.clientFilters = clientFilters;
-	}
-
-	public void setFieldIds(
-			final Collection<String> fieldIds ) {
-		this.fieldIds = fieldIds;
 	}
 
 	protected boolean validateAdapters(
@@ -99,6 +99,7 @@ public abstract class HBaseFilteredIndexQuery extends
 	public CloseableIterator<Object> query(
 			final BasicHBaseOperations operations,
 			final AdapterStore adapterStore,
+			final double[] maxResolutionSubsamplingPerDimension,
 			final Integer limit ) {
 		try {
 			if (!validateAdapters(operations)) {
@@ -111,16 +112,14 @@ public abstract class HBaseFilteredIndexQuery extends
 			}
 		}
 		catch (final IOException ex) {
-			LOGGER
-					.warn("Unabe to check if " + StringUtils.stringFromBinary(index.getId().getBytes())
-							+ " table exists");
+			LOGGER.warn("Unabe to check if " + StringUtils.stringFromBinary(index.getId().getBytes()) + " table exists");
 			return new CloseableIterator.Empty();
 		}
 
 		final String tableName = StringUtils.stringFromBinary(index.getId().getBytes());
 
 		CloseableIterator<DataAdapter<?>> adapters = null;
-		if ((fieldIds != null) && !fieldIds.isEmpty()) {
+		if (fieldIds != null) {
 			adapters = adapterStore.getAdapters();
 		}
 
@@ -152,7 +151,8 @@ public abstract class HBaseFilteredIndexQuery extends
 		if (results.iterator().hasNext()) {
 			Iterator it = initIterator(
 					adapterStore,
-					Iterators.concat(resultsIterators.iterator()));
+					Iterators.concat(resultsIterators.iterator()),
+					maxResolutionSubsamplingPerDimension);
 
 			if ((limit != null) && (limit > 0)) {
 				it = Iterators.limit(
@@ -182,7 +182,7 @@ public abstract class HBaseFilteredIndexQuery extends
 		}
 		scanner.setCacheBlocks(options.isEnableBlockCache());
 
-		FilterList filterList = new FilterList();
+		final FilterList filterList = new FilterList();
 
 		if ((adapterIds != null) && !adapterIds.isEmpty()) {
 			for (final ByteArrayId adapterId : adapterIds) {
@@ -190,17 +190,10 @@ public abstract class HBaseFilteredIndexQuery extends
 			}
 		}
 
-		// a subset of fieldIds is being requested
-		if ((fieldIds != null) && !fieldIds.isEmpty()) {
-			// configure scanner to fetch only the fieldIds specified
-			handleSubsetOfFieldIds(
-					scanner,
-					adapters);
-		}
 		// create the multi-row filter
 		final List<RowRange> rowRanges = new ArrayList<RowRange>();
 
-		List<ByteArrayRange> ranges = getRanges();
+		final List<ByteArrayRange> ranges = getRanges();
 		if ((ranges == null) || ranges.isEmpty()) {
 			rowRanges.add(new RowRange(
 					HConstants.EMPTY_BYTE_ARRAY,
@@ -211,7 +204,7 @@ public abstract class HBaseFilteredIndexQuery extends
 		else {
 			for (final ByteArrayRange range : ranges) {
 				if (range.getStart() != null) {
-					byte[] startRow = range.getStart().getBytes();
+					final byte[] startRow = range.getStart().getBytes();
 					byte[] stopRow;
 					if (!range.isSingleValue()) {
 						stopRow = HBaseUtils.getNextPrefix(range.getEnd().getBytes());
@@ -220,7 +213,7 @@ public abstract class HBaseFilteredIndexQuery extends
 						stopRow = HBaseUtils.getNextPrefix(range.getStart().getBytes());
 					}
 
-					RowRange rowRange = new RowRange(
+					final RowRange rowRange = new RowRange(
 							startRow,
 							true,
 							stopRow,
@@ -233,12 +226,12 @@ public abstract class HBaseFilteredIndexQuery extends
 
 		// Create the multi-range filter
 		try {
-			Filter filter = new MultiRowRangeFilter(
+			final Filter filter = new MultiRowRangeFilter(
 					rowRanges);
 
 			filterList.addFilter(filter);
 		}
-		catch (IOException e) {
+		catch (final IOException e) {
 			e.printStackTrace();
 		}
 
@@ -290,7 +283,7 @@ public abstract class HBaseFilteredIndexQuery extends
 			}
 
 			// configure scanner to fetch only the specified fieldIds
-			for (final String fieldId : fieldIds) {
+			for (final String fieldId : fieldIds.getLeft()) {
 				scanner.addColumn(
 						next.getAdapterId().getBytes(),
 						StringUtils.stringToBinary(fieldId));
@@ -309,20 +302,47 @@ public abstract class HBaseFilteredIndexQuery extends
 
 	protected Iterator initIterator(
 			final AdapterStore adapterStore,
-			final Iterator<Result> resultsIterator ) {
+			final Iterator<Result> resultsIterator,
+			final double[] maxResolutionSubsamplingPerDimension ) {
 		// TODO Since currently we are not supporting server side
 		// iterator/coprocessors, we also cannot run
 		// server side filters and hence they have to run on clients itself. So
 		// need to add server side filters also in list of client filters.
 		final List<QueryFilter> filters = getAllFiltersList();
-		return new HBaseEntryIteratorWrapper(
-				adapterStore,
-				index,
-				resultsIterator,
-				filters.isEmpty() ? null : filters.size() == 1 ? filters.get(0)
-						: new mil.nga.giat.geowave.core.store.filter.FilterList<QueryFilter>(
-								filters),
-				scanCallback);
+		final QueryFilter queryFilter = filters.isEmpty() ? null : filters.size() == 1 ? filters.get(0) : new mil.nga.giat.geowave.core.store.filter.FilterList<QueryFilter>(
+				filters);
+
+		final Map<ByteArrayId, RowMergingDataAdapter> mergingAdapters = new HashMap<ByteArrayId, RowMergingDataAdapter>();
+		for (final ByteArrayId adapterId : adapterIds) {
+			final DataAdapter adapter = adapterStore.getAdapter(adapterId);
+			if (adapter instanceof RowMergingDataAdapter && ((RowMergingDataAdapter) adapter).getTransform() != null) {
+				mergingAdapters.put(
+						adapterId,
+						(RowMergingDataAdapter) adapter);
+			}
+		}
+
+		if (mergingAdapters.isEmpty()) {
+			return new HBaseEntryIteratorWrapper(
+					adapterStore,
+					index,
+					resultsIterator,
+					queryFilter,
+					scanCallback,
+					fieldIds,
+					maxResolutionSubsamplingPerDimension);
+		}
+		else {
+			return new MergingEntryIterator(
+					adapterStore,
+					index,
+					resultsIterator,
+					queryFilter,
+					scanCallback,
+					mergingAdapters,
+					fieldIds,
+					maxResolutionSubsamplingPerDimension);
+		}
 	}
 
 	protected List<QueryFilter> getAllFiltersList() {

@@ -59,6 +59,7 @@ public class HBaseConstraintsQuery extends
 			final Pair<DataAdapter<?>, Aggregation<?, ?, ?>> aggregation,
 			final IndexMetaData[] indexMetaData,
 			final DuplicateEntryCount duplicateCounts,
+			final Pair<List<String>, DataAdapter<?>> fieldIds,
 			final String[] authorizations ) {
 		this(
 				adapterIds,
@@ -70,6 +71,7 @@ public class HBaseConstraintsQuery extends
 				aggregation,
 				indexMetaData,
 				duplicateCounts,
+				fieldIds,
 				authorizations);
 	}
 
@@ -83,12 +85,14 @@ public class HBaseConstraintsQuery extends
 			final Pair<DataAdapter<?>, Aggregation<?, ?, ?>> aggregation,
 			final IndexMetaData[] indexMetaData,
 			final DuplicateEntryCount duplicateCounts,
+			final Pair<List<String>, DataAdapter<?>> fieldIds,
 			final String[] authorizations ) {
 
 		super(
 				adapterIds,
 				index,
 				scanCallback,
+				fieldIds,
 				authorizations);
 
 		base = new ConstraintsQuery(
@@ -147,11 +151,13 @@ public class HBaseConstraintsQuery extends
 	public CloseableIterator<Object> query(
 			final BasicHBaseOperations operations,
 			final AdapterStore adapterStore,
+			final double[] maxResolutionSubsamplingPerDimension,
 			final Integer limit ) {
 		if (!isAggregation()) {
 			return super.query(
 					operations,
 					adapterStore,
+					maxResolutionSubsamplingPerDimension,
 					limit);
 		}
 
@@ -160,6 +166,7 @@ public class HBaseConstraintsQuery extends
 			final CloseableIterator<Object> it = super.query(
 					operations,
 					adapterStore,
+					maxResolutionSubsamplingPerDimension,
 					limit);
 
 			if ((it != null) && it.hasNext()) {
@@ -194,12 +201,14 @@ public class HBaseConstraintsQuery extends
 		return aggregateWithCoprocessor(
 				operations,
 				adapterStore,
+				maxResolutionSubsamplingPerDimension,
 				limit);
 	}
 
 	private CloseableIterator<Object> aggregateWithCoprocessor(
 			final BasicHBaseOperations operations,
 			final AdapterStore adapterStore,
+			final double[] maxResolutionSubsamplingPerDimension,
 			final Integer limit ) {
 		final String tableName = StringUtils.stringFromBinary(index.getId().getBytes());
 		Mergeable total = null;
@@ -217,8 +226,7 @@ public class HBaseConstraintsQuery extends
 
 			final Aggregation aggregation = base.aggregation.getRight();
 
-			AggregationProtos.AggregationType.Builder aggregationBuilder = AggregationProtos.AggregationType
-					.newBuilder();
+			AggregationProtos.AggregationType.Builder aggregationBuilder = AggregationProtos.AggregationType.newBuilder();
 			aggregationBuilder.setName(aggregation.getClass().getName());
 
 			if (aggregation.getParameters() != null) {
@@ -226,8 +234,7 @@ public class HBaseConstraintsQuery extends
 				aggregationBuilder.setParams(ByteString.copyFrom(paramBytes));
 			}
 
-			final AggregationProtos.AggregationRequest.Builder requestBuilder = AggregationProtos.AggregationRequest
-					.newBuilder();
+			final AggregationProtos.AggregationRequest.Builder requestBuilder = AggregationProtos.AggregationRequest.newBuilder();
 			requestBuilder.setAggregation(aggregationBuilder.build());
 
 			byte[] filterBytes = PersistenceUtils.toBinary(base.distributableFilters);

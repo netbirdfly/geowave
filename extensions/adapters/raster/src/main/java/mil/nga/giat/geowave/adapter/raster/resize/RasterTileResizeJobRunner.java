@@ -12,7 +12,6 @@ import org.apache.log4j.Logger;
 import org.opengis.coverage.grid.GridCoverage;
 
 import mil.nga.giat.geowave.adapter.raster.adapter.RasterDataAdapter;
-import mil.nga.giat.geowave.adapter.raster.adapter.merge.nodata.NoDataMergeStrategy;
 import mil.nga.giat.geowave.adapter.raster.operations.ResizeCommand;
 import mil.nga.giat.geowave.adapter.raster.operations.options.RasterTileResizeCommandLineOptions;
 import mil.nga.giat.geowave.core.cli.operations.config.options.ConfigOptions;
@@ -21,12 +20,12 @@ import mil.nga.giat.geowave.core.cli.parser.OperationParser;
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.DataStore;
+import mil.nga.giat.geowave.core.store.IndexWriter;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.config.ConfigUtils;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.index.IndexStore;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
-import mil.nga.giat.geowave.core.store.index.writer.IndexWriter;
 import mil.nga.giat.geowave.core.store.operations.remote.options.DataStorePluginOptions;
 import mil.nga.giat.geowave.mapreduce.GeoWaveConfiguratorBase;
 import mil.nga.giat.geowave.mapreduce.JobContextAdapterStore;
@@ -116,14 +115,13 @@ public class RasterTileResizeJobRunner extends
 		if (adapter == null) {
 			throw new IllegalArgumentException(
 					"Adapter for coverage '" + rasterResizeOptions.getInputCoverageName()
-							+ "' does not exist in namesace '" + inputStoreOptions.getGeowaveNamespace() + "'");
+							+ "' does not exist in namespace '" + inputStoreOptions.getGeowaveNamespace() + "'");
 		}
 
 		final RasterDataAdapter newAdapter = new RasterDataAdapter(
 				(RasterDataAdapter) adapter,
 				rasterResizeOptions.getOutputCoverageName(),
-				rasterResizeOptions.getOutputTileSize(),
-				new NoDataMergeStrategy());
+				rasterResizeOptions.getOutputTileSize());
 		JobContextAdapterStore.addDataAdapter(
 				job.getConfiguration(),
 				adapter);

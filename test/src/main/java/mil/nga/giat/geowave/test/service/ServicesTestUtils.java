@@ -26,7 +26,8 @@ public class ServicesTestUtils
 			try (final PrintWriter writer = new PrintWriter(
 					configFile,
 					StringUtils.GEOWAVE_CHAR_SET.toString())) {
-				// just enable all store types through services regardless of which
+				// just enable all store types through services regardless of
+				// which
 				// ones are required
 				for (final GeoWaveStoreType type : GeoWaveStoreType.values()) {
 					final Properties storeProps = new Properties();

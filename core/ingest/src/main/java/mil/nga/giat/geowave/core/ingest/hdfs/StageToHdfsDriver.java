@@ -99,9 +99,9 @@ public class StageToHdfsDriver extends
 							e);
 					return false;
 				}
-				
+
 			}
-			
+
 		}
 		catch (final IOException e) {
 			LOGGER.fatal(

@@ -199,7 +199,8 @@ public class DBScanIterationsJobRunner implements
 							partitioner.getClass());
 				}
 				catch (final IllegalArgumentException argEx) {
-					// this occurs if the partitioner decides that the distance is
+					// this occurs if the partitioner decides that the distance
+					// is
 					// invalid (e.g. bigger than the map space).
 					// In this case, we just exist out of the loop.
 					// startPath has the final data
@@ -214,13 +215,14 @@ public class DBScanIterationsJobRunner implements
 						runTimeProperties);
 
 				/**
-				 * Re-partitioning the fat geometries can force a large number of
-				 * partitions. The geometries end up being represented in multiple
-				 * partitions. Better to skip secondary partitioning. 0.9 is a bit
-				 * of a magic number. Ideally, it is based on the area of the max
-				 * distance cube divided by the area as defined by threshold
-				 * distances. However, looking up the partition dimension space or
-				 * assuming only two dimensions were both undesirable.
+				 * Re-partitioning the fat geometries can force a large number
+				 * of partitions. The geometries end up being represented in
+				 * multiple partitions. Better to skip secondary partitioning.
+				 * 0.9 is a bit of a magic number. Ideally, it is based on the
+				 * area of the max distance cube divided by the area as defined
+				 * by threshold distances. However, looking up the partition
+				 * dimension space or assuming only two dimensions were both
+				 * undesirable.
 				 */
 				if ((precisionFactor <= 0.9) && !overrideSecondary) {
 					localScopeProperties.store(

@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vividsolutions.jts.geom.Geometry;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import mil.nga.giat.geowave.adapter.raster.RasterUtils;
 import mil.nga.giat.geowave.adapter.raster.adapter.merge.nodata.NoDataMergeStrategy;
 import mil.nga.giat.geowave.adapter.raster.operations.ResizeCommand;
@@ -87,6 +88,7 @@ public class KDEJobRunner extends
 	 * Main method to execute the MapReduce analytic.
 	 */
 	@SuppressWarnings("deprecation")
+	@SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_OF_NULL_VALUE", justification = "false possitive")
 	public int runJob()
 			throws Exception {
 		Configuration conf = super.getConf();
@@ -212,15 +214,15 @@ public class KDEJobRunner extends
 			fs.delete(
 					new Path(
 							"/tmp/" + inputDataStoreOptions.getGeowaveNamespace() + "_stats_"
-									+ kdeCommandLineOptions.getMinLevel() + "_" + kdeCommandLineOptions.getMaxLevel() + "_"
-									+ kdeCommandLineOptions.getCoverageName()),
+									+ kdeCommandLineOptions.getMinLevel() + "_" + kdeCommandLineOptions.getMaxLevel()
+									+ "_" + kdeCommandLineOptions.getCoverageName()),
 					true);
 			FileOutputFormat.setOutputPath(
 					job,
 					new Path(
 							"/tmp/" + inputDataStoreOptions.getGeowaveNamespace() + "_stats_"
-									+ kdeCommandLineOptions.getMinLevel() + "_" + kdeCommandLineOptions.getMaxLevel() + "_"
-									+ kdeCommandLineOptions.getCoverageName() + "/basic"));
+									+ kdeCommandLineOptions.getMinLevel() + "_" + kdeCommandLineOptions.getMaxLevel()
+									+ "_" + kdeCommandLineOptions.getCoverageName() + "/basic"));
 
 			final boolean job1Success = job.waitForCompletion(true);
 			boolean job2Success = false;
@@ -256,8 +258,9 @@ public class KDEJobRunner extends
 						statsReducer,
 						new Path(
 								"/tmp/" + inputDataStoreOptions.getGeowaveNamespace() + "_stats_"
-										+ kdeCommandLineOptions.getMinLevel() + "_" + kdeCommandLineOptions.getMaxLevel()
-										+ "_" + kdeCommandLineOptions.getCoverageName() + "/basic"));
+										+ kdeCommandLineOptions.getMinLevel() + "_"
+										+ kdeCommandLineOptions.getMaxLevel() + "_"
+										+ kdeCommandLineOptions.getCoverageName() + "/basic"));
 				setupJob2Output(
 						conf,
 						statsReducer,
@@ -323,12 +326,12 @@ public class KDEJobRunner extends
 			fs.delete(
 					new Path(
 							"/tmp/" + inputDataStoreOptions.getGeowaveNamespace() + "_stats_"
-									+ kdeCommandLineOptions.getMinLevel() + "_" + kdeCommandLineOptions.getMaxLevel() + "_"
-									+ kdeCommandLineOptions.getCoverageName()),
+									+ kdeCommandLineOptions.getMinLevel() + "_" + kdeCommandLineOptions.getMaxLevel()
+									+ "_" + kdeCommandLineOptions.getCoverageName()),
 					true);
 			return (job1Success && job2Success && postJob2Success) ? 0 : 1;
 		}
-		
+
 	}
 
 	protected void setupEntriesPerLevel(

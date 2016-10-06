@@ -98,7 +98,8 @@ public class IngestFromHdfsDriver
 				for (Entry<String, IngestFromHdfsPlugin<?, ?>> pluginProvider : ingestPlugins.entrySet()) {
 					// if an appropriate sequence file does not exist, continue
 
-					// TODO: we should probably clean up the type name to make it
+					// TODO: we should probably clean up the type name to make
+					// it
 					// HDFS path safe in case there are invalid characters
 					final Path inputFile = new Path(
 							hdfsBaseDirectory,
@@ -188,7 +189,7 @@ public class IngestFromHdfsDriver
 					}
 				}
 			}
-			
+
 		}
 		catch (final IOException e) {
 			LOGGER.warn(

@@ -133,7 +133,7 @@ public class TextIndexStrategy implements
 			catch (final IOException e) {
 				e.printStackTrace();
 			}
-			
+
 		}
 		catch (IOException e1) {
 			LOGGER.warn(

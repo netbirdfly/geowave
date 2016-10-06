@@ -109,7 +109,8 @@ public class OsmPbfParser
 						Paths.get(args.getIngestDirectory()),
 						new SimpleFileVisitor<java.nio.file.Path>() {
 							@Override
-							// I couldn't figure out how to get rid of the findbugs
+							// I couldn't figure out how to get rid of the
+							// findbugs
 							// issue.
 							@SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
 							public FileVisitResult visitFile(
@@ -140,7 +141,7 @@ public class OsmPbfParser
 				IOUtils.closeQuietly(relationOut);
 
 			}
-			
+
 		}
 
 		return conf;

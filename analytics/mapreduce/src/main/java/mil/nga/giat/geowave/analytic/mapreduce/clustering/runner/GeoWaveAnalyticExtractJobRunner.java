@@ -243,8 +243,6 @@ public class GeoWaveAnalyticExtractJobRunner extends
 			}
 		}
 
-		
-
 		return ToolRunner.run(
 				config,
 				this,

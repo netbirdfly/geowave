@@ -1060,11 +1060,11 @@ public class RasterUtils
 				model,
 				0);
 		final boolean sourceIsFloat = TypeMap.isFloatingPoint(sourceType);
-		
+
 		// Default to TYPE_BYTE for floating point images only; otherwise
 		// keep unchanged
 		SampleDimensionType targetType = sourceIsFloat ? SampleDimensionType.UNSIGNED_8BITS : sourceType;
-		
+
 		// Default setting: no scaling
 		final boolean targetIsFloat = TypeMap.isFloatingPoint(targetType);
 		NumberRange targetRange = TypeMap.getRange(targetType);

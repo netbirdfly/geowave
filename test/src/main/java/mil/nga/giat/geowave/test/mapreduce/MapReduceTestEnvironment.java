@@ -66,8 +66,7 @@ public class MapReduceTestEnvironment implements
 			final Path tmpDir = new Path(
 					hdfsBaseDirectory);
 			try {
-				try (final FileSystem fs = FileSystem.get(
-						MapReduceTestUtils.getConfiguration())) {
+				try (final FileSystem fs = FileSystem.get(MapReduceTestUtils.getConfiguration())) {
 					fs.delete(
 							tmpDir,
 							true);

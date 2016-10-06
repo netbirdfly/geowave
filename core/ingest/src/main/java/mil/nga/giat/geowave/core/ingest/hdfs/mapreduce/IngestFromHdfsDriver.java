@@ -189,7 +189,6 @@ public class IngestFromHdfsDriver
 					}
 				}
 			}
-
 		}
 		catch (final IOException e) {
 			LOGGER.warn(

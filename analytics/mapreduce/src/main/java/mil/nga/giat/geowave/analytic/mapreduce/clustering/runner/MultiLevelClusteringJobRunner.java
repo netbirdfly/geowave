@@ -211,8 +211,7 @@ public abstract class MultiLevelClusteringJobRunner extends
 					}
 				}
 			}
+			return status;
 		}
-
-		return status;
 	}
 }

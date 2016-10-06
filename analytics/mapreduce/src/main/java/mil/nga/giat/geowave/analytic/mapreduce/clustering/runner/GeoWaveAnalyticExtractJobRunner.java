@@ -241,12 +241,11 @@ public class GeoWaveAnalyticExtractJobRunner extends
 						getHdfsOutputPath(),
 						true);
 			}
+			return ToolRunner.run(
+					config,
+					this,
+					new String[] {});
 		}
-
-		return ToolRunner.run(
-				config,
-				this,
-				new String[] {});
 	}
 
 	@Override

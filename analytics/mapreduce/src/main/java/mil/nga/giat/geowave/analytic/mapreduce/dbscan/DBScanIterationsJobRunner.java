@@ -309,9 +309,9 @@ public class DBScanIterationsJobRunner implements
 			inputLoadRunner.run(
 					config,
 					runTimeProperties);
+			
+			return 0;
 		}
-
-		return 0;
 	}
 
 	@Override

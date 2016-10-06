@@ -192,9 +192,9 @@ public class ComparisonStatsJobRunner extends
 				return ingester.waitForCompletion(true);
 
 			}
+			
+			return false;
 		}
-
-		return false;
 	}
 
 	@Override

@@ -163,7 +163,8 @@ public abstract class MultiLevelClusteringJobRunner extends
 				Clustering.RETAIN_GROUP_ASSIGNMENTS,
 				false);
 
-		try (final FileSystem fs = FileSystem.get(config)) {
+		// try (final FileSystem fs = FileSystem.get(config)) {
+			final FileSystem fs = FileSystem.get(config);
 			// run clustering for each level
 			final String outputBaseDir = propertyManagement.getPropertyAsString(
 					MapReduceParameters.MRConfig.HDFS_BASE_DIR,
@@ -212,6 +213,6 @@ public abstract class MultiLevelClusteringJobRunner extends
 				}
 			}
 			return status;
-		}
+		// }
 	}
 }

@@ -94,7 +94,8 @@ public class ComparisonStatsJobRunner extends
 			final String statsNamespace,
 			final String coverageName )
 			throws Exception {
-		try (final FileSystem fs = FileSystem.get(conf)) {
+		// try (final FileSystem fs = FileSystem.get(conf)) {
+			final FileSystem fs = FileSystem.get(conf);
 			fs.delete(
 					new Path(
 							"/tmp/" + inputDataStoreOptions.getGeowaveNamespace() + "_stats_"
@@ -194,7 +195,7 @@ public class ComparisonStatsJobRunner extends
 			}
 			
 			return false;
-		}
+		// }
 	}
 
 	@Override

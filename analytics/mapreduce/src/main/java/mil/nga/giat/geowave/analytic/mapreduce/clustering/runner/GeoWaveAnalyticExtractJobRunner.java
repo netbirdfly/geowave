@@ -235,7 +235,8 @@ public class GeoWaveAnalyticExtractJobRunner extends
 				config,
 				dataStoreOptions.getFactoryOptionsAsMap());
 
-		try (final FileSystem fs = FileSystem.get(config)) {
+		// try (final FileSystem fs = FileSystem.get(config)) {
+			final FileSystem fs = FileSystem.get(config);
 			if (fs.exists(this.getHdfsOutputPath())) {
 				fs.delete(
 						getHdfsOutputPath(),
@@ -245,7 +246,7 @@ public class GeoWaveAnalyticExtractJobRunner extends
 					config,
 					this,
 					new String[] {});
-		}
+		// }
 	}
 
 	@Override

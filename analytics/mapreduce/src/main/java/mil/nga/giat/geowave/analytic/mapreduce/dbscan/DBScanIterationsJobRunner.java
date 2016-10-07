@@ -93,7 +93,8 @@ public class DBScanIterationsJobRunner implements
 				GlobalParameters.Global.BATCH_ID,
 				UUID.randomUUID().toString());
 
-		try (final FileSystem fs = FileSystem.get(config)) {
+		// try (final FileSystem fs = FileSystem.get(config)) {
+			final FileSystem fs = FileSystem.get(config);
 			final String outputBaseDir = runTimeProperties.getPropertyAsString(
 					MapReduceParameters.MRConfig.HDFS_BASE_DIR,
 					"/tmp");
@@ -311,7 +312,7 @@ public class DBScanIterationsJobRunner implements
 					runTimeProperties);
 			
 			return 0;
-		}
+		// }
 	}
 
 	@Override

@@ -210,7 +210,8 @@ public class KDEJobRunner extends
 			}
 		}
 
-		try (final FileSystem fs = FileSystem.get(conf)) {
+		// try (final FileSystem fs = FileSystem.get(conf)) {
+			final FileSystem fs = FileSystem.get(conf);
 			fs.delete(
 					new Path(
 							"/tmp/" + inputDataStoreOptions.getGeowaveNamespace() + "_stats_"
@@ -330,7 +331,7 @@ public class KDEJobRunner extends
 									+ "_" + kdeCommandLineOptions.getCoverageName()),
 					true);
 			return (job1Success && job2Success && postJob2Success) ? 0 : 1;
-		}
+		// }
 
 	}
 

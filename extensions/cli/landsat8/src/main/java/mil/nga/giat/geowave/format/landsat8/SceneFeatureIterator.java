@@ -403,8 +403,9 @@ public class SceneFeatureIterator implements
 			throws FileNotFoundException,
 			IOException {
 		
-		try (final FileInputStream is = new FileInputStream(csvFile)) {
-			parser = new CSVParser(
+		// try (final FileInputStream is = new FileInputStream(csvFile)) {
+		final FileInputStream is = new FileInputStream(csvFile);	
+		parser = new CSVParser(
 					new InputStreamReader(
 							is,
 							StringUtils.UTF8_CHAR_SET),
@@ -444,7 +445,7 @@ public class SceneFeatureIterator implements
 						iterator,
 						filterPredicate);
 			}
-		}
+		// }
 	}
 
 	public SimpleFeatureType getFeatureType() {

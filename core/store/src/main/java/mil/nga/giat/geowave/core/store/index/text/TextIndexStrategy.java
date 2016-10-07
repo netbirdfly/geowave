@@ -114,9 +114,12 @@ public class TextIndexStrategy implements
 			final int end ) {
 
 		final List<ByteArrayId> tokens = new ArrayList<ByteArrayId>();
-		try (final NGramTokenizer nGramTokenizer = new NGramTokenizer(
+		/*try (final NGramTokenizer nGramTokenizer = new NGramTokenizer(
 				start,
-				end)) {
+				end)) {*/
+			final NGramTokenizer nGramTokenizer = new NGramTokenizer(
+					start,
+					end);
 			try {
 				nGramTokenizer.setReader(new StringReader(
 						value));
@@ -134,12 +137,12 @@ public class TextIndexStrategy implements
 				e.printStackTrace();
 			}
 
-		}
+		/*}
 		catch (IOException e1) {
 			LOGGER.warn(
 					"Cannot close NGramTokenizer",
 					e1);
-		}
+		}*/
 
 		return tokens;
 	}

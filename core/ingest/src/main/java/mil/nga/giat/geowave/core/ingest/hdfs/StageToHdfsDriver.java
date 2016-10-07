@@ -78,7 +78,8 @@ public class StageToHdfsDriver extends
 				basePath);
 
 		try {
-			try (final FileSystem fs = FileSystem.get(conf)) {
+			// try (final FileSystem fs = FileSystem.get(conf)) {
+				final FileSystem fs = FileSystem.get(conf);
 				if (!fs.exists(hdfsBaseDirectory)) {
 					fs.mkdirs(hdfsBaseDirectory);
 				}
@@ -99,7 +100,7 @@ public class StageToHdfsDriver extends
 							e);
 					return false;
 				}
-			}
+			// }
 		}
 		catch (final IOException e) {
 			LOGGER.fatal(

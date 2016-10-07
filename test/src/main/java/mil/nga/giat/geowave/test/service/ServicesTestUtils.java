@@ -23,9 +23,12 @@ public class ServicesTestUtils
 	protected static void writeConfigFile(
 			final File configFile ) {
 		try {
-			try (final PrintWriter writer = new PrintWriter(
+			/*try (final PrintWriter writer = new PrintWriter(
 					configFile,
-					StringUtils.GEOWAVE_CHAR_SET.toString())) {
+					StringUtils.GEOWAVE_CHAR_SET.toString())) {*/
+				final PrintWriter writer = new PrintWriter(
+						configFile,
+						StringUtils.GEOWAVE_CHAR_SET.toString());
 				// just enable all store types through services regardless of
 				// which
 				// ones are required
@@ -56,8 +59,7 @@ public class ServicesTestUtils
 				writer.println("hdfs=" + env.getHdfs());
 				writer.println("hdfsBase=" + env.getHdfsBaseDirectory());
 				writer.println("jobTracker=" + env.getJobtracker());
-				writer.close();
-			}
+			// }
 		}
 		catch (final FileNotFoundException e) {
 			LOGGER.error(

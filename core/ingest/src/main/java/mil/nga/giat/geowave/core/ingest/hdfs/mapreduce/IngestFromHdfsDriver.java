@@ -90,7 +90,8 @@ public class IngestFromHdfsDriver
 					hdfsHostPort,
 					mapReduceOptions.getJobTrackerOrResourceManagerHostPort(),
 					conf);
-			try (final FileSystem fs = FileSystem.get(conf)) {
+			// try (final FileSystem fs = FileSystem.get(conf)) {
+				final FileSystem fs = FileSystem.get(conf);
 				if (!fs.exists(hdfsBaseDirectory)) {
 					LOGGER.fatal("HDFS base directory " + hdfsBaseDirectory + " does not exist");
 					return false;
@@ -188,7 +189,7 @@ public class IngestFromHdfsDriver
 						}
 					}
 				}
-			}
+			// }
 		}
 		catch (final IOException e) {
 			LOGGER.warn(

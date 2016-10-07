@@ -236,16 +236,16 @@ public class GeoWaveAnalyticExtractJobRunner extends
 				dataStoreOptions.getFactoryOptionsAsMap());
 
 		// try (final FileSystem fs = FileSystem.get(config)) {
-			final FileSystem fs = FileSystem.get(config);
-			if (fs.exists(this.getHdfsOutputPath())) {
-				fs.delete(
-						getHdfsOutputPath(),
-						true);
-			}
-			return ToolRunner.run(
-					config,
-					this,
-					new String[] {});
+		final FileSystem fs = FileSystem.get(config);
+		if (fs.exists(this.getHdfsOutputPath())) {
+			fs.delete(
+					getHdfsOutputPath(),
+					true);
+		}
+		return ToolRunner.run(
+				config,
+				this,
+				new String[] {});
 		// }
 	}
 

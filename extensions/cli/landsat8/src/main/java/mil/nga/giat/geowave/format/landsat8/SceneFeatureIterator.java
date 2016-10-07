@@ -402,49 +402,50 @@ public class SceneFeatureIterator implements
 			final Filter cqlFilter )
 			throws FileNotFoundException,
 			IOException {
-		
-		// try (final FileInputStream is = new FileInputStream(csvFile)) {
-		final FileInputStream is = new FileInputStream(csvFile);	
-		parser = new CSVParser(
-					new InputStreamReader(
-							is,
-							StringUtils.UTF8_CHAR_SET),
-					CSVFormat.DEFAULT.withHeader().withSkipHeaderRecord());
 
-			final Iterator<CSVRecord> csvIterator = parser.iterator();
-			long startLineDecrementor = startLine;
-			// we skip the header, so only skip to start line 1
-			while ((startLineDecrementor > 1) && csvIterator.hasNext()) {
-				startLineDecrementor--;
-				csvIterator.next();
+		// try (final FileInputStream is = new FileInputStream(csvFile)) {
+		final FileInputStream is = new FileInputStream(
+				csvFile);
+		parser = new CSVParser(
+				new InputStreamReader(
+						is,
+						StringUtils.UTF8_CHAR_SET),
+				CSVFormat.DEFAULT.withHeader().withSkipHeaderRecord());
+
+		final Iterator<CSVRecord> csvIterator = parser.iterator();
+		long startLineDecrementor = startLine;
+		// we skip the header, so only skip to start line 1
+		while ((startLineDecrementor > 1) && csvIterator.hasNext()) {
+			startLineDecrementor--;
+			csvIterator.next();
+		}
+
+		// wrap the iterator with a feature conversion and a filter (if
+		// provided)
+		iterator = Iterators.transform(
+				csvIterator,
+				new CSVToFeatureTransform(
+						geometryStore,
+						type));
+		if (cqlFilter != null) {
+			Filter actualFilter;
+			if (hasOtherProperties(cqlFilter)) {
+				final PropertyIgnoringFilterVisitor visitor = new PropertyIgnoringFilterVisitor(
+						SCENE_ATTRIBUTES,
+						type);
+				actualFilter = (Filter) cqlFilter.accept(
+						visitor,
+						null);
 			}
-	
-			// wrap the iterator with a feature conversion and a filter (if
-			// provided)
-			iterator = Iterators.transform(
-					csvIterator,
-					new CSVToFeatureTransform(
-							geometryStore,
-							type));
-			if (cqlFilter != null) {
-				Filter actualFilter;
-				if (hasOtherProperties(cqlFilter)) {
-					final PropertyIgnoringFilterVisitor visitor = new PropertyIgnoringFilterVisitor(
-							SCENE_ATTRIBUTES,
-							type);
-					actualFilter = (Filter) cqlFilter.accept(
-							visitor,
-							null);
-				}
-				else {
-					actualFilter = cqlFilter;
-				}
-				final CqlFilterPredicate filterPredicate = new CqlFilterPredicate(
-						actualFilter);
-				iterator = Iterators.filter(
-						iterator,
-						filterPredicate);
+			else {
+				actualFilter = cqlFilter;
 			}
+			final CqlFilterPredicate filterPredicate = new CqlFilterPredicate(
+					actualFilter);
+			iterator = Iterators.filter(
+					iterator,
+					filterPredicate);
+		}
 		// }
 	}
 

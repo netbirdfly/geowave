@@ -114,35 +114,34 @@ public class TextIndexStrategy implements
 			final int end ) {
 
 		final List<ByteArrayId> tokens = new ArrayList<ByteArrayId>();
-		/*try (final NGramTokenizer nGramTokenizer = new NGramTokenizer(
+		/*
+		 * try (final NGramTokenizer nGramTokenizer = new NGramTokenizer( start,
+		 * end)) {
+		 */
+		final NGramTokenizer nGramTokenizer = new NGramTokenizer(
 				start,
-				end)) {*/
-			final NGramTokenizer nGramTokenizer = new NGramTokenizer(
-					start,
-					end);
-			try {
-				nGramTokenizer.setReader(new StringReader(
-						value));
-				final CharTermAttribute charTermAttribute = nGramTokenizer.addAttribute(CharTermAttribute.class);
-				nGramTokenizer.reset();
+				end);
+		try {
+			nGramTokenizer.setReader(new StringReader(
+					value));
+			final CharTermAttribute charTermAttribute = nGramTokenizer.addAttribute(CharTermAttribute.class);
+			nGramTokenizer.reset();
 
-				while (nGramTokenizer.incrementToken()) {
-					tokens.add(new ByteArrayId(
-							charTermAttribute.toString()));
-				}
-				nGramTokenizer.end();
-				nGramTokenizer.close();
+			while (nGramTokenizer.incrementToken()) {
+				tokens.add(new ByteArrayId(
+						charTermAttribute.toString()));
 			}
-			catch (final IOException e) {
-				e.printStackTrace();
-			}
+			nGramTokenizer.end();
+			nGramTokenizer.close();
+		}
+		catch (final IOException e) {
+			e.printStackTrace();
+		}
 
-		/*}
-		catch (IOException e1) {
-			LOGGER.warn(
-					"Cannot close NGramTokenizer",
-					e1);
-		}*/
+		/*
+		 * } catch (IOException e1) { LOGGER.warn(
+		 * "Cannot close NGramTokenizer", e1); }
+		 */
 
 		return tokens;
 	}

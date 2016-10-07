@@ -64,14 +64,14 @@ public class GeoWaveDedupeJobRunner extends
 		job.setSpeculativeExecution(false);
 
 		// try (final FileSystem fs = FileSystem.get(job.getConfiguration())) {
-			final FileSystem fs = FileSystem.get(job.getConfiguration());
-			final Path outputPath = getHdfsOutputPath();
-			fs.delete(
-					outputPath,
-					true);
-			FileOutputFormat.setOutputPath(
-					job,
-					outputPath);
+		final FileSystem fs = FileSystem.get(job.getConfiguration());
+		final Path outputPath = getHdfsOutputPath();
+		fs.delete(
+				outputPath,
+				true);
+		FileOutputFormat.setOutputPath(
+				job,
+				outputPath);
 		// }
 	}
 

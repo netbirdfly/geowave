@@ -23,42 +23,44 @@ public class ServicesTestUtils
 	protected static void writeConfigFile(
 			final File configFile ) {
 		try {
-			/*try (final PrintWriter writer = new PrintWriter(
+			/*
+			 * try (final PrintWriter writer = new PrintWriter( configFile,
+			 * StringUtils.GEOWAVE_CHAR_SET.toString())) {
+			 */
+			final PrintWriter writer = new PrintWriter(
 					configFile,
-					StringUtils.GEOWAVE_CHAR_SET.toString())) {*/
-				final PrintWriter writer = new PrintWriter(
-						configFile,
-						StringUtils.GEOWAVE_CHAR_SET.toString());
-				// just enable all store types through services regardless of
-				// which
-				// ones are required
-				for (final GeoWaveStoreType type : GeoWaveStoreType.values()) {
-					final Properties storeProps = new Properties();
-					final DataStorePluginOptions storeOptions = type.getTestEnvironment().getDataStoreOptions(
-							TestUtils.TEST_NAMESPACE);
-					storeOptions.save(
-							storeProps,
-							DataStorePluginOptions.getStoreNamespace(storeOptions.getType()));
-					try {
-						storeProps.store(
-								writer,
-								"Data Store Options for '" + storeOptions.getType() + "'");
-					}
-					catch (final IOException e) {
-						LOGGER.warn(
-								"Unable to write store options for '" + storeOptions.getType() + "'",
-								e);
-					}
+					StringUtils.GEOWAVE_CHAR_SET.toString());
+			// just enable all store types through services regardless of
+			// which
+			// ones are required
+			for (final GeoWaveStoreType type : GeoWaveStoreType.values()) {
+				final Properties storeProps = new Properties();
+				final DataStorePluginOptions storeOptions = type.getTestEnvironment().getDataStoreOptions(
+						TestUtils.TEST_NAMESPACE);
+				storeOptions.save(
+						storeProps,
+						DataStorePluginOptions.getStoreNamespace(storeOptions.getType()));
+				try {
+					storeProps.store(
+							writer,
+							"Data Store Options for '" + storeOptions.getType() + "'");
 				}
-				final MapReduceTestEnvironment env = MapReduceTestEnvironment.getInstance();
+				catch (final IOException e) {
+					LOGGER.warn(
+							"Unable to write store options for '" + storeOptions.getType() + "'",
+							e);
+				}
+			}
+			final MapReduceTestEnvironment env = MapReduceTestEnvironment.getInstance();
 
-				writer.println("geoserver.url=" + ServicesTestEnvironment.GEOSERVER_BASE_URL);
-				writer.println("geoserver.username=" + ServicesTestEnvironment.GEOSERVER_USER);
-				writer.println("geoserver.password=" + ServicesTestEnvironment.GEOSERVER_PASS);
-				writer.println("geoserver.workspace=" + ServicesTestEnvironment.TEST_WORKSPACE);
-				writer.println("hdfs=" + env.getHdfs());
-				writer.println("hdfsBase=" + env.getHdfsBaseDirectory());
-				writer.println("jobTracker=" + env.getJobtracker());
+			writer.println("geoserver.url=" + ServicesTestEnvironment.GEOSERVER_BASE_URL);
+			writer.println("geoserver.username=" + ServicesTestEnvironment.GEOSERVER_USER);
+			writer.println("geoserver.password=" + ServicesTestEnvironment.GEOSERVER_PASS);
+			writer.println("geoserver.workspace=" + ServicesTestEnvironment.TEST_WORKSPACE);
+			writer.println("hdfs=" + env.getHdfs());
+			writer.println("hdfsBase=" + env.getHdfsBaseDirectory());
+			writer.println("jobTracker=" + env.getJobtracker());
+			writer.close();
 			// }
 		}
 		catch (final FileNotFoundException e) {

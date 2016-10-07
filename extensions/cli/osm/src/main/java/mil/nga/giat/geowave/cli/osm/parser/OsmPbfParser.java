@@ -141,7 +141,7 @@ public class OsmPbfParser
 				IOUtils.closeQuietly(relationOut);
 
 			}
-			
+
 			return conf;
 		}
 	}

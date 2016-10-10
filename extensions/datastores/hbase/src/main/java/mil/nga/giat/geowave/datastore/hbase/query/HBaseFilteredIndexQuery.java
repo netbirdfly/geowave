@@ -189,6 +189,14 @@ public abstract class HBaseFilteredIndexQuery extends
 				scanner.addFamily(adapterId.getBytes());
 			}
 		}
+		
+		// a subset of fieldIds is being requested
+		if ((fieldIds != null) && !fieldIds.getLeft().isEmpty()) {
+			// configure scanner to fetch only the fieldIds specified
+			handleSubsetOfFieldIds(
+					scanner,
+					adapters);
+		}
 
 		// create the multi-row filter
 		final List<RowRange> rowRanges = new ArrayList<RowRange>();

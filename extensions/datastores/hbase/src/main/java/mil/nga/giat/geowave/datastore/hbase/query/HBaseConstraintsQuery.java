@@ -129,7 +129,7 @@ public class HBaseConstraintsQuery extends
 
 		// Since we have custom filters enabled, this list should only return
 		// the client filters
-		if (options.isEnableCustomFilters()) {
+		if (options != null && options.isEnableCustomFilters()) {
 			return filters;
 		}
 

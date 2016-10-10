@@ -10,18 +10,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.hadoop.hbase.CellUtil;
-import org.apache.hadoop.hbase.TableNotFoundException;
-import org.apache.hadoop.hbase.client.Delete;
-import org.apache.hadoop.hbase.client.Result;
-import org.apache.hadoop.hbase.client.ResultScanner;
-import org.apache.hadoop.hbase.client.Scan;
-import org.apache.hadoop.mapreduce.InputSplit;
-import org.apache.hadoop.mapreduce.RecordReader;
-import org.apache.log4j.Logger;
-
-import com.google.common.collect.Iterators;
-
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
@@ -66,6 +54,18 @@ import mil.nga.giat.geowave.datastore.hbase.util.HBaseUtils;
 import mil.nga.giat.geowave.datastore.hbase.util.HBaseUtils.MultiScannerClosableWrapper;
 import mil.nga.giat.geowave.mapreduce.MapReduceDataStore;
 import mil.nga.giat.geowave.mapreduce.input.GeoWaveInputKey;
+
+import org.apache.hadoop.hbase.CellUtil;
+import org.apache.hadoop.hbase.TableNotFoundException;
+import org.apache.hadoop.hbase.client.Delete;
+import org.apache.hadoop.hbase.client.Result;
+import org.apache.hadoop.hbase.client.ResultScanner;
+import org.apache.hadoop.hbase.client.Scan;
+import org.apache.hadoop.mapreduce.InputSplit;
+import org.apache.hadoop.mapreduce.RecordReader;
+import org.apache.log4j.Logger;
+
+import com.google.common.collect.Iterators;
 
 public class HBaseDataStore extends
 		BaseDataStore implements
@@ -337,6 +337,9 @@ public class HBaseDataStore extends
 				(ScanCallback<Object>) sanitizedQueryOptions.getScanCallback(),
 				sanitizedQueryOptions.getLimit(),
 				sanitizedQueryOptions.getAuthorizations());
+
+		prefixQuery.setOptions(options);
+
 		return prefixQuery.query(
 				operations,
 				sanitizedQueryOptions.getMaxResolutionSubsamplingPerDimension(),
@@ -358,6 +361,8 @@ public class HBaseDataStore extends
 				(ScanCallback<Object>) sanitizedQueryOptions.getScanCallback(),
 				filter,
 				sanitizedQueryOptions.getAuthorizations());
+
+		q.setOptions(options);
 
 		return q.query(
 				operations,
@@ -501,8 +506,7 @@ public class HBaseDataStore extends
 				// index table does not exist yet
 				if (operations.tableExists(altIdxTableName)) {
 					operations.deleteTable(altIdxTableName);
-					LOGGER.warn("Deleting current alternate index table [" + altIdxTableName
-							+ "] as main table does not yet exist.");
+					LOGGER.warn("Deleting current alternate index table [" + altIdxTableName + "] as main table does not yet exist.");
 				}
 			}
 

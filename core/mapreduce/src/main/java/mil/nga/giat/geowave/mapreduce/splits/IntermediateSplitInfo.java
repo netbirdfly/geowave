@@ -1,5 +1,7 @@
 package mil.nga.giat.geowave.mapreduce.splits;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -47,19 +49,32 @@ public class IntermediateSplitInfo implements
 			final double thisCardinalty = rangeLocationPair.getCardinality();
 			final double fraction = (targetCardinality - currentCardinality) / thisCardinalty;
 
+			LOGGER.warn("fraction: " + fraction);
 			final byte[] start = rangeLocationPair.getRange().getStartKey();
 			final byte[] end = rangeLocationPair.getRange().getEndKey();
 
 			final double cdfStart = stats.cdf(start);
 			final double cdfEnd = stats.cdf(end);
-			final byte[] expectedEnd = stats.quantile(cdfStart + ((cdfEnd - cdfStart) * fraction));
-
+			LOGGER.warn("cdf start: " + cdfStart);
+			LOGGER.warn("cdf end: " + cdfEnd);
+			final double expectedEndValue = stats.quantile(cdfStart + ((cdfEnd - cdfStart) * fraction));
+			final BigInteger expectedEndValueBI = new BigDecimal(
+					expectedEndValue).toBigInteger();
+			LOGGER.warn("expected end: " + expectedEndValue);
 			final int maxCardinality = Math.max(
 					start.length,
 					end.length);
 
+			final byte[] bytes = expectedEndValueBI.toByteArray();
+			final byte[] undoTwosComplement = new byte[bytes.length - 1];
+			System.arraycopy(
+					bytes,
+					1,
+					undoTwosComplement,
+					0,
+					undoTwosComplement.length);
 			byte[] splitKey = expandBytes(
-					expectedEnd,
+					undoTwosComplement,
 					maxCardinality);
 
 			final String location = rangeLocationPair.getLocation();
@@ -70,10 +85,38 @@ public class IntermediateSplitInfo implements
 					splitKey) || Arrays.equals(
 					end,
 					splitKey)) {
+				LOGGER.warn("getting midpoint");
 				splitKey = SplitsProvider.getMidpoint(rangeLocationPair.getRange());
+				// this implies its already as fine grained as the range can get
 				if (splitKey == null) {
+					LOGGER.warn("split is null");
 					return null;
 				}
+
+				// if you can split the range only by setting the split to the
+				// end, but its not inclusive on the end, just clamp this to the
+				// start and don't split producing a new pari
+				if (Arrays.equals(
+						end,
+						splitKey) && !rangeLocationPair.getRange().isEndKeyInclusive()) {
+
+					LOGGER.warn("end key inclusive");
+					rangeLocationPair = splitsProvider.constructRangeLocationPair(
+							splitsProvider.constructRange(
+									rangeLocationPair.getRange().getStartKey(),
+									rangeLocationPair.getRange().isStartKeyInclusive(),
+									splitKey,
+									endKeyInclusive),
+							location,
+							stats.cardinality(
+									rangeLocationPair.getRange().getStartKey(),
+									splitKey));
+					return null;
+				}
+			}
+			else {
+
+				LOGGER.warn("normal");
 			}
 
 			try {
@@ -105,7 +148,9 @@ public class IntermediateSplitInfo implements
 						index);
 			}
 			catch (final java.lang.IllegalArgumentException ex) {
-				LOGGER.info("Unable to split range: " + ex.getLocalizedMessage());
+				LOGGER.info(
+						"Unable to split range",
+						ex);
 				return null;
 			}
 		}
@@ -114,14 +159,22 @@ public class IntermediateSplitInfo implements
 				final byte valueBytes[],
 				final int numBytes ) {
 			final byte[] bytes = new byte[numBytes];
-			for (int i = 0; i < numBytes; i++) {
-				if (i < valueBytes.length) {
-					bytes[i] = valueBytes[i];
-				}
-				else {
+			int expansion = 0;
+			if (numBytes > valueBytes.length) {
+				expansion = (numBytes - valueBytes.length);
+				for (int i = 0; i < expansion; i++) {
 					bytes[i] = 0;
 				}
+				for (int i = 0; i < valueBytes.length; i++) {
+					bytes[expansion + i] = valueBytes[i];
+				}
 			}
+			else {
+				for (int i = 0; i < numBytes; i++) {
+					bytes[i] = valueBytes[i];
+				}
+			}
+
 			return bytes;
 		}
 	}

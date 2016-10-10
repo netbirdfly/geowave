@@ -1,6 +1,7 @@
 package mil.nga.giat.geowave.mapreduce.splits;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,6 +14,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.log4j.Logger;
 
+import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.store.DataStoreOperations;
 import mil.nga.giat.geowave.core.store.adapter.AdapterIndexMappingStore;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
@@ -20,6 +22,7 @@ import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.adapter.statistics.DataStatisticsStore;
 import mil.nga.giat.geowave.core.store.adapter.statistics.RowRangeDataStatistics;
 import mil.nga.giat.geowave.core.store.adapter.statistics.RowRangeHistogramStatistics;
+import mil.nga.giat.geowave.core.store.adapter.statistics.histogram.ByteUtils;
 import mil.nga.giat.geowave.core.store.index.Index;
 import mil.nga.giat.geowave.core.store.index.IndexStore;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
@@ -225,6 +228,7 @@ public abstract class SplitsProvider
 	protected static byte[] getKeyFromBigInteger(
 			final BigInteger value,
 			final int numBytes ) {
+		// TODO: does this account for the two extra bytes on BigInteger?
 		final byte[] valueBytes = value.toByteArray();
 		final byte[] bytes = new byte[numBytes];
 		final int pos = Math.abs(numBytes - valueBytes.length);
@@ -315,7 +319,7 @@ public abstract class SplitsProvider
 
 	protected static double getRangeLength(
 			final GeoWaveRowRange range ) {
-		if (range.getStartKey() == null || range.getEndKey() == null) {
+		if ((range.getStartKey() == null) || (range.getEndKey() == null)) {
 			return 1;
 		}
 		final byte[] start = range.getStartKey();
@@ -338,7 +342,7 @@ public abstract class SplitsProvider
 
 	protected static byte[] getMidpoint(
 			final GeoWaveRowRange range ) {
-		if (range.getStartKey() == null || range.getEndKey() == null) {
+		if ((range.getStartKey() == null) || (range.getEndKey() == null)) {
 			return null;
 		}
 
@@ -360,12 +364,93 @@ public abstract class SplitsProvider
 				extractBytes(
 						end,
 						maxDepth));
-		return getKeyFromBigInteger(
-				endBI.subtract(
-						startBI).divide(
-						TWO).add(
-						startBI),
-				maxDepth);
+		final BigInteger rangeBI = endBI.subtract(startBI);
+		if (rangeBI.equals(BigInteger.ZERO) || rangeBI.equals(BigInteger.ONE)) {
+			return end;
+		}
+		LOGGER.warn("start " + startBI);
+		LOGGER.warn("end " + endBI);
+		LOGGER.warn("range " + rangeBI);
+		final byte[] valueBytes = rangeBI.divide(
+				TWO).add(
+				startBI).toByteArray();
+		final byte[] bytes = new byte[valueBytes.length - 2];
+		System.arraycopy(
+				valueBytes,
+				2,
+				bytes,
+				0,
+				bytes.length);
+		return bytes;
+	}
+
+	public static void main(
+			String[] args ) {
+		BigInteger startBI = BigInteger.valueOf(16782367);
+		BigInteger endBI = BigInteger.valueOf(16782592);
+		final BigInteger rangeBI = endBI.subtract(startBI);
+		LOGGER.warn("start " + startBI);
+		LOGGER.warn("end " + endBI);
+		LOGGER.warn("range " + rangeBI);
+		final byte[] valueBytes = rangeBI.divide(
+				TWO).add(
+				startBI).toByteArray();
+		final byte[] bytes = new byte[valueBytes.length - 2];
+		System.arraycopy(
+				valueBytes,
+				2,
+				bytes,
+				0,
+				bytes.length);
+		System.err.println(Arrays.toString(bytes));
+		System.err.println(Arrays.toString(valueBytes));
+		System.err.println(Arrays.toString(startBI.toByteArray()));
+
+		System.err.println(Arrays.toString(endBI.toByteArray()));
+
+		byte[] bytess = new byte[] {
+			31,
+			32,
+			-97,
+			-28,
+			-103,
+			-126,
+			83,
+			0
+		};
+		System.err.println(new ByteArrayId(
+				ByteUtils.toBytes(8.761595385184851E15)).getHexString());
+		System.err.println(new ByteArrayId(
+				ByteUtils.toBytes(1.44991348049302938E18)).getHexString());
+		System.err.println(new ByteArrayId(
+				bytess).getHexString());
+		expandBytes(
+				new BigDecimal(
+						1.44991348049250355E18).toBigInteger().toByteArray(),
+				2);
+	}
+
+	private static byte[] expandBytes(
+			final byte valueBytes[],
+			final int numBytes ) {
+		final byte[] bytes = new byte[numBytes];
+		int expansion = 0;
+		if (numBytes > valueBytes.length) {
+			expansion = (numBytes - valueBytes.length);
+			for (int i = 0; i < expansion; i++) {
+				bytes[i] = 0;
+			}
+			for (int i = 0; i < valueBytes.length; i++) {
+				bytes[expansion + i] = valueBytes[i];
+			}
+		}
+		else {
+			for (int i = 0; i < numBytes; i++) {
+				bytes[i] = valueBytes[i];
+			}
+		}
+
+		return bytes;
 	}
 
 	public static byte[] extractBytes(

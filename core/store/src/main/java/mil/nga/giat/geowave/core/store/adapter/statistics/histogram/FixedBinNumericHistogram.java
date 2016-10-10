@@ -133,10 +133,13 @@ public class FixedBinNumericHistogram implements
 			countThisFar += count[bin];
 		}
 		if (bin == 0) {
+			System.err.println(minValue);
 			return minValue;
 		}
 		final double perBinSize = binSize();
 		final double countUptoLastBin = countThisFar - count[bin - 1];
+		System.err.println(perBinSize + " " + bin + " " + fractionOfTotal + " " + countUptoLastBin + " "
+				+ count[bin - 1] + " " + minValue);
 		return minValue + ((perBinSize * bin) + (perBinSize * ((fractionOfTotal - countUptoLastBin) / count[bin - 1])));
 	}
 

@@ -311,8 +311,11 @@ public class MinimalBinDistanceHistogram implements
 		final int binsCount = bins.size();
 		for (int b = 0; b < binsCount; b++) {
 			csum += bins.get(b).count;
+
+			System.err.println("csum: " + csum);
 			if ((csum / totalCount) >= q) {
 				if (b == 0) {
+					System.err.println("lowerBound: " + b + " " + bins.get(b).lowerBound);
 					return bins.get(b).lowerBound;
 				}
 
@@ -320,9 +323,12 @@ public class MinimalBinDistanceHistogram implements
 				final double r = bins.get(b - 1).lowerBound
 						+ ((((q * totalCount) - csum) * (bins.get(b).lowerBound - bins.get(b - 1).lowerBound)) / (bins
 								.get(b).count));
+				System.err.println("r: " + r);
 				return r;
 			}
 		}
+
+		System.err.println("max" + maxValue);
 		return maxValue; // should not get here
 	}
 

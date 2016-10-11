@@ -5,14 +5,11 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.hadoop.hbase.client.Result;
-import org.apache.hadoop.hbase.client.Scan;
-import org.apache.hadoop.hbase.filter.Filter;
-import org.apache.log4j.Logger;
-
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.ByteArrayRange;
+import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
+import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
 import mil.nga.giat.geowave.core.store.filter.DedupeFilter;
 import mil.nga.giat.geowave.core.store.filter.QueryFilter;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
@@ -20,12 +17,14 @@ import mil.nga.giat.geowave.core.store.query.QueryOptions;
 import mil.nga.giat.geowave.datastore.hbase.util.HBaseInputFormatIteratorWrapper;
 import mil.nga.giat.geowave.datastore.hbase.util.HBaseUtils;
 
+import org.apache.hadoop.hbase.client.Result;
+import org.apache.hadoop.hbase.client.Scan;
+import org.apache.log4j.Logger;
+
 /**
- * * Represents a query operation for a range of HBase row IDs. This class is
- * particularly used by the InputFormat as the iterator that it returns will
- * contain Entry<GeoWaveInputKey, Object> entries rather than just the object.
- * This is so the input format has a way of getting the adapter ID and data ID
- * to define the key.
+ * * Represents a query operation for a range of HBase row IDs. This class is particularly used by the InputFormat as
+ * the iterator that it returns will contain Entry<GeoWaveInputKey, Object> entries rather than just the object. This is
+ * so the input format has a way of getting the adapter ID and data ID to define the key.
  */
 public class InputFormatHBaseRangeQuery extends
 		HBaseConstraintsQuery
@@ -91,15 +90,14 @@ public class InputFormatHBaseRangeQuery extends
 				index,
 				resultsIterator,
 				isOutputWritable,
-				filters.isEmpty() ? null : filters.size() == 1 ? filters.get(0)
-						: new mil.nga.giat.geowave.core.store.filter.FilterList<QueryFilter>(
-								filters));
+				filters.isEmpty() ? null : filters.size() == 1 ? filters.get(0) : new mil.nga.giat.geowave.core.store.filter.FilterList<QueryFilter>(
+						filters));
 	}
 
 	@Override
 	protected Scan getMultiScanner(
 			final Integer limit,
-			final List<Filter> distributableFilters ) {
+			final CloseableIterator<DataAdapter<?>> adapters ) {
 		final Scan scanner = new Scan();
 
 		scanner.setStartRow(range.getStart().getBytes());

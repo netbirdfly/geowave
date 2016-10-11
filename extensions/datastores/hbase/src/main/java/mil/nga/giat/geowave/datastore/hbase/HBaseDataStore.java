@@ -315,6 +315,8 @@ public class HBaseDataStore extends
 				sanitizedQueryOptions.getFieldIdsAdapterPair(),
 				sanitizedQueryOptions.getAuthorizations());
 
+		hbaseQuery.setOptions(options);
+
 		return hbaseQuery.query(
 				operations,
 				tempAdapterStore,

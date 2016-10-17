@@ -38,7 +38,6 @@ import mil.nga.giat.geowave.core.store.operations.remote.options.StoreLoader;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 import org.w3c.dom.Document;
@@ -206,8 +205,7 @@ public class GeoServerRestClient
 					continue;
 				}
 
-				logger.debug("Get feature layer: " + dataAdapterInfo.adapterId + " returned "
-						+ getFlResponse.getStatus());
+				logger.debug("Get feature layer: " + dataAdapterInfo.adapterId + " returned " + getFlResponse.getStatus());
 
 				// We have a datastore. Add the layer per the adapter ID
 				Response addFlResponse = addFeatureLayer(
@@ -440,7 +438,7 @@ public class GeoServerRestClient
 		String queryIndexStrategy = "Best Match";
 
 		final String dataStoreJson = createDatastoreJson(
-				"accumulo",
+				inputStoreOptions.getType(),
 				inputStoreOptions.getFactoryOptionsAsMap(),
 				datastoreName,
 				lockMgmt,
@@ -594,8 +592,7 @@ public class GeoServerRestClient
 								}
 
 								if (entryArray == null) {
-									logger
-											.error("entry Array is null - didn't find a connectionParameters datastore object that was a JSONObject or JSONArray");
+									logger.error("entry Array is null - didn't find a connectionParameters datastore object that was a JSONObject or JSONArray");
 								}
 								else {
 									// group layers by namespace
@@ -915,7 +912,7 @@ public class GeoServerRestClient
 			cvgStoreName = gwStoreName + GeoServerConfig.DEFAULT_CS;
 		}
 
-		// Get the store's accumulo config
+		// Get the store's db config
 		Map<String, String> storeConfigMap = inputStoreOptions.getFactoryOptionsAsMap();
 
 		// Add in geoserver coverage store info
@@ -973,11 +970,8 @@ public class GeoServerRestClient
 	public Response getCoverages(
 			String workspaceName,
 			String cvsstoreName ) {
-		final Response resp = getWebTarget()
-				.path(
-						"rest/workspaces/" + workspaceName + "/coveragestores/" + cvsstoreName + "/coverages.json")
-				.request()
-				.get();
+		final Response resp = getWebTarget().path(
+				"rest/workspaces/" + workspaceName + "/coveragestores/" + cvsstoreName + "/coverages.json").request().get();
 
 		if (resp.getStatus() == Status.OK.getStatusCode()) {
 			resp.bufferEntity();
@@ -1012,12 +1006,8 @@ public class GeoServerRestClient
 			final String workspaceName,
 			String cvgStoreName,
 			String coverageName ) {
-		final Response resp = getWebTarget()
-				.path(
-						"rest/workspaces/" + workspaceName + "/coveragestores/" + cvgStoreName + "/coverages/"
-								+ coverageName + ".json")
-				.request()
-				.get();
+		final Response resp = getWebTarget().path(
+				"rest/workspaces/" + workspaceName + "/coveragestores/" + cvgStoreName + "/coverages/" + coverageName + ".json").request().get();
 
 		if (resp.getStatus() == Status.OK.getStatusCode()) {
 			resp.bufferEntity();
@@ -1045,8 +1035,7 @@ public class GeoServerRestClient
 			final String workspaceName,
 			final String cvgStoreName,
 			final String coverageName ) {
-		String jsonString = "{'coverage':" + "{'name':'" + coverageName + "'," + "'nativeCoverageName':'"
-				+ coverageName + "'}}";
+		String jsonString = "{'coverage':" + "{'name':'" + coverageName + "'," + "'nativeCoverageName':'" + coverageName + "'}}";
 		logger.debug("Posting JSON: " + jsonString + " to " + workspaceName + "/" + cvgStoreName);
 
 		return getWebTarget().path(
@@ -1068,15 +1057,10 @@ public class GeoServerRestClient
 			String workspaceName,
 			String cvgstoreName,
 			String coverageName ) {
-		return getWebTarget()
-				.path(
-						"rest/workspaces/" + workspaceName + "/coveragestores/" + cvgstoreName + "/coverages/"
-								+ coverageName)
-				.queryParam(
-						"recurse",
-						"true")
-				.request()
-				.delete();
+		return getWebTarget().path(
+				"rest/workspaces/" + workspaceName + "/coveragestores/" + cvgstoreName + "/coverages/" + coverageName).queryParam(
+				"recurse",
+				"true").request().delete();
 	}
 
 	// Internal methods
@@ -1286,16 +1270,17 @@ public class GeoServerRestClient
 
 		// Create the custom geowave url w/ params
 		StringBuffer buf = new StringBuffer();
-		buf.append("user=");
+		buf.append("zookeeper=");
+		buf.append(zookeeper);
+		buf.append(";user=");
 		buf.append(user);
 		buf.append(";password=");
 		buf.append(pass);
-		buf.append(";zookeeper=");
-		buf.append(zookeeper);
 		buf.append(";instance=");
 		buf.append(instance);
 		buf.append(";gwNamespace=");
 		buf.append(gwNamespace);
+		
 		if (equalizeHistogramOverride != null) {
 			buf.append(";equalizeHistogramOverride=");
 			buf.append(equalizeHistogramOverride);

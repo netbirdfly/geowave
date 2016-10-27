@@ -99,7 +99,7 @@ public class InputFormatHBaseRangeQuery extends
 	@Override
 	protected Scan getMultiScanner(
 			final Integer limit,
-			final List<Filter> distributableFilters ) {
+			final double[] maxResolutionSubsamplingPerDimension ) {
 		final Scan scanner = new Scan();
 
 		scanner.setStartRow(range.getStart().getBytes());

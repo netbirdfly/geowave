@@ -9,6 +9,7 @@ import java.util.Map;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
 import mil.nga.giat.geowave.core.index.ByteArrayRange;
+import mil.nga.giat.geowave.core.index.IndexUtils;
 import mil.nga.giat.geowave.core.index.StringUtils;
 import mil.nga.giat.geowave.core.store.CloseableIterator;
 import mil.nga.giat.geowave.core.store.CloseableIteratorWrapper;
@@ -115,7 +116,7 @@ public abstract class HBaseFilteredIndexQuery extends
 
 		final Scan multiScanner = getMultiScanner(
 				limit,
-				null);
+				maxResolutionSubsamplingPerDimension);
 
 		final List<Iterator<Result>> resultsIterators = new ArrayList<Iterator<Result>>();
 		final List<ResultScanner> results = new ArrayList<ResultScanner>();
@@ -164,7 +165,7 @@ public abstract class HBaseFilteredIndexQuery extends
 	// scanners
 	protected Scan getMultiScanner(
 			final Integer limit,
-			final List<Filter> distributableFilters ) {
+			final double[] maxResolutionSubsamplingPerDimension ) {
 		// Single scan w/ multiple ranges
 		final Scan scanner = new Scan();
 
@@ -227,8 +228,8 @@ public abstract class HBaseFilteredIndexQuery extends
 			LOGGER.error("Error creating range filter." + e);
 		}
 
-		// Add distributable filters if requested
 		if (options.isEnableCustomFilters()) {
+			// Add distributable filters if requested
 			List<DistributableQueryFilter> distFilters = getDistributableFilters();
 			if (distFilters != null) {
 				HBaseDistributableFilter hbdFilter = new HBaseDistributableFilter();
@@ -237,6 +238,27 @@ public abstract class HBaseFilteredIndexQuery extends
 						index.getIndexModel());
 
 				filterList.addFilter(hbdFilter);
+			}
+			
+			// Add skipping filter if requested
+			if (maxResolutionSubsamplingPerDimension != null) {
+				if (maxResolutionSubsamplingPerDimension.length != index
+						.getIndexStrategy()
+						.getOrderedDimensionDefinitions().length) {
+					final String tableName = StringUtils.stringFromBinary(index.getId().getBytes());
+					LOGGER.warn("Unable to subsample for table '" + tableName + "'. Subsample dimensions = "
+							+ maxResolutionSubsamplingPerDimension.length + " when indexed dimensions = "
+							+ index.getIndexStrategy().getOrderedDimensionDefinitions().length);
+				}
+				else {
+					final int cardinalityToSubsample = (int) Math.round(IndexUtils.getDimensionalBitsUsed(
+							index.getIndexStrategy(),
+							maxResolutionSubsamplingPerDimension)
+							+ (8 * index.getIndexStrategy().getByteOffsetFromDimensionalIndex()));
+
+					FixedCardinalitySkippingFilter skippingFilter = new FixedCardinalitySkippingFilter(cardinalityToSubsample);
+					filterList.addFilter(skippingFilter);
+				}
 			}
 		}
 

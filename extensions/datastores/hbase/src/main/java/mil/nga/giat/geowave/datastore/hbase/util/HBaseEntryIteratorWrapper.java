@@ -21,7 +21,8 @@ import mil.nga.giat.geowave.core.store.util.EntryIteratorWrapper;
 public class HBaseEntryIteratorWrapper<T> extends
 		EntryIteratorWrapper<T>
 {
-	private final static Logger LOGGER = Logger.getLogger(HBaseEntryIteratorWrapper.class);
+	private final static Logger LOGGER = Logger.getLogger(
+			HBaseEntryIteratorWrapper.class);
 
 	private byte[] fieldSubsetBitmask;
 
@@ -62,7 +63,8 @@ public class HBaseEntryIteratorWrapper<T> extends
 				scannerIt,
 				clientFilter,
 				scanCallback);
-		initializeBitPosition(maxResolutionSubsamplingPerDimension);
+		initializeBitPosition(
+				maxResolutionSubsamplingPerDimension);
 		if (fieldIds != null) {
 			fieldSubsetBitmask = BitmaskUtils.generateFieldSubsetBitmask(
 					index.getIndexModel(),
@@ -82,11 +84,13 @@ public class HBaseEntryIteratorWrapper<T> extends
 			result = (Result) row;
 		}
 		catch (final ClassCastException e) {
-			LOGGER.error("Row is not an HBase row Result.");
+			LOGGER.error(
+					"Row is not an HBase row Result.");
 			return null;
 		}
 
-		if (passesResolutionSkippingFilter(result)) {
+		if (passesResolutionSkippingFilter(
+				result)) {
 			return HBaseUtils.decodeRow(
 					result,
 					adapterStore,
@@ -100,57 +104,39 @@ public class HBaseEntryIteratorWrapper<T> extends
 
 	private boolean passesResolutionSkippingFilter(
 			final Result result ) {
-		if ((reachedEnd == true) || ((skipUntilRow != null) && (skipUntilRow.compareTo(new ByteArrayId(
-				result.getRow())) > 0))) {
+		if ((reachedEnd == true) || ((skipUntilRow != null) && (skipUntilRow.compareTo(
+				new ByteArrayId(
+						result.getRow())) > 0))) {
 			return false;
 		}
-		incrementSkipRow(result);
+		incrementSkipRow(
+				result);
 		return true;
 	}
 
 	private void incrementSkipRow(
 			final Result result ) {
 		if (bitPosition != null) {
-			final int cardinality = bitPosition + 1;
-			final byte[] rowCopy = new byte[(int) Math.ceil(cardinality / 8.0)];
-			System.arraycopy(
+			final byte[] nextRow = IndexUtils.getNextRowForSkip(
 					result.getRow(),
-					0,
-					rowCopy,
-					0,
-					rowCopy.length);
-			// number of bits not used in the last byte
-			int remainder = (8 - (cardinality % 8));
-			if (remainder == 8) {
-				remainder = 0;
-			}
+					bitPosition);
 
-			final int numIncrements = (int) Math.pow(
-					2,
-					remainder);
-			if (remainder > 0) {
-				for (int i = 0; i < remainder; i++) {
-					rowCopy[rowCopy.length - 1] |= (1 << (i));
-				}
+			if (nextRow == null) {
+				reachedEnd = true;
 			}
-			for (int i = 0; i < numIncrements; i++) {
-				if (!ByteArrayUtils.increment(rowCopy)) {
-					reachedEnd = true;
-					return;
-				}
+			else {
+				skipUntilRow = new ByteArrayId(
+						nextRow);
 			}
-			skipUntilRow = new ByteArrayId(
-					rowCopy);
 		}
 	}
 
 	private void initializeBitPosition(
 			final double[] maxResolutionSubsamplingPerDimension ) {
 		if ((maxResolutionSubsamplingPerDimension != null) && (maxResolutionSubsamplingPerDimension.length > 0)) {
-			bitPosition = (int) Math.round(IndexUtils.getDimensionalBitsUsed(
+			bitPosition = IndexUtils.getBitPositionFromSubsamplingArray(
 					index.getIndexStrategy(),
-					maxResolutionSubsamplingPerDimension)
-					+ (8 * index.getIndexStrategy().getByteOffsetFromDimensionalIndex()));
+					maxResolutionSubsamplingPerDimension);
 		}
 	}
 

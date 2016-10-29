@@ -23,9 +23,11 @@ public class GaussianCellMapper extends
 {
 	private final static Logger LOGGER = Logger.getLogger(GaussianCellMapper.class);
 	protected static final String CQL_FILTER_KEY = "CQL_FILTER";
+	protected static final String GEOM_ATTR_KEY = "GEOM_ATTR";
 	protected int minLevel;
 	protected int maxLevel;
 	protected Filter filter;
+	protected String geomAttr;
 	protected Map<Integer, LevelStore> levelStoreMap;
 
 	@Override
@@ -40,6 +42,8 @@ public class GaussianCellMapper extends
 		maxLevel = context.getConfiguration().getInt(
 				KDEJobRunner.MAX_LEVEL_KEY,
 				25);
+		geomAttr = context.getConfiguration().get(
+				GEOM_ATTR_KEY);
 		final String cql = context.getConfiguration().get(
 				CQL_FILTER_KEY);
 		if ((cql != null) && !cql.isEmpty()) {
@@ -99,7 +103,13 @@ public class GaussianCellMapper extends
 			if ((filter != null) && !filter.evaluate(value)) {
 				return;
 			}
-			final Object geomObj = value.getDefaultGeometry();
+			final Object geomObj;
+			if (geomAttr != null) {
+				geomObj = value.getAttribute(geomAttr);
+			}
+			else {
+				geomObj = value.getDefaultGeometry();
+			}
 			if ((geomObj != null) && (geomObj instanceof Geometry)) {
 				pt = ((Geometry) geomObj).getCentroid();
 			}

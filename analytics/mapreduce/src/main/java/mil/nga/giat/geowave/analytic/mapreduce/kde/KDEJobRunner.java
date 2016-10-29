@@ -140,6 +140,12 @@ public class KDEJobRunner extends
 					GaussianCellMapper.CQL_FILTER_KEY,
 					kdeCommandLineOptions.getCqlFilter());
 		}
+
+		if (kdeCommandLineOptions.getGeomAttr() != null) {
+			conf.set(
+					GaussianCellMapper.GEOM_ATTR_KEY,
+					kdeCommandLineOptions.getGeomAttr());
+		}
 		preJob1Setup(conf);
 		final Job job = new Job(
 				conf);

@@ -14,6 +14,7 @@ import org.apache.hadoop.hbase.client.coprocessor.Batch;
 import org.apache.hadoop.hbase.filter.MultiRowRangeFilter;
 import org.apache.hadoop.hbase.filter.MultiRowRangeFilter.RowRange;
 import org.apache.hadoop.hbase.ipc.BlockingRpcCallback;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import com.google.common.collect.Iterators;
@@ -110,10 +111,8 @@ public class HBaseConstraintsQuery extends
 				this);
 
 		if (isAggregation()) {
-			// Because aggregations are done client-side make sure to set
-			// the adapter ID here
-			this.adapterIds = Collections.singletonList(
-					aggregation.getLeft().getAdapterId());
+			LOGGER.setLevel(Level.DEBUG);
+			this.adapterIds = Collections.singletonList(aggregation.getLeft().getAdapterId());
 		}
 	}
 

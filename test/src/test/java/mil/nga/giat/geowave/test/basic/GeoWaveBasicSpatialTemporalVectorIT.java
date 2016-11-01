@@ -59,7 +59,7 @@ public class GeoWaveBasicSpatialTemporalVectorIT extends
 			"yyyy-MM-dd'T'hh:mm:ss'Z'");
 
 	@GeoWaveTestStore(value = {
-		GeoWaveStoreType.ACCUMULO,
+//		GeoWaveStoreType.ACCUMULO,
 		GeoWaveStoreType.HBASE
 	}, options = {
 		/**
@@ -68,7 +68,8 @@ public class GeoWaveBasicSpatialTemporalVectorIT extends
 		 */
 		"enableCustomFilters=true",
 		"enableCoprocessors=true",
-		"verifyCoprocessors=true"
+		"verifyCoprocessors=true",
+		"scanCacheSize=100000"
 	})
 	protected DataStorePluginOptions dataStore;
 	private static long startMillis;

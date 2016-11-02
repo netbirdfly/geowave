@@ -68,8 +68,7 @@ public class GeoWaveBasicSpatialTemporalVectorIT extends
 		 */
 		"enableCustomFilters=true",
 		"enableCoprocessors=true",
-		"verifyCoprocessors=true",
-		"scanCacheSize=100000"
+		"verifyCoprocessors=true"
 	})
 	protected DataStorePluginOptions dataStore;
 	private static long startMillis;

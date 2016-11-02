@@ -97,6 +97,20 @@ public abstract class HBaseFilteredIndexQuery extends
 			final AdapterStore adapterStore,
 			final double[] maxResolutionSubsamplingPerDimension,
 			final Integer limit ) {
+		return internalQuery(
+				operations,
+				adapterStore,
+				maxResolutionSubsamplingPerDimension,
+				limit,
+				true);
+	}
+
+	protected CloseableIterator<Object> internalQuery(
+			final BasicHBaseOperations operations,
+			final AdapterStore adapterStore,
+			final double[] maxResolutionSubsamplingPerDimension,
+			final Integer limit,
+			final boolean decodePersistenceEncoding ) {
 		try {
 			if (!validateAdapters(
 					operations)) {
@@ -114,9 +128,9 @@ public abstract class HBaseFilteredIndexQuery extends
 			}
 		}
 		catch (final IOException ex) {
-			LOGGER.warn(
-					"Unabe to check if " + StringUtils.stringFromBinary(
-							index.getId().getBytes()) + " table exists");
+			LOGGER
+					.warn("Unable to check if " + StringUtils.stringFromBinary(index.getId().getBytes())
+							+ " table exists");
 			return new CloseableIterator.Empty();
 		}
 
@@ -154,9 +168,9 @@ public abstract class HBaseFilteredIndexQuery extends
 		if (results.iterator().hasNext()) {
 			Iterator it = initIterator(
 					adapterStore,
-					Iterators.concat(
-							resultsIterators.iterator()),
-					maxResolutionSubsamplingPerDimension);
+					Iterators.concat(resultsIterators.iterator()),
+					maxResolutionSubsamplingPerDimension,
+					decodePersistenceEncoding);
 
 			if ((limit != null) && (limit > 0)) {
 				it = Iterators.limit(
@@ -191,7 +205,7 @@ public abstract class HBaseFilteredIndexQuery extends
 		scanner.setCacheBlocks(
 				options.isEnableBlockCache());
 
-		FilterList filterList = new FilterList();
+		final FilterList filterList = new FilterList();
 
 		if ((adapterIds != null) && !adapterIds.isEmpty()) {
 			for (final ByteArrayId adapterId : adapterIds) {
@@ -252,10 +266,9 @@ public abstract class HBaseFilteredIndexQuery extends
 		}
 
 		if (options.isEnableCustomFilters()) {
-			// Add distributable filters if requested
-			List<DistributableQueryFilter> distFilters = getDistributableFilters();
+			final List<DistributableQueryFilter> distFilters = getDistributableFilters();
 			if (distFilters != null) {
-				HBaseDistributableFilter hbdFilter = new HBaseDistributableFilter();
+				final HBaseDistributableFilter hbdFilter = new HBaseDistributableFilter();
 				hbdFilter.init(
 						distFilters,
 						index.getIndexModel());
@@ -287,8 +300,7 @@ public abstract class HBaseFilteredIndexQuery extends
 
 		// Set the filter list for the scan and return the scan list (with the
 		// single multi-range scan)
-		scanner.setFilter(
-				filterList);
+		scanner.setFilter(filterList);
 
 		// Only return the most recent version
 		scanner.setMaxVersions(
@@ -305,7 +317,8 @@ public abstract class HBaseFilteredIndexQuery extends
 	protected Iterator initIterator(
 			final AdapterStore adapterStore,
 			final Iterator<Result> resultsIterator,
-			final double[] maxResolutionSubsamplingPerDimension ) {
+			final double[] maxResolutionSubsamplingPerDimension,
+			final boolean decodePersistenceEncoding ) {
 		// TODO Since currently we are not supporting server side
 		// iterator/coprocessors, we also cannot run
 		// server side filters and hence they have to run on clients itself. So
@@ -318,9 +331,9 @@ public abstract class HBaseFilteredIndexQuery extends
 
 		final Map<ByteArrayId, RowMergingDataAdapter> mergingAdapters = new HashMap<ByteArrayId, RowMergingDataAdapter>();
 		for (final ByteArrayId adapterId : adapterIds) {
-			final DataAdapter adapter = adapterStore.getAdapter(
-					adapterId);
-			if (adapter instanceof RowMergingDataAdapter && ((RowMergingDataAdapter) adapter).getTransform() != null) {
+			final DataAdapter adapter = adapterStore.getAdapter(adapterId);
+			if ((adapter instanceof RowMergingDataAdapter)
+					&& (((RowMergingDataAdapter) adapter).getTransform() != null)) {
 				mergingAdapters.put(
 						adapterId,
 						(RowMergingDataAdapter) adapter);
@@ -335,7 +348,8 @@ public abstract class HBaseFilteredIndexQuery extends
 					queryFilter,
 					scanCallback,
 					fieldIds,
-					maxResolutionSubsamplingPerDimension);
+					maxResolutionSubsamplingPerDimension,
+					decodePersistenceEncoding);
 		}
 		else {
 			return new MergingEntryIterator(

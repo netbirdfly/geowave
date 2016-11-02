@@ -65,7 +65,7 @@ public class ConstraintsQuery
 	}
 
 	public boolean isAggregation() {
-		return ((aggregation != null) && (aggregation.getLeft() != null) && (aggregation.getRight() != null));
+		return ((aggregation != null) && (aggregation.getRight() != null));
 	}
 
 	public List<ByteArrayRange> getRanges() {
@@ -103,11 +103,11 @@ public class ConstraintsQuery
 	}
 
 	public List<ByteArrayRange> getAllRanges() {
-			return DataStoreUtils.constraintsToByteArrayRanges(
-					constraints,
-					index.getIndexStrategy(),
-					MAX_RANGE_DECOMPOSITION,
-					indexMetaData);
+		return DataStoreUtils.constraintsToByteArrayRanges(
+				constraints,
+				index.getIndexStrategy(),
+				MAX_RANGE_DECOMPOSITION,
+				indexMetaData);
 	}
 
 	private SplitFilterLists splitList(

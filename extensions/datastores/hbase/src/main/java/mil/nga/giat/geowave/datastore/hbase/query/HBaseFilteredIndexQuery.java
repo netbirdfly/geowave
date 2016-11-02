@@ -49,6 +49,7 @@ public abstract class HBaseFilteredIndexQuery extends
 	protected List<QueryFilter> clientFilters;
 	private final static Logger LOGGER = Logger.getLogger(
 			HBaseFilteredIndexQuery.class);
+	private boolean hasSkippingFilter = false;
 
 	public HBaseFilteredIndexQuery(
 			final List<ByteArrayId> adapterIds,
@@ -278,6 +279,7 @@ public abstract class HBaseFilteredIndexQuery extends
 			}
 
 			// Add skipping filter if requested
+			hasSkippingFilter = false;
 			if (maxResolutionSubsamplingPerDimension != null) {
 				if (maxResolutionSubsamplingPerDimension.length != index.getIndexStrategy().getOrderedDimensionDefinitions().length) {
 					final String tableName = StringUtils.stringFromBinary(
@@ -294,6 +296,7 @@ public abstract class HBaseFilteredIndexQuery extends
 							cardinalityToSubsample);
 					filterList.addFilter(
 							skippingFilter);
+					hasSkippingFilter = true;
 				}
 			}
 		}
@@ -349,7 +352,8 @@ public abstract class HBaseFilteredIndexQuery extends
 					scanCallback,
 					fieldIds,
 					maxResolutionSubsamplingPerDimension,
-					decodePersistenceEncoding);
+					decodePersistenceEncoding,
+					hasSkippingFilter);
 		}
 		else {
 			return new MergingEntryIterator(
@@ -360,7 +364,8 @@ public abstract class HBaseFilteredIndexQuery extends
 					scanCallback,
 					mergingAdapters,
 					fieldIds,
-					maxResolutionSubsamplingPerDimension);
+					maxResolutionSubsamplingPerDimension,
+					hasSkippingFilter);
 		}
 	}
 

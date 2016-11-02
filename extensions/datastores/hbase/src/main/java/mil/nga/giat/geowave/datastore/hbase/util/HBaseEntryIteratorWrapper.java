@@ -30,6 +30,7 @@ public class HBaseEntryIteratorWrapper<T> extends
 	private ByteArrayId skipUntilRow;
 
 	private boolean reachedEnd = false;
+	private boolean hasSkippingFilter = false;
 
 	public HBaseEntryIteratorWrapper(
 			final AdapterStore adapterStore,
@@ -38,7 +39,8 @@ public class HBaseEntryIteratorWrapper<T> extends
 			final QueryFilter clientFilter,
 			final Pair<List<String>, DataAdapter<?>> fieldIds,
 			final double[] maxResolutionSubsamplingPerDimension,
-			boolean decodePersistenceEncoding ) {
+			boolean decodePersistenceEncoding,
+			final boolean hasSkippingFilter ) {
 		this(
 				adapterStore,
 				index,
@@ -47,7 +49,8 @@ public class HBaseEntryIteratorWrapper<T> extends
 				null,
 				fieldIds,
 				maxResolutionSubsamplingPerDimension,
-				decodePersistenceEncoding);
+				decodePersistenceEncoding,
+				hasSkippingFilter);
 	}
 
 	public HBaseEntryIteratorWrapper(
@@ -58,7 +61,8 @@ public class HBaseEntryIteratorWrapper<T> extends
 			final ScanCallback<T> scanCallback,
 			final Pair<List<String>, DataAdapter<?>> fieldIds,
 			final double[] maxResolutionSubsamplingPerDimension,
-			boolean decodePersistenceEncoding ) {
+			boolean decodePersistenceEncoding,
+			final boolean hasSkippingFilter) {
 		super(
 				true,
 				adapterStore,
@@ -67,7 +71,12 @@ public class HBaseEntryIteratorWrapper<T> extends
 				clientFilter,
 				scanCallback);
 		this.decodePersistenceEncoding = decodePersistenceEncoding;
-		initializeBitPosition(maxResolutionSubsamplingPerDimension);
+		this.hasSkippingFilter = hasSkippingFilter;
+		
+		if (!hasSkippingFilter) {
+			initializeBitPosition(maxResolutionSubsamplingPerDimension);
+		}
+		
 		if (fieldIds != null) {
 			fieldSubsetBitmask = BitmaskUtils.generateFieldSubsetBitmask(
 					index.getIndexModel(),
@@ -108,13 +117,19 @@ public class HBaseEntryIteratorWrapper<T> extends
 
 	private boolean passesResolutionSkippingFilter(
 			final Result result ) {
+		if (hasSkippingFilter) {
+			return true;
+		}
+		
 		if ((reachedEnd == true) || ((skipUntilRow != null) && (skipUntilRow.compareTo(
 				new ByteArrayId(
 						result.getRow())) > 0))) {
 			return false;
 		}
+		
 		incrementSkipRow(
 				result);
+		
 		return true;
 	}
 

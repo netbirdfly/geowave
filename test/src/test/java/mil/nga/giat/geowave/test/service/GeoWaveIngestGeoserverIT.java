@@ -200,12 +200,19 @@ public class GeoWaveIngestGeoserverIT
 			ref = ImageIO.read(new File(
 					REFERENCE_26_WMS_IMAGE_PATH));
 		}
+		
+		File refoutput = new File("ref-image.jpg");
+		ImageIO.write(ref, "jpg", refoutput);
+
 		// being a little lenient because of differences in O/S rendering
 		TestUtils.testTileAgainstReference(
 				biDirectRender,
 				ref,
 				0,
 				0.07);
+		
+		File test1output = new File("test1-image.jpg");
+		ImageIO.write(biDirectRender, "jpg", test1output);
 
 		final BufferedImage biSubsamplingWithoutError = getWMSSingleTile(
 				-180,
@@ -218,6 +225,9 @@ public class GeoWaveIngestGeoserverIT
 				360,
 				null);
 		Assert.assertNotNull(ref);
+		
+		File test2output = new File("test2-image.jpg");
+		ImageIO.write(biSubsamplingWithoutError, "jpg", test2output);
 
 		// being a little lenient because of differences in O/S rendering
 		TestUtils.testTileAgainstReference(

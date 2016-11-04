@@ -34,7 +34,8 @@ public class FixedCardinalitySkippingFilter extends
 		skip(cell);
 
 		if (nextCellHint == null) {
-			return ReturnCode.NEXT_ROW;
+			LOGGER.warn("SkipFilter has reached the end of the data!");
+			return ReturnCode.SKIP;
 		}
 
 		return ReturnCode.SEEK_NEXT_USING_HINT;

@@ -31,6 +31,8 @@ public class HBaseEntryIteratorWrapper<T> extends
 
 	private boolean reachedEnd = false;
 	private boolean hasSkippingFilter = false;
+	
+	private boolean reported = false;
 
 	public HBaseEntryIteratorWrapper(
 			final AdapterStore adapterStore,
@@ -118,6 +120,10 @@ public class HBaseEntryIteratorWrapper<T> extends
 	private boolean passesResolutionSkippingFilter(
 			final Result result ) {
 		if (hasSkippingFilter) {
+			if (!reported) {
+				LOGGER.warn(">>> Skipping filter applied");
+				reported = true;
+			}
 			return true;
 		}
 		

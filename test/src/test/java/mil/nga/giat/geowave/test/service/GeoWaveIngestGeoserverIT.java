@@ -37,6 +37,7 @@ import mil.nga.giat.geowave.core.store.DataStore;
 import mil.nga.giat.geowave.core.store.IndexWriter;
 import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 import mil.nga.giat.geowave.core.store.operations.remote.options.DataStorePluginOptions;
+import mil.nga.giat.geowave.datastore.hbase.util.HBaseEntryIteratorWrapper;
 import mil.nga.giat.geowave.examples.ingest.SimpleIngest;
 import mil.nga.giat.geowave.service.client.GeoserverServiceClient;
 import mil.nga.giat.geowave.test.GeoWaveITRunner;
@@ -54,7 +55,7 @@ public class GeoWaveIngestGeoserverIT
 {
 
 	private static final Logger LOGGER = Logger.getLogger(GeoWaveIngestGeoserverIT.class);
-
+	
 	private static final String WORKSPACE = "testomatic";
 	private static final String WMS_VERSION = "1.3";
 	private static final String WMS_URL_PREFIX = "/geoserver/wms";
@@ -63,7 +64,7 @@ public class GeoWaveIngestGeoserverIT
 
 	private static GeoserverServiceClient geoserverServiceClient = null;
 	@GeoWaveTestStore(value = {
-//		GeoWaveStoreType.ACCUMULO,
+		GeoWaveStoreType.ACCUMULO,
 		GeoWaveStoreType.HBASE
 	}, options = {
 		/**
@@ -200,9 +201,7 @@ public class GeoWaveIngestGeoserverIT
 			ref = ImageIO.read(new File(
 					REFERENCE_26_WMS_IMAGE_PATH));
 		}
-		
-		File refoutput = new File("ref-image.jpg");
-		ImageIO.write(ref, "jpg", refoutput);
+		Assert.assertNotNull(ref);
 
 		// being a little lenient because of differences in O/S rendering
 		TestUtils.testTileAgainstReference(
@@ -211,9 +210,6 @@ public class GeoWaveIngestGeoserverIT
 				0,
 				0.07);
 		
-		File test1output = new File("test1-image.jpg");
-		ImageIO.write(biDirectRender, "jpg", test1output);
-
 		final BufferedImage biSubsamplingWithoutError = getWMSSingleTile(
 				-180,
 				180,
@@ -224,11 +220,7 @@ public class GeoWaveIngestGeoserverIT
 				920,
 				360,
 				null);
-		Assert.assertNotNull(ref);
 		
-		File test2output = new File("test2-image.jpg");
-		ImageIO.write(biSubsamplingWithoutError, "jpg", test2output);
-
 		// being a little lenient because of differences in O/S rendering
 		TestUtils.testTileAgainstReference(
 				biSubsamplingWithoutError,
@@ -246,6 +238,7 @@ public class GeoWaveIngestGeoserverIT
 				920,
 				360,
 				null);
+			
 		TestUtils.testTileAgainstReference(
 				biSubsamplingWithExpectedError,
 				ref,
@@ -262,11 +255,12 @@ public class GeoWaveIngestGeoserverIT
 				920,
 				360,
 				null);
+		
 		TestUtils.testTileAgainstReference(
-				biSubsamplingWithLotsOfError,
-				ref,
-				0.3,
-				0.35);
+					biSubsamplingWithLotsOfError,
+					ref,
+					0.3,
+					0.35);
 	}
 
 	@After

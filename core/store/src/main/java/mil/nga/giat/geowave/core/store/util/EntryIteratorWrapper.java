@@ -3,6 +3,8 @@ package mil.nga.giat.geowave.core.store.util;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+import org.apache.log4j.Logger;
+
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.callback.ScanCallback;
 import mil.nga.giat.geowave.core.store.filter.QueryFilter;
@@ -20,6 +22,8 @@ import mil.nga.giat.geowave.core.store.index.PrimaryIndex;
 public abstract class EntryIteratorWrapper<T> implements
 		Iterator<T>
 {
+	private final static Logger LOGGER = Logger.getLogger(EntryIteratorWrapper.class);
+
 	protected final AdapterStore adapterStore;
 	protected final PrimaryIndex index;
 	protected final Iterator scannerIt;

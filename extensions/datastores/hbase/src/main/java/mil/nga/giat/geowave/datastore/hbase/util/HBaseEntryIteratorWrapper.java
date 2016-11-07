@@ -8,7 +8,6 @@ import org.apache.hadoop.hbase.client.Result;
 import org.apache.log4j.Logger;
 
 import mil.nga.giat.geowave.core.index.ByteArrayId;
-import mil.nga.giat.geowave.core.index.ByteArrayUtils;
 import mil.nga.giat.geowave.core.index.IndexUtils;
 import mil.nga.giat.geowave.core.store.adapter.AdapterStore;
 import mil.nga.giat.geowave.core.store.adapter.DataAdapter;
@@ -32,8 +31,6 @@ public class HBaseEntryIteratorWrapper<T> extends
 	private boolean reachedEnd = false;
 	private boolean hasSkippingFilter = false;
 	
-	private boolean reported = false;
-
 	public HBaseEntryIteratorWrapper(
 			final AdapterStore adapterStore,
 			final PrimaryIndex index,
@@ -75,8 +72,11 @@ public class HBaseEntryIteratorWrapper<T> extends
 		this.decodePersistenceEncoding = decodePersistenceEncoding;
 		this.hasSkippingFilter = hasSkippingFilter;
 		
-		if (!hasSkippingFilter) {
+		if (!this.hasSkippingFilter) {
 			initializeBitPosition(maxResolutionSubsamplingPerDimension);
+		}
+		else {
+			bitPosition = null;
 		}
 		
 		if (fieldIds != null) {
@@ -102,7 +102,7 @@ public class HBaseEntryIteratorWrapper<T> extends
 					"Row is not an HBase row Result.");
 			return null;
 		}
-
+		
 		if (passesResolutionSkippingFilter(
 				result)) {
 			return HBaseUtils.decodeRow(
@@ -120,10 +120,6 @@ public class HBaseEntryIteratorWrapper<T> extends
 	private boolean passesResolutionSkippingFilter(
 			final Result result ) {
 		if (hasSkippingFilter) {
-			if (!reported) {
-				LOGGER.warn(">>> Skipping filter applied");
-				reported = true;
-			}
 			return true;
 		}
 		

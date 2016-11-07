@@ -7,18 +7,17 @@ import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.CellUtil;
 import org.apache.hadoop.hbase.exceptions.DeserializationException;
 import org.apache.hadoop.hbase.filter.FilterBase;
-import org.apache.log4j.Logger;
+import org.apache.hadoop.hbase.util.Bytes;
 
 import mil.nga.giat.geowave.core.index.IndexUtils;
 
 public class FixedCardinalitySkippingFilter extends
 		FilterBase
 {
-	private final static Logger LOGGER = Logger.getLogger(
-			FixedCardinalitySkippingFilter.class);
-
 	private Integer bitPosition;
-	private Cell nextCellHint;
+	private byte[] nextRow = null;
+	private ReturnCode returnCode;
+	private boolean init = false;
 
 	public FixedCardinalitySkippingFilter() {}
 
@@ -31,33 +30,60 @@ public class FixedCardinalitySkippingFilter extends
 	public ReturnCode filterKeyValue(
 			Cell cell )
 			throws IOException {
-		skip(cell);
-
-		if (nextCellHint == null) {
-			LOGGER.warn("SkipFilter has reached the end of the data!");
-			return ReturnCode.SKIP;
+		// Make sure we have the next row to include
+		if (!init) {
+			init = true;
+			getNextRowKey(
+					cell);
 		}
 
-		return ReturnCode.SEEK_NEXT_USING_HINT;
+		// Compare current row w/ next row
+		returnCode = checkNextRow(
+				cell);
+
+		// If we're at or past the next row, advance it
+		if (returnCode != ReturnCode.SKIP) {
+			getNextRowKey(
+					cell);
+		}
+
+		return returnCode;
 	}
 
-	@Override
-	public Cell getNextCellHint(
-			final Cell currentKV ) {
-		return nextCellHint;
+	private ReturnCode checkNextRow(
+			Cell cell ) {
+		final byte[] row = CellUtil.cloneRow(
+				cell);
+
+		final byte[] rowCopy = new byte[nextRow.length];
+
+		System.arraycopy(
+				row,
+				0,
+				rowCopy,
+				0,
+				rowCopy.length);
+
+		int cmp = Bytes.compareTo(
+				rowCopy,
+				nextRow);
+
+		if (cmp < 0) {
+			return ReturnCode.SKIP;
+		}
+		else {
+			return ReturnCode.INCLUDE;
+		}
 	}
 
-	private void skip(
+	private void getNextRowKey(
 			final Cell currentCell ) {
 		final byte[] row = CellUtil.cloneRow(
 				currentCell);
 
-		final byte[] nextRow = IndexUtils.getNextRowForSkip(
+		nextRow = IndexUtils.getNextRowForSkip(
 				row,
 				bitPosition);
-
-		nextCellHint = nextRow != null ? CellUtil.createCell(
-				nextRow) : null;
 	}
 
 	public byte[] toByteArray()

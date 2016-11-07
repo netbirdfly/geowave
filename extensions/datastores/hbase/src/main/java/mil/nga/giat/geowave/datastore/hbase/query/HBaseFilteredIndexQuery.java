@@ -150,7 +150,7 @@ public abstract class HBaseFilteredIndexQuery extends
 					multiScanner,
 					tableName,
 					authorizations);
-
+			
 			if (rs != null) {
 				results.add(
 						rs);
@@ -297,6 +297,7 @@ public abstract class HBaseFilteredIndexQuery extends
 					filterList.addFilter(
 							skippingFilter);
 					hasSkippingFilter = true;
+					LOGGER.warn("KAM >>> HAS SKIPPING FILTER");
 				}
 			}
 		}

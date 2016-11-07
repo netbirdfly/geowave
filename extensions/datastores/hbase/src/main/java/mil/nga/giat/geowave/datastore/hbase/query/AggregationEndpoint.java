@@ -8,8 +8,6 @@ import java.util.List;
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.Coprocessor;
 import org.apache.hadoop.hbase.CoprocessorEnvironment;
-import org.apache.hadoop.hbase.client.Consistency;
-import org.apache.hadoop.hbase.client.IsolationLevel;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.coprocessor.CoprocessorException;
 import org.apache.hadoop.hbase.coprocessor.CoprocessorService;
@@ -18,9 +16,7 @@ import org.apache.hadoop.hbase.filter.Filter;
 import org.apache.hadoop.hbase.filter.FilterList;
 import org.apache.hadoop.hbase.filter.MultiRowRangeFilter;
 import org.apache.hadoop.hbase.protobuf.ResponseConverter;
-import org.apache.hadoop.hbase.regionserver.NoLimitScannerContext;
-import org.apache.hadoop.hbase.regionserver.Region;
-import org.apache.hadoop.hbase.regionserver.RegionScanner;
+import org.apache.hadoop.hbase.regionserver.InternalScanner;
 import org.apache.log4j.Logger;
 
 import com.google.protobuf.ByteString;
@@ -236,12 +232,8 @@ public class AggregationEndpoint extends
 			final HBaseDistributableFilter hdFilter )
 			throws IOException {
 		final Scan scan = new Scan();
-		scan.setMaxVersions(1);
-		scan.setCaching(100000);
-		scan.setCacheBlocks(true);
-		scan.setLoadColumnFamiliesOnDemand(true);
-		scan.setIsolationLevel(IsolationLevel.READ_UNCOMMITTED);
-		scan.setConsistency(Consistency.TIMELINE);
+		scan.setMaxVersions(
+				1);
 
 		if (filter != null) {
 			scan.setFilter(
@@ -252,19 +244,12 @@ public class AggregationEndpoint extends
 					adapterId.getBytes());
 		}
 
-		Region region = env.getRegion();
+		try (InternalScanner scanner = env.getRegion().getScanner(
+				scan)) {
 
 		final List<Cell> results = new ArrayList<Cell>();
-
-		final RegionScanner scanner = region.getScanner(
-				scan);
-
-		region.startRegionOperation();
-
-		try {
-			synchronized (scanner) {
-				while (scanner.nextRaw(
-						results, NoLimitScannerContext.getInstance())) {
+			while (scanner.next(
+					results)) {
 					if ((dataAdapter != null) && (hdFilter != null)) {
 						final Object row = hdFilter.decodeRow(
 								dataAdapter);
@@ -282,14 +267,9 @@ public class AggregationEndpoint extends
 						aggregation.aggregate(
 								results);
 					}
+				results.clear();
 				}
 			}
-		}
-		finally {
-			region.closeRegionOperation();
-			scanner.close();
-		}
-
 		return aggregation.getResult();
 	}
 }

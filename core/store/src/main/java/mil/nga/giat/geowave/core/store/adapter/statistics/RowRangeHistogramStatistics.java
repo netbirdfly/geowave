@@ -23,7 +23,8 @@ public class RowRangeHistogramStatistics<T> extends
 	public static final ByteArrayId STATS_ID = new ByteArrayId(
 			"RANGE_HISTOGRAM_");
 	private static final NumericHistogramFactory HistFactory = new MinimalBinDistanceHistogramFactory();
-	NumericHistogram histogram = HistFactory.create(1024);
+	NumericHistogram histogram = HistFactory.create(
+			1024);
 
 	protected RowRangeHistogramStatistics() {
 		super();
@@ -34,7 +35,8 @@ public class RowRangeHistogramStatistics<T> extends
 			final ByteArrayId indexId ) {
 		super(
 				adapterId,
-				composeId(indexId));
+				composeId(
+						indexId));
 	}
 
 	public RowRangeHistogramStatistics(
@@ -44,8 +46,10 @@ public class RowRangeHistogramStatistics<T> extends
 			int bins ) {
 		super(
 				adapterId,
-				composeId(indexId));
-		histogram = factory.create(bins);
+				composeId(
+						indexId));
+		histogram = factory.create(
+				bins);
 	}
 
 	public RowRangeHistogramStatistics(
@@ -54,8 +58,10 @@ public class RowRangeHistogramStatistics<T> extends
 			int bins ) {
 		super(
 				adapterId,
-				composeId(indexId));
-		histogram = HistFactory.create(bins);
+				composeId(
+						indexId));
+		histogram = HistFactory.create(
+				bins);
 	}
 
 	public static ByteArrayId composeId(
@@ -70,7 +76,8 @@ public class RowRangeHistogramStatistics<T> extends
 	public DataStatistics<T> duplicate() {
 		return new RowRangeHistogramStatistics<T>(
 				dataAdapterId,
-				decomposeFromId(statisticsId),
+				decomposeFromId(
+						statisticsId),
 				this.histogram.getNumBins());// indexId
 	}
 
@@ -96,10 +103,13 @@ public class RowRangeHistogramStatistics<T> extends
 			byte[] start,
 			byte[] end ) {
 		return this.histogram.sum(
-				ByteUtils.toDouble(end),
-				true) - this.histogram.sum(
-				ByteUtils.toDouble(start),
-				false);
+				ByteUtils.toDouble(
+						end),
+				true)
+				- this.histogram.sum(
+						ByteUtils.toDouble(
+								start),
+						false);
 	}
 
 	public double[] quantile(
@@ -107,41 +117,51 @@ public class RowRangeHistogramStatistics<T> extends
 		final double[] result = new double[bins];
 		final double binSize = 1.0 / bins;
 		for (int bin = 0; bin < bins; bin++) {
-			result[bin] = quantile(binSize * (bin + 1));
+			result[bin] = quantile(
+					binSize * (bin + 1));
 		}
 		return result;
 	}
 
 	public long[] count(
 			final int bins ) {
-		return histogram.count(bins);
+		return histogram.count(
+				bins);
 	}
 
 	public double cdf(
 			final byte[] id ) {
-		return cdf(ByteUtils.toDouble(id));
+		return cdf(
+				ByteUtils.toDouble(
+						id));
 	}
 
 	private double cdf(
 			double val ) {
-		return histogram.cdf(val);
+		return histogram.cdf(
+				val);
 	}
 
 	public double quantile(
 			final double percentage ) {
-		return histogram.quantile((percentage));
+		return histogram.quantile(
+				(percentage));
 	}
 
 	public double percentPopulationOverRange(
 			final byte[] start,
 			final byte[] stop ) {
-		return cdf(stop) - cdf(start);
+		return cdf(
+				stop)
+				- cdf(
+						start);
 	}
 
 	public long getLeftMostCount() {
-		return (long) Math.ceil(histogram.sum(
-				histogram.getMinValue(),
-				true));
+		return (long) Math.ceil(
+				histogram.sum(
+						histogram.getMinValue(),
+						true));
 	}
 
 	public long totalSampleSize() {
@@ -152,24 +172,29 @@ public class RowRangeHistogramStatistics<T> extends
 	public void merge(
 			final Mergeable mergeable ) {
 		if (mergeable instanceof RowRangeHistogramStatistics) {
-			histogram.merge(((RowRangeHistogramStatistics<?>) mergeable).histogram);
+			histogram.merge(
+					((RowRangeHistogramStatistics<?>) mergeable).histogram);
 		}
 	}
 
 	@Override
 	public byte[] toBinary() {
 
-		final ByteBuffer buffer = super.binaryBuffer(histogram.bufferSize() + 5);
+		final ByteBuffer buffer = super.binaryBuffer(
+				histogram.bufferSize() + 5);
 		// buffer out an
-		histogram.toBinary(buffer);
+		histogram.toBinary(
+				buffer);
 		return buffer.array();
 	}
 
 	@Override
 	public void fromBinary(
 			final byte[] bytes ) {
-		final ByteBuffer buffer = super.binaryBuffer(bytes);
-		histogram.fromBinary(buffer);
+		final ByteBuffer buffer = super.binaryBuffer(
+				bytes);
+		histogram.fromBinary(
+				buffer);
 	}
 
 	@Override
@@ -178,7 +203,9 @@ public class RowRangeHistogramStatistics<T> extends
 			final T entry ) {
 		for (final ByteArrayId ids : entryInfo.getRowIds()) {
 			final byte[] idBytes = ids.getBytes();
-			add(ByteUtils.toDouble(idBytes));
+			add(
+					ByteUtils.toDouble(
+							idBytes));
 
 		}
 	}
@@ -194,22 +221,32 @@ public class RowRangeHistogramStatistics<T> extends
 		StringBuffer buffer = new StringBuffer();
 		buffer.append(
 				"histogram[index=").append(
-				super.statisticsId.getString());
-		buffer.append(", bins={");
-		for (double v : this.quantile(10)) {
-			buffer.append(v);
-			buffer.append(' ');
-		}
-		buffer.deleteCharAt(buffer.length() - 1);
-		buffer.append(", counts={");
-		for (long v : this.count(10)) {
+						super.statisticsId.getString());
+		buffer.append(
+				", bins={");
+		for (double v : this.quantile(
+				10)) {
 			buffer.append(
-					v).append(
+					v);
+			buffer.append(
 					' ');
 		}
-		buffer.deleteCharAt(buffer.length() - 1);
-		buffer.append("}]");
-		buffer.append("}]");
+		buffer.deleteCharAt(
+				buffer.length() - 1);
+		buffer.append(
+				", counts={");
+		for (long v : this.count(
+				10)) {
+			buffer.append(
+					v).append(
+							' ');
+		}
+		buffer.deleteCharAt(
+				buffer.length() - 1);
+		buffer.append(
+				"}]");
+		buffer.append(
+				"}]");
 		return buffer.toString();
 	}
 

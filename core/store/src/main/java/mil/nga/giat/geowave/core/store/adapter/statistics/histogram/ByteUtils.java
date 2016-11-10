@@ -22,6 +22,8 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
 
+import mil.nga.giat.geowave.core.index.ByteArrayId;
+
 public class ByteUtils
 {
 

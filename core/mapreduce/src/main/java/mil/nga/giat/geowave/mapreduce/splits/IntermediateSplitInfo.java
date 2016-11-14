@@ -49,35 +49,18 @@ public class IntermediateSplitInfo implements
 			final double thisCardinalty = rangeLocationPair.getCardinality();
 			final double fraction = (targetCardinality - currentCardinality) / thisCardinalty;
 
-			LOGGER.warn("fraction: " + fraction);
 			final byte[] start = rangeLocationPair.getRange().getStartKey();
 			final byte[] end = rangeLocationPair.getRange().getEndKey();
 
 			final double cdfStart = stats.cdf(start);
+
 			final double cdfEnd = stats.cdf(end);
-			LOGGER.warn("cdf start: " + cdfStart);
-			LOGGER.warn("cdf end: " + cdfEnd);
 			final double expectedEndValue = stats.quantile(cdfStart + ((cdfEnd - cdfStart) * fraction));
-			// final BigInteger expectedEndValueBI = new BigDecimal(
-			// expectedEndValue).toBigInteger();
-			LOGGER.warn("expected end: " + expectedEndValue);
 			final int maxCardinality = Math.max(
 					start.length,
 					end.length);
 
-			// LOGGER.warn(expectedEndValueBI);
-			// final byte[] bytes = expectedEndValueBI.toByteArray();
 			byte[] bytes = ByteUtils.toBytes(expectedEndValue);
-			LOGGER.warn(new ByteArrayId(
-					bytes).getHexString());
-			// final byte[] undoTwosComplement = new byte[bytes.length - 1];
-			// System.arraycopy(
-			// bytes,
-			// 1,
-			// undoTwosComplement,
-			// 0,
-			// undoTwosComplement.length);
-			// LOGGER.warn(new ByteArrayId(undoTwosComplement).getHexString());
 			byte[] splitKey;
 			if ((bytes.length < 8) && (bytes.length < maxCardinality)) {
 				// prepend with 0
@@ -103,36 +86,22 @@ public class IntermediateSplitInfo implements
 			final String location = rangeLocationPair.getLocation();
 			final boolean startKeyInclusive = true;
 			final boolean endKeyInclusive = false;
-
-			LOGGER.warn(new ByteArrayId(
-					start).getHexString());
-			LOGGER.warn(new ByteArrayId(
-					splitKey).getHexString());
-			LOGGER.warn(new ByteArrayId(
-					end).getHexString());
-			if (Arrays.equals(
-					start,
-					splitKey) || Arrays.equals(
-					end,
-					splitKey)) {
-				// LOGGER.warn(
-				// "getting midpoint");
-				// return null;
+			if (new ByteArrayId(
+					start).compareTo(new ByteArrayId(
+					splitKey)) >= 0 || new ByteArrayId(
+					end).compareTo(new ByteArrayId(
+					splitKey)) <= 0) {
 				splitKey = SplitsProvider.getMidpoint(rangeLocationPair.getRange());
-				// this implies its already as fine grained as the range can get
 				if (splitKey == null) {
-					LOGGER.warn("split is null");
 					return null;
 				}
 
 				// if you can split the range only by setting the split to the
 				// end, but its not inclusive on the end, just clamp this to the
-				// start and don't split producing a new pari
+				// start and don't split producing a new pair
 				if (Arrays.equals(
 						end,
 						splitKey) && !rangeLocationPair.getRange().isEndKeyInclusive()) {
-
-					LOGGER.warn("end key inclusive");
 					rangeLocationPair = splitsProvider.constructRangeLocationPair(
 							splitsProvider.constructRange(
 									rangeLocationPair.getRange().getStartKey(),
@@ -145,10 +114,6 @@ public class IntermediateSplitInfo implements
 									splitKey));
 					return null;
 				}
-			}
-			else {
-
-				LOGGER.warn("normal");
 			}
 
 			try {

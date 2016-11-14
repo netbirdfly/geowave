@@ -43,7 +43,6 @@ public class ByteUtils
 		BigInteger tmp = new BigDecimal(
 				val).toBigInteger();
 		byte[] arr = tmp.toByteArray();
-		System.err.println("big int: " + Arrays.toString(arr));
 		if (arr[0] == (byte) 0 && arr.length > 1 && arr[1] == (byte) 0xff) {
 			// to represent {0xff, 0xff}, big integer uses {0x00, 0xff, 0xff}
 			// due to the one's compliment representation.

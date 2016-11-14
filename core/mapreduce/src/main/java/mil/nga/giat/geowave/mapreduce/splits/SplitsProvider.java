@@ -368,9 +368,6 @@ public abstract class SplitsProvider
 		if (rangeBI.equals(BigInteger.ZERO) || rangeBI.equals(BigInteger.ONE)) {
 			return end;
 		}
-		LOGGER.warn("start " + startBI);
-		LOGGER.warn("end " + endBI);
-		LOGGER.warn("range " + rangeBI);
 		final byte[] valueBytes = rangeBI.divide(
 				TWO).add(
 				startBI).toByteArray();
@@ -381,75 +378,6 @@ public abstract class SplitsProvider
 				bytes,
 				0,
 				bytes.length);
-		return bytes;
-	}
-
-	public static void main(
-			String[] args ) {
-		BigInteger startBI = BigInteger.valueOf(16782367);
-		BigInteger endBI = BigInteger.valueOf(16782592);
-		final BigInteger rangeBI = endBI.subtract(startBI);
-		LOGGER.warn("start " + startBI);
-		LOGGER.warn("end " + endBI);
-		LOGGER.warn("range " + rangeBI);
-		final byte[] valueBytes = rangeBI.divide(
-				TWO).add(
-				startBI).toByteArray();
-		final byte[] bytes = new byte[valueBytes.length - 2];
-		System.arraycopy(
-				valueBytes,
-				2,
-				bytes,
-				0,
-				bytes.length);
-		System.err.println(Arrays.toString(bytes));
-		System.err.println(Arrays.toString(valueBytes));
-		System.err.println(Arrays.toString(startBI.toByteArray()));
-
-		System.err.println(Arrays.toString(endBI.toByteArray()));
-
-		byte[] bytess = new byte[] {
-			31,
-			32,
-			-97,
-			-28,
-			-103,
-			-126,
-			83,
-			0
-		};
-		System.err.println(new ByteArrayId(
-				ByteUtils.toBytes(8.761595385184851E15)).getHexString());
-		System.err.println(new ByteArrayId(
-				ByteUtils.toBytes(1.44991348049302938E18)).getHexString());
-		System.err.println(new ByteArrayId(
-				bytess).getHexString());
-		expandBytes(
-				new BigDecimal(
-						1.44991348049250355E18).toBigInteger().toByteArray(),
-				2);
-	}
-
-	private static byte[] expandBytes(
-			final byte valueBytes[],
-			final int numBytes ) {
-		final byte[] bytes = new byte[numBytes];
-		int expansion = 0;
-		if (numBytes > valueBytes.length) {
-			expansion = (numBytes - valueBytes.length);
-			for (int i = 0; i < expansion; i++) {
-				bytes[i] = 0;
-			}
-			for (int i = 0; i < valueBytes.length; i++) {
-				bytes[expansion + i] = valueBytes[i];
-			}
-		}
-		else {
-			for (int i = 0; i < numBytes; i++) {
-				bytes[i] = valueBytes[i];
-			}
-		}
-
 		return bytes;
 	}
 

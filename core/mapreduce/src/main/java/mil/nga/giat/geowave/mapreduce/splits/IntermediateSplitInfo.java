@@ -23,8 +23,7 @@ public class IntermediateSplitInfo implements
 		Comparable<IntermediateSplitInfo>
 {
 
-	private final static Logger LOGGER = Logger.getLogger(
-			IntermediateSplitInfo.class);
+	private final static Logger LOGGER = Logger.getLogger(IntermediateSplitInfo.class);
 
 	protected class IndexRangeLocation
 	{
@@ -50,36 +49,27 @@ public class IntermediateSplitInfo implements
 			final double thisCardinalty = rangeLocationPair.getCardinality();
 			final double fraction = (targetCardinality - currentCardinality) / thisCardinalty;
 
-			LOGGER.warn(
-					"fraction: " + fraction);
+			LOGGER.warn("fraction: " + fraction);
 			final byte[] start = rangeLocationPair.getRange().getStartKey();
 			final byte[] end = rangeLocationPair.getRange().getEndKey();
 
-			final double cdfStart = stats.cdf(
-					start);
-			final double cdfEnd = stats.cdf(
-					end);
-			LOGGER.warn(
-					"cdf start: " + cdfStart);
-			LOGGER.warn(
-					"cdf end: " + cdfEnd);
-			final double expectedEndValue = stats.quantile(
-					cdfStart + ((cdfEnd - cdfStart) * fraction));
+			final double cdfStart = stats.cdf(start);
+			final double cdfEnd = stats.cdf(end);
+			LOGGER.warn("cdf start: " + cdfStart);
+			LOGGER.warn("cdf end: " + cdfEnd);
+			final double expectedEndValue = stats.quantile(cdfStart + ((cdfEnd - cdfStart) * fraction));
 			// final BigInteger expectedEndValueBI = new BigDecimal(
 			// expectedEndValue).toBigInteger();
-			LOGGER.warn(
-					"expected end: " + expectedEndValue);
+			LOGGER.warn("expected end: " + expectedEndValue);
 			final int maxCardinality = Math.max(
 					start.length,
 					end.length);
 
 			// LOGGER.warn(expectedEndValueBI);
 			// final byte[] bytes = expectedEndValueBI.toByteArray();
-			byte[] bytes = ByteUtils.toBytes(
-					expectedEndValue);
-			LOGGER.warn(
-					new ByteArrayId(
-							bytes).getHexString());
+			byte[] bytes = ByteUtils.toBytes(expectedEndValue);
+			LOGGER.warn(new ByteArrayId(
+					bytes).getHexString());
 			// final byte[] undoTwosComplement = new byte[bytes.length - 1];
 			// System.arraycopy(
 			// bytes,
@@ -114,31 +104,26 @@ public class IntermediateSplitInfo implements
 			final boolean startKeyInclusive = true;
 			final boolean endKeyInclusive = false;
 
-			LOGGER.warn(
-					new ByteArrayId(
-							start).getHexString());
-			LOGGER.warn(
-					new ByteArrayId(
-							splitKey).getHexString());
-			LOGGER.warn(
-					new ByteArrayId(
-							end).getHexString());
+			LOGGER.warn(new ByteArrayId(
+					start).getHexString());
+			LOGGER.warn(new ByteArrayId(
+					splitKey).getHexString());
+			LOGGER.warn(new ByteArrayId(
+					end).getHexString());
 			if (Arrays.equals(
 					start,
-					splitKey)
-					|| Arrays.equals(
-							end,
-							splitKey)) {
-//				LOGGER.warn(
-//						"getting midpoint");
-//				return null;
-				 splitKey =
-				 SplitsProvider.getMidpoint(rangeLocationPair.getRange());
-//				 this implies its already as fine grained as the range can get
-				 if (splitKey == null) {
-				 LOGGER.warn("split is null");
-				 return null;
-				 }
+					splitKey) || Arrays.equals(
+					end,
+					splitKey)) {
+				// LOGGER.warn(
+				// "getting midpoint");
+				// return null;
+				splitKey = SplitsProvider.getMidpoint(rangeLocationPair.getRange());
+				// this implies its already as fine grained as the range can get
+				if (splitKey == null) {
+					LOGGER.warn("split is null");
+					return null;
+				}
 
 				// if you can split the range only by setting the split to the
 				// end, but its not inclusive on the end, just clamp this to the
@@ -147,8 +132,7 @@ public class IntermediateSplitInfo implements
 						end,
 						splitKey) && !rangeLocationPair.getRange().isEndKeyInclusive()) {
 
-					LOGGER.warn(
-							"end key inclusive");
+					LOGGER.warn("end key inclusive");
 					rangeLocationPair = splitsProvider.constructRangeLocationPair(
 							splitsProvider.constructRange(
 									rangeLocationPair.getRange().getStartKey(),
@@ -164,8 +148,7 @@ public class IntermediateSplitInfo implements
 			}
 			else {
 
-				LOGGER.warn(
-						"normal");
+				LOGGER.warn("normal");
 			}
 
 			try {
@@ -241,16 +224,14 @@ public class IntermediateSplitInfo implements
 	synchronized void merge(
 			final IntermediateSplitInfo split ) {
 		for (final Entry<PrimaryIndex, List<RangeLocationPair>> e : split.splitInfo.entrySet()) {
-			List<RangeLocationPair> thisList = splitInfo.get(
-					e.getKey());
+			List<RangeLocationPair> thisList = splitInfo.get(e.getKey());
 			if (thisList == null) {
 				thisList = new ArrayList<RangeLocationPair>();
 				splitInfo.put(
 						e.getKey(),
 						thisList);
 			}
-			thisList.addAll(
-					e.getValue());
+			thisList.addAll(e.getValue());
 		}
 	}
 
@@ -281,10 +262,9 @@ public class IntermediateSplitInfo implements
 				});
 		for (final Entry<PrimaryIndex, List<RangeLocationPair>> ranges : splitInfo.entrySet()) {
 			for (final RangeLocationPair p : ranges.getValue()) {
-				orderedSplits.add(
-						new IndexRangeLocation(
-								p,
-								ranges.getKey()));
+				orderedSplits.add(new IndexRangeLocation(
+						p,
+						ranges.getKey()));
 			}
 		}
 		final double targetCardinality = getTotalRangeAtCardinality() / 2;
@@ -298,8 +278,7 @@ public class IntermediateSplitInfo implements
 			double nextCardinality = currentCardinality + next.rangeLocationPair.getCardinality();
 			if (nextCardinality > targetCardinality) {
 				final IndexRangeLocation newSplit = next.split(
-						statsCache.get(
-								next.index),
+						statsCache.get(next.index),
 						currentCardinality,
 						targetCardinality);
 				double splitCardinality = next.rangeLocationPair.getCardinality();
@@ -362,8 +341,7 @@ public class IntermediateSplitInfo implements
 						entry.getValue());
 			}
 			else {
-				splitInfo.putAll(
-						otherSplitInfo);
+				splitInfo.putAll(otherSplitInfo);
 				otherSplitInfo.clear();
 			}
 		}
@@ -376,16 +354,14 @@ public class IntermediateSplitInfo implements
 			final Map<PrimaryIndex, List<RangeLocationPair>> otherSplitInfo,
 			final RangeLocationPair pair,
 			final PrimaryIndex index ) {
-		List<RangeLocationPair> list = otherSplitInfo.get(
-				index);
+		List<RangeLocationPair> list = otherSplitInfo.get(index);
 		if (list == null) {
 			list = new ArrayList<RangeLocationPair>();
 			otherSplitInfo.put(
 					index,
 					list);
 		}
-		list.add(
-				pair);
+		list.add(pair);
 
 	}
 
@@ -393,14 +369,12 @@ public class IntermediateSplitInfo implements
 		final Set<String> locations = new HashSet<String>();
 		for (final Entry<PrimaryIndex, List<RangeLocationPair>> entry : splitInfo.entrySet()) {
 			for (final RangeLocationPair pair : entry.getValue()) {
-				locations.add(
-						pair.getLocation());
+				locations.add(pair.getLocation());
 			}
 		}
 		return splitsProvider.constructInputSplit(
 				splitInfo,
-				locations.toArray(
-						new String[locations.size()]));
+				locations.toArray(new String[locations.size()]));
 	}
 
 	@Override
@@ -422,12 +396,10 @@ public class IntermediateSplitInfo implements
 				double rangeSum = 0;
 				double otherSum = 0;
 				for (final List<RangeLocationPair> p : splitInfo.values()) {
-					pairs.addAll(
-							p);
+					pairs.addAll(p);
 				}
 				for (final List<RangeLocationPair> p : o.splitInfo.values()) {
-					otherPairs.addAll(
-							p);
+					otherPairs.addAll(p);
 				}
 
 				result = Integer.compare(
@@ -435,12 +407,10 @@ public class IntermediateSplitInfo implements
 						otherPairs.size());
 				if (result == 0) {
 					for (final RangeLocationPair p : pairs) {
-						rangeSum += SplitsProvider.getRangeLength(
-								p.getRange());
+						rangeSum += SplitsProvider.getRangeLength(p.getRange());
 					}
 					for (final RangeLocationPair p : otherPairs) {
-						otherSum += SplitsProvider.getRangeLength(
-								p.getRange());
+						otherSum += SplitsProvider.getRangeLength(p.getRange());
 					}
 					result = Double.compare(
 							rangeSum,
@@ -483,8 +453,7 @@ public class IntermediateSplitInfo implements
 				return false;
 			}
 		}
-		else if (!splitInfo.equals(
-				other.splitInfo)) {
+		else if (!splitInfo.equals(other.splitInfo)) {
 			return false;
 		}
 		if (splitsProvider == null) {
@@ -492,8 +461,7 @@ public class IntermediateSplitInfo implements
 				return false;
 			}
 		}
-		else if (!splitsProvider.equals(
-				other.splitsProvider)) {
+		else if (!splitsProvider.equals(other.splitsProvider)) {
 			return false;
 		}
 		return true;

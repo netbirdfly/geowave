@@ -123,7 +123,7 @@ public class BasicMapReduceIT
 	}
 
 	@GeoWaveTestStore({
-		// GeoWaveStoreType.ACCUMULO,
+		GeoWaveStoreType.ACCUMULO,
 		GeoWaveStoreType.HBASE
 	})
 	protected DataStorePluginOptions dataStorePluginOptions;
@@ -309,8 +309,8 @@ public class BasicMapReduceIT
 				exportPath,
 				null);
 		options.setBatchSize(10000);
-		options.setMinSplits(365);
-		options.setMaxSplits(365);
+		options.setMinSplits(MapReduceTestUtils.MIN_INPUT_SPLITS);
+		options.setMaxSplits(MapReduceTestUtils.MAX_INPUT_SPLITS);
 		options.setResourceManagerHostPort(env.getJobtracker());
 
 		final Configuration conf = MapReduceTestUtils.getConfiguration();
@@ -341,8 +341,8 @@ public class BasicMapReduceIT
 		final TestJobRunner jobRunner = new TestJobRunner(
 				dataStorePluginOptions,
 				expectedResults);
-		jobRunner.setMinInputSplits(2);
-		jobRunner.setMaxInputSplits(2);
+		jobRunner.setMinInputSplits(MapReduceTestUtils.MIN_INPUT_SPLITS);
+		jobRunner.setMaxInputSplits(MapReduceTestUtils.MAX_INPUT_SPLITS);
 		if (query != null) {
 			jobRunner.setQuery(query);
 		}

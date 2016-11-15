@@ -66,6 +66,7 @@ public class GeoWaveIngestGeoserverIT
 		GeoWaveStoreType.ACCUMULO,
 		GeoWaveStoreType.HBASE
 	}, options = {
+		"bigtable=true",
 		"enableCustomFilters=true",
 		"enableCoprocessors=true",
 		"verifyCoprocessors=true"

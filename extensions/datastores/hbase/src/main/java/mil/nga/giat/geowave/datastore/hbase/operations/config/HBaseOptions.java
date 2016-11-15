@@ -11,6 +11,9 @@ public class HBaseOptions implements
 {
 	public static final String COPROCESSOR_JAR_KEY = "coprocessorJar";
 
+	@Parameter(names = "--bigtable")
+	protected boolean bigtable = false;
+
 	@Parameter(names = "--persistAdapter", hidden = true, arity = 1)
 	protected boolean persistAdapter = true;
 
@@ -48,6 +51,15 @@ public class HBaseOptions implements
 		"--" + COPROCESSOR_JAR_KEY
 	}, description = "Path (HDFS URL) to the jar containing coprocessor classes")
 	private String coprocessorJar;
+
+	public boolean isBigtable() {
+		return bigtable;
+	}
+
+	public void setBigtable(
+			final boolean bigtable ) {
+		this.bigtable = bigtable;
+	}
 
 	public boolean isPersistDataStatistics() {
 		return persistDataStatistics;

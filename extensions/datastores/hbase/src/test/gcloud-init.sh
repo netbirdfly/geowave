@@ -10,13 +10,18 @@ cat <<EOF | ./google-cloud-sdk/bin/gcloud components install beta
 Y
 EOF
 
-cat <<EOF | ./google-cloud-sdk/bin/gcloud beta emulators bigtable env-init
+cat <<EOF | ./google-cloud-sdk/bin/gcloud beta emulators bigtable env-init --quiet
 Y
 EOF
 
 # start the emulator
 ./google-cloud-sdk/bin/gcloud beta emulators bigtable start &
 
+# wait a few seconds
+sleep 10
+
 # get the emulator port and set it in the env
-exportEmulatorConfig=./google-cloud-sdk/bin/gcloud beta emulators bigtable env-init
-eval "$exportEmulatorConfig"
+./google-cloud-sdk/bin/gcloud beta emulators bigtable env-init > exportBigtableEnv
+
+# this next step has to be run outside this script:
+source exportBigtableEnv

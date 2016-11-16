@@ -67,9 +67,9 @@ public class GeoWaveIngestGeoserverIT
 		GeoWaveStoreType.HBASE
 	}, options = {
 		"bigtable=true",
-		"enableCustomFilters=true",
-		"enableCoprocessors=true",
-		"verifyCoprocessors=true"
+		"enableCustomFilters=false",
+		"enableCoprocessors=false",
+		"verifyCoprocessors=false"
 	})
 	protected DataStorePluginOptions dataStoreOptions;
 

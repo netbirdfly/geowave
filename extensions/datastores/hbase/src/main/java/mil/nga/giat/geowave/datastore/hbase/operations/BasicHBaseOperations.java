@@ -36,6 +36,8 @@ public class BasicHBaseOperations implements
 	private static final String DEFAULT_TABLE_NAMESPACE = "";
 	public static final Object ADMIN_MUTEX = new Object();
 	private static final long SLEEP_INTERVAL = 10000L;
+	private static final String projectId = "geowave-149619";
+	private static final String instanceId = "geowave";
 
 	private final Connection conn;
 	private final String tableNamespace;
@@ -47,7 +49,8 @@ public class BasicHBaseOperations implements
 			final boolean bigtable )
 			throws IOException {
 		if (bigtable) {
-			Configuration config = HBaseConfiguration.create();
+			// Configuration config = HBaseConfiguration.create();
+			Configuration config = BigtableConfiguration.configure(projectId, instanceId);
 			
 			// TODO: Bigtable configgy things? What about connection pooling?
 			

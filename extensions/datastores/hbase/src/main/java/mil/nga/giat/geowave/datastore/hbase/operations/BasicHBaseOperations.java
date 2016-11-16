@@ -36,8 +36,8 @@ public class BasicHBaseOperations implements
 	private static final String DEFAULT_TABLE_NAMESPACE = "";
 	public static final Object ADMIN_MUTEX = new Object();
 	private static final long SLEEP_INTERVAL = 10000L;
-	private static final String projectId = "geowave-149619";
-	private static final String instanceId = "geowave";
+	private static final String projectId = "geowave-bigtable-project-id";
+	private static final String instanceId = "geowave-bigtable-instance-id";
 
 	private final Connection conn;
 	private final String tableNamespace;

@@ -143,7 +143,7 @@ public abstract class HBaseFilteredIndexQuery extends
 		final List<Iterator<Result>> resultsIterators = new ArrayList<Iterator<Result>>();
 		final List<ResultScanner> results = new ArrayList<ResultScanner>();
 
-		if (options.isBigtable()) {
+		if (isBigtable()) {
 			final List<Scan> scanners = getScannerList(
 					limit);
 
@@ -177,8 +177,8 @@ public abstract class HBaseFilteredIndexQuery extends
 					filterList,
 					limit,
 					maxResolutionSubsamplingPerDimension);
-			
-			if (options.isEnableCustomFilters()) {
+
+			if (isEnableCustomFilters()) {
 				// Add skipping filter if requested
 				hasSkippingFilter = false;
 				if (maxResolutionSubsamplingPerDimension != null) {
@@ -203,7 +203,8 @@ public abstract class HBaseFilteredIndexQuery extends
 					}
 				}
 
-				// Add distributable filters if requested, this has to be last in
+				// Add distributable filters if requested, this has to be last
+				// in
 				// the
 				// filter list for the dedupe filter to work correctly
 				final List<DistributableQueryFilter> distFilters = getDistributableFilters();
@@ -217,9 +218,11 @@ public abstract class HBaseFilteredIndexQuery extends
 							hbdFilter);
 				}
 			}
-			
-			multiScanner.setFilter(
-					filterList);
+
+			if (!filterList.getFilters().isEmpty()) {
+				multiScanner.setFilter(
+						filterList);
+			}
 
 			try {
 				final ResultScanner rs = operations.getScannedResults(
@@ -267,6 +270,14 @@ public abstract class HBaseFilteredIndexQuery extends
 		LOGGER.error(
 				"Results were empty");
 		return new CloseableIterator.Empty();
+	}
+
+	private boolean isEnableCustomFilters() {
+		return (options != null && options.isEnableCustomFilters());
+	}
+
+	private boolean isBigtable() {
+		return (options != null && options.isBigtable());
 	}
 
 	// Bigtable does not support MultiRowRangeFilters. This method returns a
@@ -337,12 +348,10 @@ public abstract class HBaseFilteredIndexQuery extends
 		final Scan scanner = new Scan();
 
 		// Performance tuning per store options
-		if (options.getScanCacheSize() != HConstants.DEFAULT_HBASE_CLIENT_SCANNER_CACHING) {
-			scanner.setCaching(
-					options.getScanCacheSize());
-		}
+		scanner.setCaching(
+				getScanCacheSize());
 		scanner.setCacheBlocks(
-				options.isEnableBlockCache());
+				isEnableBlockCache());
 
 		// Only return the most recent version
 		scanner.setMaxVersions(
@@ -361,6 +370,25 @@ public abstract class HBaseFilteredIndexQuery extends
 		}
 
 		return scanner;
+	}
+
+	private int getScanCacheSize() {
+		if (options != null) {
+			if (options.getScanCacheSize() != HConstants.DEFAULT_HBASE_CLIENT_SCANNER_CACHING) {
+				return options.getScanCacheSize();
+			}
+		}
+
+		// Need to get default from config.
+		return 10000;
+	}
+
+	private boolean isEnableBlockCache() {
+		if (options != null) {
+			return options.isEnableBlockCache();
+		}
+
+		return true;
 	}
 
 	protected MultiRowRangeFilter getMultiRowRangeFilter(

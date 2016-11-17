@@ -140,54 +140,11 @@ public abstract class HBaseFilteredIndexQuery extends
 		final String tableName = StringUtils.stringFromBinary(
 				index.getId().getBytes());
 
-		final FilterList filterList = new FilterList();
-
-		if (options.isEnableCustomFilters()) {
-			// Add skipping filter if requested
-			hasSkippingFilter = false;
-			if (maxResolutionSubsamplingPerDimension != null) {
-				if (maxResolutionSubsamplingPerDimension.length != index
-						.getIndexStrategy()
-						.getOrderedDimensionDefinitions().length) {
-					LOGGER.warn(
-							"Unable to subsample for table '" + tableName + "'. Subsample dimensions = "
-									+ maxResolutionSubsamplingPerDimension.length + " when indexed dimensions = "
-									+ index.getIndexStrategy().getOrderedDimensionDefinitions().length);
-				}
-				else {
-					final int cardinalityToSubsample = IndexUtils.getBitPositionFromSubsamplingArray(
-							index.getIndexStrategy(),
-							maxResolutionSubsamplingPerDimension);
-
-					final FixedCardinalitySkippingFilter skippingFilter = new FixedCardinalitySkippingFilter(
-							cardinalityToSubsample);
-					filterList.addFilter(
-							skippingFilter);
-					hasSkippingFilter = true;
-				}
-			}
-
-			// Add distributable filters if requested, this has to be last in
-			// the
-			// filter list for the dedupe filter to work correctly
-			final List<DistributableQueryFilter> distFilters = getDistributableFilters();
-			if (distFilters != null) {
-				final HBaseDistributableFilter hbdFilter = new HBaseDistributableFilter();
-				hbdFilter.init(
-						distFilters,
-						index.getIndexModel());
-
-				filterList.addFilter(
-						hbdFilter);
-			}
-		}
-
 		final List<Iterator<Result>> resultsIterators = new ArrayList<Iterator<Result>>();
 		final List<ResultScanner> results = new ArrayList<ResultScanner>();
 
 		if (options.isBigtable()) {
 			final List<Scan> scanners = getScannerList(
-					filterList,
 					limit);
 
 			for (final Scan scanner : scanners) {
@@ -214,10 +171,55 @@ public abstract class HBaseFilteredIndexQuery extends
 			}
 		}
 		else {
+			final FilterList filterList = new FilterList();
+
 			final Scan multiScanner = getMultiScanner(
 					filterList,
 					limit,
 					maxResolutionSubsamplingPerDimension);
+			
+			if (options.isEnableCustomFilters()) {
+				// Add skipping filter if requested
+				hasSkippingFilter = false;
+				if (maxResolutionSubsamplingPerDimension != null) {
+					if (maxResolutionSubsamplingPerDimension.length != index
+							.getIndexStrategy()
+							.getOrderedDimensionDefinitions().length) {
+						LOGGER.warn(
+								"Unable to subsample for table '" + tableName + "'. Subsample dimensions = "
+										+ maxResolutionSubsamplingPerDimension.length + " when indexed dimensions = "
+										+ index.getIndexStrategy().getOrderedDimensionDefinitions().length);
+					}
+					else {
+						final int cardinalityToSubsample = IndexUtils.getBitPositionFromSubsamplingArray(
+								index.getIndexStrategy(),
+								maxResolutionSubsamplingPerDimension);
+
+						final FixedCardinalitySkippingFilter skippingFilter = new FixedCardinalitySkippingFilter(
+								cardinalityToSubsample);
+						filterList.addFilter(
+								skippingFilter);
+						hasSkippingFilter = true;
+					}
+				}
+
+				// Add distributable filters if requested, this has to be last in
+				// the
+				// filter list for the dedupe filter to work correctly
+				final List<DistributableQueryFilter> distFilters = getDistributableFilters();
+				if (distFilters != null) {
+					final HBaseDistributableFilter hbdFilter = new HBaseDistributableFilter();
+					hbdFilter.init(
+							distFilters,
+							index.getIndexModel());
+
+					filterList.addFilter(
+							hbdFilter);
+				}
+			}
+			
+			multiScanner.setFilter(
+					filterList);
 
 			try {
 				final ResultScanner rs = operations.getScannedResults(
@@ -270,7 +272,6 @@ public abstract class HBaseFilteredIndexQuery extends
 	// Bigtable does not support MultiRowRangeFilters. This method returns a
 	// single scan per range
 	protected List<Scan> getScannerList(
-			final FilterList filterList,
 			final Integer limit ) {
 
 		List<ByteArrayRange> ranges = getRanges();
@@ -302,9 +303,6 @@ public abstract class HBaseFilteredIndexQuery extends
 					}
 				}
 
-				scanner.setFilter(
-						filterList);
-
 				scanners.add(
 						scanner);
 			}
@@ -329,11 +327,7 @@ public abstract class HBaseFilteredIndexQuery extends
 		if (filter != null) {
 			filterList.addFilter(
 					filter);
-			// scanner.setStartRow(filter.getRowRanges().get(0).getStartRow());
 		}
-
-		multiScanner.setFilter(
-				filterList);
 
 		return multiScanner;
 	}

@@ -44,8 +44,8 @@ before_install:
   - chmod +x .utility/maven-coveralls-hack.sh
   - chmod +x .utility/gcloud-init.sh
   - .utility/maven-coveralls-hack.sh
-  - .utility/gcloud-init.sh
-  - source exportBigtableEnv
+  # - .utility/gcloud-init.sh
+  # - source exportBigtableEnv
 after_success:
   - .utility/publish-docs.sh
   - cd test; mvn coveralls:report -Daccumulo.version=${ACCUMULO_VERSION} -Daccumulo.api=${ACCUMULO_API} -Dhbase.version=${HBASE_VERSION} -Dhadoop.version=${HADOOP_VERSION} -Dgeotools.version=${GEOTOOLS_VERSION} -Dgeoserver.version=${GEOSERVER_VERSION} -P ${PLATFORM_VERSION}
